@@ -1,0 +1,15 @@
+# Release-1 excluded artifacts — the ONE list (internal work item 2419, RA R3 on PR internal work item 2504).
+#
+# Lean baseline docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md §4.2 (deferred adapters) and §4.3
+# (former empty POM-only shells, now removed), plus the owner's internal work item 1141 Q1 deferral: these must not appear in Release-1 publication claims. Read by
+# scripts/test/bom_release1_test.sh (BOM membership) and scripts/test/readme_storefront_test.sh
+# (deferred-claim check); bom_release1_test.sh also fails when appbase-bom/pom.xml's comment or
+# docs/Known-Limitations.md omits an entry, so the prose copies cannot drift from this file.
+#
+# One artifactId per line; '#' starts a comment.
+appbase-client-clamav
+appbase-client-smtp
+appbase-client-jasync
+appbase-client-spark
+# Deferred by the owner's internal work item 1141 Q1 ruling, 2026-09-27 (comment 5855318230):
+appbase-service-user-account-r2dbc

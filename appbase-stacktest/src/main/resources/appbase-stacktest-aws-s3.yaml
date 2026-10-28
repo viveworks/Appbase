@@ -1,0 +1,116 @@
+---
+autoStart: true
+defaultDefaultS3ClientIntegrationServiceConfiguration:
+  clusterIdValueKeyConfiguration:
+    clusterId: "primary"
+  customDefaultAwsSdkHttpClientServiceConfiguration: null
+  awsSdkHttpClientIntegrationServiceKeyConfiguration:
+    text: "primary"
+  customDefaultAwsSdkAsyncHttpClientServiceConfiguration: null
+  awsSdkAsyncHttpClientIntegrationServiceKeyConfiguration:
+    text: "primary"
+  awsSdkClientOverrideConfiguration:
+    awsSdkAdvancedClientOptionsFactoryInjectedTypeConfiguration: null
+    awsSdkExecutionInterceptorsFactoryInjectedTypeConfiguration: null
+    headers: null
+    awsSdkRetryPolicyConfiguration:
+      useDefaultRetryPolicy: true
+      awsSdkRetryMode: "LEGACY"
+      useBuilderWithRetryMode: true
+      additionalRetryConditionsAllowed: true
+      awsSdkBackoffStrategyConfiguration:
+        type: "com.viveworks.appbase.client.cloud.aws.common.configuration.backoff.FullJitterBackoffStrategyConfiguration"
+        baseDelay: "PT0.5S"
+        maxBackoffTime: "PT20S"
+      retryCount: null
+      retryConditionInjectedTypeConfiguration: null
+      retryCapacityConditionInjectedTypeConfiguration: null
+      throttlingBackoffStrategyConfiguration: null
+    apiCallAttemptTimeoutConfiguration:
+      enabled: true
+      timeout: 10000
+      timeoutTimeUnit: "MILLISECONDS"
+    apiCallTimeoutConfiguration:
+      enabled: true
+      timeout: 10000
+      timeoutTimeUnit: "MILLISECONDS"
+    defaultAwsSdkProfileFileConfiguration:
+      useDefaultProfile: false
+      awsSdkConfigurationFileConfiguration:
+        location: "classpath:///aws-config.profile"
+      awsSdkCredentialsFileConfiguration:
+        location: "classpath:///aws-credentials.profile"
+    defaultProfileName: null
+  awsSdkClientAsyncConfiguration:
+    awsSdkAdvancedAsyncClientOptionsFactoryInjectedTypeConfiguration: null
+  awsSdkCredentialsProviderConfiguration:
+    asyncCredentialUpdateEnabled: false
+    awsSdkProfileFileConfiguration:
+      useDefaultProfile: false
+      awsSdkConfigurationFileConfiguration:
+        location: "classpath:///aws-config.profile"
+      awsSdkCredentialsFileConfiguration:
+        location: "classpath:///aws-credentials.profile"
+    profileName: "default"
+    reuseLastProviderEnabled: true
+  awsSdkS3Configuration:
+    accelerateModeEnabled: false
+    checksumValidationEnabled: true
+    chunkedEncodingEnabled: true
+    dualStackEnabled: false
+    pathStyleAccessEnabled: true
+    useArnRegionEnabled: null
+    awsSdkProfileFileConfiguration:
+      useDefaultProfile: false
+      awsSdkConfigurationFileConfiguration:
+        location: "classpath:///aws-config.profile"
+      awsSdkCredentialsFileConfiguration:
+        location: "classpath:///aws-credentials.profile"
+    profileName: "default"
+  # The S3 lifecycle runs MinIO on loopback port 9000. Keep this endpoint aligned with the
+  # appbase-client-aws-s3.yaml integration-test fixture.
+  endpointOverrideUri: "http://localhost:9000"
+  awsSdkRegionConfiguration:
+    # S3 treats the client region as the CreateBucket location constraint. `dev-region` is not an
+    # AWS region; us-east-1 uses S3's constraint-free CreateBucket default.
+    id: "us-east-1"
+    globalRegion: false
+keyedDefaultS3ClientIntegrationServiceConfigurations: null
+globalEnableRegisterNotFoundAppbaseClientIntegrationServices: true
+disabledRegisterNotFoundAppbaseClientIntegrationServices: null
+checkKeyedAppbaseClientIntegrationServicesSanity: false
+appbaseClientPoolManagerInjectedTypeConfiguration: null
+customAppbaseClientPoolManagerConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.manager.DefaultAppbaseClientPoolManagerConfiguration"
+  unhealthyAppbaseClientIntegrationServiceManagementDisabled: false
+  clientPoolCheckerTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 0
+    interval: 30
+    timeUnit: "SECONDS"
+  clientIntegrationServiceRepairTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 60
+    interval: 30
+    timeUnit: "SECONDS"
+  useMediatorSharedScheduler: true
+  customScheduledExecutorServiceConfiguration: null
+  repairDisabledAppbaseClientKeyConfigurations: null
+  repairDisabledAppbaseClientIntegrationServiceTypeNames: null
+  enableGlobalMaxRepairAttemptsCheck: true
+  globalMaxRepairAttempts: 3
+  maxRepairAttemptsByAppbaseClientKeyConfigurations: null
+  maxRepairAttemptsByAppbaseClientIntegrationServiceTypeNameMap: null
+  globalDisableUnregisterUnhealthyIrreparableAppbaseClientIntegrationServices: false
+  disableUnregisterUnhealthyIrreparableByAppbaseClientKeyConfigurations: null
+  disableUnregisterUnhealthyIrreparableByAppbaseClientIntegrationServiceTypeNameMap: null
+  repairListenerImplObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+  unhealthyClientIntegrationServiceEntryObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 1024
+appbaseClientPoolInjectedTypeConfiguration: null
+customAppbaseClientPoolConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.DefaultAppbaseClientPoolConfiguration"
+  repairUnhealthyServices: true

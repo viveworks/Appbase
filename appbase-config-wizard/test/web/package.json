@@ -1,0 +1,16 @@
+{
+  "name": "appbase-config-wizard-web-tests",
+  "version": "1.0.0",
+  "description": "Playwright integration tests for appbase-config-wizard web UI",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^26.0.1",
+    "typescript": "^6.0.3"
+  }
+}

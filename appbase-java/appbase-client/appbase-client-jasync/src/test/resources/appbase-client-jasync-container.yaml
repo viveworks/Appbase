@@ -1,0 +1,93 @@
+# Copyright 2019 The original author or authors of Appbase
+#
+# This project includes software developed by the author or authors of
+# Appbase (https://github.com/viveworks/Appbase).
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+autoStart: true
+defaultDefaultJasyncClientIntegrationServiceConfiguration:
+  textValueKeyConfiguration:
+    text: "primary"
+  databaseType: "MYSQL_OR_MARIADB"
+  host: "appbase-infra"
+  port: 3306
+  database: "appbase-test-mariadb-db"
+  user: "root"
+  password: "password"
+  maxActiveConnections: 1
+  maxIdleTimeConfiguration:
+    enabled: true
+    time: 10
+    timeUnit: "MILLISECONDS"
+  maxPendingQueries: 2147483647
+  connectionValidationIntervalConfiguration:
+    enabled: true
+    time: 5
+    timeUnit: "SECONDS"
+  connectionCreateTimeoutConfiguration:
+    enabled: true
+    timeout: 5
+    timeoutTimeUnit: "SECONDS"
+  connectionTestTimeoutConfiguration:
+    enabled: true
+    timeout: 5
+    timeoutTimeUnit: "SECONDS"
+  queryTimeoutConfiguration:
+    enabled: false
+    timeout: 200
+    timeoutTimeUnit: "MILLISECONDS"
+  maxConnectionTtlConfiguration:
+    enabled: false
+    time: 0
+    timeUnit: null
+  applicationName: null
+keyedDefaultJasyncClientIntegrationServiceConfigurations: null
+globalEnableRegisterNotFoundAppbaseClientIntegrationServices: true
+disabledRegisterNotFoundAppbaseClientIntegrationServices: null
+checkKeyedAppbaseClientIntegrationServicesSanity: false
+appbaseClientPoolManagerInjectedTypeConfiguration: null
+customAppbaseClientPoolManagerConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.manager.DefaultAppbaseClientPoolManagerConfiguration"
+  unhealthyAppbaseClientIntegrationServiceManagementDisabled: false
+  clientPoolCheckerTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 0
+    interval: 30
+    timeUnit: "SECONDS"
+  clientIntegrationServiceRepairTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 60
+    interval: 30
+    timeUnit: "SECONDS"
+  useMediatorSharedScheduler: true
+  customScheduledExecutorServiceConfiguration: null
+  repairDisabledAppbaseClientKeyConfigurations: null
+  repairDisabledAppbaseClientIntegrationServiceTypeNames: null
+  enableGlobalMaxRepairAttemptsCheck: true
+  globalMaxRepairAttempts: 3
+  maxRepairAttemptsByAppbaseClientKeyConfigurations: null
+  maxRepairAttemptsByAppbaseClientIntegrationServiceTypeNameMap: null
+  globalDisableUnregisterUnhealthyIrreparableAppbaseClientIntegrationServices: false
+  disableUnregisterUnhealthyIrreparableByAppbaseClientKeyConfigurations: null
+  disableUnregisterUnhealthyIrreparableByAppbaseClientIntegrationServiceTypeNameMap: null
+  repairListenerImplObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+  unhealthyClientIntegrationServiceEntryObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+appbaseClientPoolInjectedTypeConfiguration: null
+customAppbaseClientPoolConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.DefaultAppbaseClientPoolConfiguration"
+  repairUnhealthyServices: true

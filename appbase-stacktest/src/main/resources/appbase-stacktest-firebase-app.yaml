@@ -1,0 +1,72 @@
+---
+autoStart: true
+defaultDefaultFirebaseAppClientIntegrationServiceConfiguration:
+  textValueKeyConfiguration: null
+  projectId: "appbase-project"
+  serviceAccountId: null
+  emulatedEnvironment: true
+  connectTimeoutConfiguration:
+    enabled: true
+    timeout: 100
+    timeoutTimeUnit: "MILLISECONDS"
+  readTimeoutConfiguration:
+    enabled: true
+    timeout: 500
+    timeoutTimeUnit: "MILLISECONDS"
+  googleCredentialsConfiguration: null
+  databaseUrl: null
+  storageBucket: null
+  firebaseDatabaseAuthVariableOverrideFactoryInjectedTypeConfiguration: null
+  useDefaultJacksonFactory: true
+  jsonFactoryInjectedTypeConfiguration: null
+  netHttpTransportConfiguration:
+    keepAlive: true
+    maxConnections: 64
+  httpTransportInjectedTypeConfiguration: null
+  threadManagerInjectedTypeConfiguration: null
+  customFirebaseThreadManagerConfiguration:
+    threadFactoryConfiguration:
+      nameFormat: "appbase-firebase-%d"
+      daemon: false
+      enableThreadAffinity: true
+    useSharedExecutorService: true
+    executorServiceConfiguration: null
+keyedDefaultFirebaseAppClientIntegrationServiceConfigurations: null
+globalEnableRegisterNotFoundAppbaseClientIntegrationServices: true
+disabledRegisterNotFoundAppbaseClientIntegrationServices: null
+checkKeyedAppbaseClientIntegrationServicesSanity: false
+appbaseClientPoolManagerInjectedTypeConfiguration: null
+customAppbaseClientPoolManagerConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.manager.DefaultAppbaseClientPoolManagerConfiguration"
+  unhealthyAppbaseClientIntegrationServiceManagementDisabled: false
+  clientPoolCheckerTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 0
+    interval: 30
+    timeUnit: "SECONDS"
+  clientIntegrationServiceRepairTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 60
+    interval: 30
+    timeUnit: "SECONDS"
+  useMediatorSharedScheduler: true
+  customScheduledExecutorServiceConfiguration: null
+  repairDisabledAppbaseClientKeyConfigurations: null
+  repairDisabledAppbaseClientIntegrationServiceTypeNames: null
+  enableGlobalMaxRepairAttemptsCheck: true
+  globalMaxRepairAttempts: 3
+  maxRepairAttemptsByAppbaseClientKeyConfigurations: null
+  maxRepairAttemptsByAppbaseClientIntegrationServiceTypeNameMap: null
+  globalDisableUnregisterUnhealthyIrreparableAppbaseClientIntegrationServices: false
+  disableUnregisterUnhealthyIrreparableByAppbaseClientKeyConfigurations: null
+  disableUnregisterUnhealthyIrreparableByAppbaseClientIntegrationServiceTypeNameMap: null
+  repairListenerImplObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+  unhealthyClientIntegrationServiceEntryObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+appbaseClientPoolInjectedTypeConfiguration: null
+customAppbaseClientPoolConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.DefaultAppbaseClientPoolConfiguration"
+  repairUnhealthyServices: true

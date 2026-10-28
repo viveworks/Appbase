@@ -1,0 +1,13 @@
+---
+autoStart: true
+defaultAppbaseClientSharedResourcesConfiguration:
+  autoStart: true
+  sharedMutableAppbaseClientKeyObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 128
+  sharedHostPortValueObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 512
+  sharedTextValueObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 512

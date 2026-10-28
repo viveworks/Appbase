@@ -1,0 +1,42 @@
+# Fork-safe public pull-request compliance check. No secrets and no write permission.
+name: DCO
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  signoff:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out trusted checker from the PR base
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check out candidate with full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: candidate
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Import exact trusted base history
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git -C candidate fetch --no-tags ../trusted "$BASE_SHA"
+          test "$(git -C candidate rev-parse 'FETCH_HEAD^{commit}')" = "$BASE_SHA"
+      - name: Verify every candidate commit sign-off
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          DCO_REQUIRE_AUTHOR_MATCH: 1
+        working-directory: candidate
+        run: bash ../trusted/scripts/ci/check-signoff.sh --base "$BASE_SHA" --head "$HEAD_SHA"

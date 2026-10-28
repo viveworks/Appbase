@@ -1,0 +1,1031 @@
+# Generated public projection of the private ci-verify workflow. Do not edit after export.
+name: ci-verify
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_l04_kafka_zookeeper:
+        required: true
+        type: boolean
+        default: false
+      run_release_rehearsal:
+        required: true
+        type: boolean
+        default: false
+      run_l10_config_wizard_playwright:
+        required: true
+        type: boolean
+        default: false
+      l10_playwright_grep:
+        required: false
+        type: string
+        default: ''
+      l10_jshell_diagnostic:
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  VERIFY_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+
+concurrency:
+  group: public-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changed-modules:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      modules: ${{ steps.compute.outputs.modules }}
+      head_sha: ${{ steps.compute.outputs.head_sha }}
+      run_shell_suites: ${{ steps.compute.outputs.run_shell_suites }}
+      run_console_suite: ${{ steps.compute.outputs.run_console_suite }}
+      run_emulator: ${{ steps.compute.outputs.run_emulator }}
+      run_stacktest: ${{ steps.compute.outputs.run_stacktest }}
+      run_hosted_tiers: ${{ steps.compute.outputs.run_hosted_tiers }}
+      run_unit_tests: ${{ steps.compute.outputs.run_unit_tests }}
+    steps:
+      - name: Check out the exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Compute fail-closed touched scope
+        id: compute
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT" == pull_request ]]; then
+            modules="$(.github/scripts/changed-modules.sh --github-output "$RUNNER_TEMP/selectors" "$BASE_SHA" "$HEAD_SHA")"
+            cat "$RUNNER_TEMP/selectors" >> "$GITHUB_OUTPUT"
+          elif [[ "$EVENT" == workflow_dispatch ]]; then
+            modules=ALL
+            printf '%s\n' run_shell_suites=true run_console_suite=true run_emulator=true run_stacktest=true >> "$GITHUB_OUTPUT"
+          else
+            echo "unsupported event: $EVENT" >&2; exit 2
+          fi
+          echo "modules=$modules" >> "$GITHUB_OUTPUT"
+          if [[ "$modules" == NONE ]]; then
+            printf '%s\n' run_hosted_tiers=false run_unit_tests=false >> "$GITHUB_OUTPUT"
+          else
+            printf '%s\n' run_hosted_tiers=true run_unit_tests=true >> "$GITHUB_OUTPUT"
+          fi
+          echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  maven-compile:
+    needs: changed-modules
+    if: >-
+      needs.changed-modules.outputs.modules != 'NONE' &&
+      needs.changed-modules.outputs.run_hosted_tiers == 'true'
+    outputs:
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+      static_acceptance_result: ${{ steps.static-receipt.outputs.result }}
+      static_acceptance_tested_sha: ${{ steps.static-receipt.outputs.tested_sha }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      # Maven >= 3.9 appends MAVEN_ARGS to every invocation, including the one inside build.sh.
+      MAVEN_ARGS: -B -ntp
+      MODULES: ${{ needs.changed-modules.outputs.modules }}
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          # git-commit-id-plugin (useNativeGit) reads git metadata in `initialize`.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+
+      - name: Install ripgrep for build.sh bounded manifest scan
+        run: sudo apt-get update && sudo apt-get install -y ripgrep && rg --version
+
+      - name: Set up Temurin JDK 25 (build.sh hard-requires 25)
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      # setup-java's own maven key format, file patterns and absolute path (the cache version hashes
+      # the path string), so the entries `cache: maven` saved on develop still hit. ubuntu-24.04 x64.
+      - name: Restore the ~/.m2 repository cache
+        id: restore-maven
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+
+      - name: Toolchain
+        run: |
+          java -version
+          mvn -version
+
+      - name: Full reactor — ./build.sh --mode compile (coverage self-check + clean test-compile)
+        if: env.MODULES == 'ALL'
+        run: ./build.sh --mode compile
+
+      - name: Changed modules — clean test-compile -pl <changed> -am -amd
+        if: env.MODULES != 'ALL'
+        # build.sh refuses --modules for compile, so the Maven part is mirrored directly. The coverage
+        # self-check is not needed here: adding/removing a pom.xml or pubspec.yaml forces ALL.
+        run: mvn -q clean test-compile -pl "$MODULES" -am -amd -Dsurefire.failIfNoSpecifiedTests=false
+
+      - name: Generate and verify MCP API surface against compiled classes
+        if: env.MODULES == 'ALL'
+        env:
+          MCP_API_SOURCE_REVISION: ${{ needs.changed-modules.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+          bash scripts/generate-mcp-api-surface.sh "$RUNNER_TEMP/appbase-api-surface.json"
+          bash scripts/verify-mcp-api-surface.sh "$RUNNER_TEMP/appbase-api-surface.json"
+
+  api-inventory:
+    needs: changed-modules
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Fast inventory gate and fixture suite
+        run: |
+          set -euo pipefail
+          bash scripts/api-inventory-fast-check.sh
+          bash scripts/test/inventory_test.sh
+
+  # Deliberately separate from maven-compile: that prerequisite preserves full-reactor coverage/self-check
+  # evidence and the trusted cache-save boundary. Maven's test lifecycle necessarily recompiles selected
+  # modules; merging the jobs would either lose that distinct compile evidence or complicate cache trust.
+  maven-unit-tests:
+    needs: [changed-modules, maven-compile]
+    if: >-
+      needs.maven-compile.result == 'success' &&
+      needs.changed-modules.outputs.run_hosted_tiers == 'true' &&
+      needs.changed-modules.outputs.run_unit_tests == 'true'
+    outputs:
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+    runs-on: ubuntu-24.04
+    # Changed-module scope is deliberately bounded at 20 minutes; Surefire's 8-minute fork timeout
+    # remains smaller so Maven can report the failed module before the job is cancelled.
+    timeout-minutes: 20
+    env:
+      MAVEN_ARGS: -B -ntp
+      MODULES: ${{ needs.changed-modules.outputs.modules }}
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Reactor unit tests
+        run: |
+          set -euo pipefail
+          client_gates=(
+            -DAerospikeClientServiceTests.enabled=false -DCassandraClientServiceTests.enabled=false
+            -DClamAVClientServiceTests.enabled=false -DDruidClientServiceTests.enabled=false
+            -DElasticsearchClientServiceTests.enabled=false -DFirebaseAuthClientServiceTests.enabled=false
+            -DJasyncClientServiceTests.enabled=false -DJdbcClientServiceTests.enabled=false
+            -DJdbiClientServiceTests.enabled=false -DJpaClientServiceTests.enabled=false
+            -DKafkaClientServiceTests.enabled=false -DR2dbcClientServiceTests.enabled=false
+            -DRedisClientServiceTests.enabled=false
+            -DS3ClientServiceTests.enabled=false -DSmtpClientServiceTests.enabled=false
+            -DSparkClientServiceTests.enabled=false -DVitessClientServiceTests.enabled=false
+            -DZooKeeperClientServiceTests.enabled=false
+          )
+          if [[ "$MODULES" == ALL ]]; then
+            mvn -B -fae test -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
+          else
+            mvn -B -fae test -pl "$MODULES" -am -amd -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
+          fi
+      - name: Print bounded Surefire fork diagnostics
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import pathlib
+
+          reports = sorted(pathlib.Path('.').glob('**/target/surefire-reports/*.dumpstream'))
+          reports += sorted(pathlib.Path('.').glob('**/target/surefire-reports/*.dump'))
+          remaining = 64 * 1024
+          selected = reports[:64]
+          if not reports:
+              print('No Surefire .dumpstream or .dump files were produced.')
+          for index, report in enumerate(selected):
+              print(f'===== {report} =====')
+              size = report.stat().st_size
+              with report.open('rb') as stream:
+                  shown = stream.read(min(64 * 1024, remaining))
+              print(shown.decode('utf-8', errors='replace'), end='')
+              if shown and not shown.endswith(b'\n'):
+                  print()
+              if len(shown) < size:
+                  print(f'[truncated: showed {len(shown)} of {size} bytes]')
+              remaining -= len(shown)
+              if remaining <= 0:
+                  omitted = len(reports) - index - 1
+                  print(f'[64 KiB content limit reached; {omitted} additional files omitted]')
+                  break
+          else:
+              omitted = len(reports) - len(selected)
+              if omitted:
+                  print(f'[64-file metadata limit reached; {omitted} additional files omitted]')
+          PY
+
+      - name: Summarize Surefire results by module
+        if: always()
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import pathlib
+          import xml.etree.ElementTree as ET
+
+          totals = {}
+          for report in pathlib.Path('.').glob('**/surefire-reports/*.xml'):
+              module = str(report.parents[2])
+              counts = totals.setdefault(module, [0, 0, 0, 0])
+              root = ET.parse(report).getroot()
+              for index, key in enumerate(('tests', 'failures', 'errors', 'skipped')):
+                  counts[index] += int(root.attrib.get(key, 0))
+          print('## Surefire unit-test results')
+          print('| module | tests | failures | errors | skipped |')
+          print('|---|---:|---:|---:|---:|')
+          for module, counts in sorted(totals.items()):
+              print(f'| {module} | {counts[0]} | {counts[1]} | {counts[2]} | {counts[3]} |')
+          if not totals:
+              print('| *(no Surefire XML produced)* | 0 | 0 | 0 | 0 |')
+          PY
+
+      - name: Require at least one executed unit test
+        run: .github/scripts/require-test-count.py '**/surefire-reports/*.xml'
+
+  offline-shell-suites:
+    needs: changed-modules
+    if: needs.changed-modules.outputs.run_shell_suites == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out the exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Public offline product contracts
+        run: |
+          set -euo pipefail
+          for suite in             aerospike_container_contract_test.sh             checkstyle_baseline_ratchet_test.sh             ci_release_rehearsal_test.sh             ci_verify_compile_prereqs_test.sh; do
+            timeout 900 bash "scripts/test/$suite"
+          done
+  config-wizard-console:
+    needs: changed-modules
+    if: needs.changed-modules.outputs.run_console_suite == 'true'
+    concurrency:
+      group: ci-verify-live-l09-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    # Advisory-skip until internal work item 1302's prompt rebaseline reaches this branch. The content probe below
+    # automatically opts in the suite once conftest expects the shipped `number=pick` prompt.
+    # Follow-up: remove this `number=pick` content probe once internal work item 1302 merges.
+    # The prior exact-head full verification occupied its lease window for at most 63 minutes
+    # (06:03:48Z reservation to 07:06:31Z receipt, internal work item 2513 comment 5966612358). Ninety minutes keeps
+    # that measured workload bounded while allowing hosted-runner variance; billing stops when the
+    # job finishes, so this is a failure ceiling rather than planned spend.
+    timeout-minutes: 90
+    env:
+      MAVEN_ARGS: -B -ntp
+    outputs:
+      prompt_fix_ready: ${{ steps.prompt-fix.outputs.ready }}
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Detect internal work item 1302 prompt fixes
+        id: prompt-fix
+        run: |
+          conftest=appbase-config-wizard/test/console/conftest.py
+          [ -f "$conftest" ] || { echo '::error::console conftest missing'; exit 1; }
+          if grep -q 'number=pick' "$conftest"; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'Advisory skip: internal work item 1302 prompt fixes are not present.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Set up Temurin JDK 25
+        if: steps.prompt-fix.outputs.ready == 'true'
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Build config-wizard JAR (tests skipped)
+        if: steps.prompt-fix.outputs.ready == 'true'
+        run: mvn -B -P quick-profile -pl appbase-config-wizard -am -DskipTests clean install
+      - name: Set up Python 3
+        if: steps.prompt-fix.outputs.ready == 'true'
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install console-suite dependencies
+        if: steps.prompt-fix.outputs.ready == 'true'
+        run: |
+          python -m venv .ci-console-venv
+          .ci-console-venv/bin/python -m pip install --require-hashes -r .github/scripts/console-requirements.lock
+      - name: Run config-wizard pexpect suite
+        if: steps.prompt-fix.outputs.ready == 'true'
+        run: .ci-console-venv/bin/python -m pytest -v appbase-config-wizard/test/console --junitxml=appbase-config-wizard/target/console-junit.xml
+      - name: Require at least one executed console test
+        if: steps.prompt-fix.outputs.ready == 'true'
+        run: .github/scripts/require-test-count.py appbase-config-wizard/target/console-junit.xml
+  emulator:
+    needs: changed-modules
+    if: needs.changed-modules.outputs.run_emulator == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Emulator configuration and schema contract
+        run: bash scripts/test/appbase_emulator_infra_test.sh
+  stacktest:
+    needs: changed-modules
+    if: needs.changed-modules.outputs.run_stacktest == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Check out the exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Start public product infrastructure
+        run: bash appbase-stacktest/infra/run-infra.sh
+      - name: Build StackTestMain
+        run: .github/scripts/stacktest-live-runner.sh install
+      - name: Live product gate
+        run: .github/scripts/stacktest-live-runner.sh green public-pr
+      - name: Stop public product infrastructure
+        if: always()
+        run: bash appbase-stacktest/infra/stop-infra.sh
+  live-l04-kafka-zookeeper:
+    # internal work item 2536 L-04 / epic row (internal work item 1297): live Kafka (KRaft) + standalone ZooKeeper Failsafe ITs,
+    # mutation-verified. Images match appbase-client-{kafka,zookeeper}/infra/docker/*/env-*.sh exactly
+    # (apache/kafka:3.7.1 KRaft single-node; zookeeper:3.9 standalone) so the hosted run exercises the
+    # same images the host lifecycle scripts would have. Both live ITs connect to plain `localhost`
+    # (their test-resource YAMLs), not the `kafka.local`/`zookeeper.local` hostnames the *production*
+    # default config uses, so no /etc/hosts entry is needed here.
+    needs: changed-modules
+    outputs:
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_l04_kafka_zookeeper == 'true'
+    concurrency:
+      group: ci-verify-live-l04-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      kafka:
+        image: apache/kafka:3.7.1
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_NODE_ID: 1
+          KAFKA_PROCESS_ROLES: broker,controller
+          KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+          KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+          KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+          KAFKA_LOG_CLEANER_DEDUPE_BUFFER_SIZE: 2097152
+      zookeeper:
+        image: zookeeper:3.9
+        ports:
+          - 2181:2181
+        env:
+          ZOO_STANDALONE_ENABLED: true
+    env:
+      MAVEN_ARGS: -B -ntp
+      KAFKA_ZK_IT_MODULES: >-
+        appbase-java/appbase-client/appbase-client-kafka,appbase-java/appbase-client/appbase-client-zookeeper
+      KAFKA_PRODUCER_ACCESSOR: appbase-java/appbase-client/appbase-client-kafka/src/main/java/com/viveworks/appbase/client/service/kafka/producer/reactive/ReactiveKafkaProducerAccessor.java
+      ZOOKEEPER_ACCESSOR: appbase-java/appbase-client/appbase-client-zookeeper/src/main/java/com/viveworks/appbase/client/service/zookeeper/accessor/reactive/ReactiveZooKeeperAccessor.java
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Restore the ~/.m2 repository cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+      - name: Wait for Kafka and ZooKeeper to actually accept connections
+        # Measured 2026-10-08 (run 37809902700): GH Actions' `services:` only waits for the container
+        # to START, not for apache/kafka's KRaft storage format-on-first-boot to finish — the broker's
+        # own "CLUSTER_ID not set, formatting..." log line landed ~2 minutes AFTER the unmutated IT had
+        # already timed out waiting on port 9092. The host's own run-kafka.sh never hits this because
+        # wait-kafka-ready.sh (TCP-probe retry) gates it; this step is that same probe, inlined, for
+        # both services since neither has a GH Actions health check that would otherwise cover it.
+        run: |
+          set -euo pipefail
+          wait_port() {
+            local host="$1" port="$2" timeout="${3:-90}" waited=0
+            while ! (exec 3<>"/dev/tcp/$host/$port") 2>/dev/null; do
+              if [ "$waited" -ge "$timeout" ]; then
+                echo "::error::$host:$port did not accept a connection after ${timeout}s"
+                return 1
+              fi
+              sleep 1
+              waited=$((waited + 1))
+            done
+            echo "$host:$port accepting connections (after ${waited}s)"
+          }
+          wait_port localhost 9092 90
+          wait_port localhost 2181 90
+      - name: Install the dependency closure (tests skipped — prep only, not evidence)
+        # -am's own reactor would otherwise run the FULL dependency closure's tests on every live
+        # receipt call below (appbase-core alone has 356 *Test.java files). This one `install`
+        # materializes the dependency jars and runs the exact-head Checkstyle ratchet once, with tests
+        # skipped everywhere. GREEN/RED/restored-GREEN then call only test-compile and the two Failsafe
+        # goals: re-entering the full `verify` lifecycle after this install makes Checkstyle's
+        # incremental cache emit a partial report (measured run 38138670143: 21/66 Kafka Java files),
+        # which the coverage-complete ratchet correctly rejects even though the live Kafka IT passed.
+        run: mvn -q -pl "$KAFKA_ZK_IT_MODULES" -am -P develop-profile -DskipTests=true install
+      - name: GREEN — live Kafka KRaft + ZooKeeper reactive ITs
+        id: green
+        run: >-
+          mvn -pl "$KAFKA_ZK_IT_MODULES" -P develop-profile
+          -DKafkaClientServiceTests.enabled=true -DZooKeeperClientServiceTests.enabled=true
+          -Dit.test=ReactiveKafkaAccessorIT,ReactiveZooKeeperAccessorIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+          test-compile failsafe:integration-test failsafe:verify
+      - name: Apply mechanism mutation — redirect the Kafka send and the ZooKeeper znode create
+        # Kafka: the single-record send() publishes to a shadow topic the IT's consumer never
+        # subscribes to, so the round trip times out (StepVerifier, 30s). ZooKeeper: create() writes
+        # to a shadow path, so Curator's returned created-path no longer equals the path the IT
+        # asserted against — an immediate assertion failure, no timeout needed. Both are one-line,
+        # single-occurrence, mechanically reversible: the only "record"/"path" write site in each file.
+        run: |
+          set -euo pipefail
+          sed -i 's/SenderRecord\.<K, V, Object>create(record, null)/SenderRecord.<K, V, Object>create(new ProducerRecord<>(record.topic() + "-l04-ci-mutation", record.key(), record.value()), null)/' "$KAFKA_PRODUCER_ACCESSOR"
+          sed -i 's/async\.create()\.forPath(path, data)/async.create().forPath(path + "-l04-ci-mutation", data)/' "$ZOOKEEPER_ACCESSOR"
+          git diff -- "$KAFKA_PRODUCER_ACCESSOR" "$ZOOKEEPER_ACCESSOR"
+      - name: RED — mutated send/create must fail the live ITs (anti-vacuity)
+        id: red
+        continue-on-error: true
+        run: >-
+          mvn -pl "$KAFKA_ZK_IT_MODULES" -P develop-profile
+          -DKafkaClientServiceTests.enabled=true -DZooKeeperClientServiceTests.enabled=true
+          -Dit.test=ReactiveKafkaAccessorIT,ReactiveZooKeeperAccessorIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+          test-compile failsafe:integration-test failsafe:verify
+      - name: Enforce the mutation actually failed the ITs
+        run: |
+          if [[ "${{ steps.red.outcome }}" != "failure" ]]; then
+            echo "::error::L-04 mutation did not fail the live ITs — vacuous test (internal work item 2536 L-04)"
+            exit 1
+          fi
+      - name: Restore production source
+        run: git checkout -- "$KAFKA_PRODUCER_ACCESSOR" "$ZOOKEEPER_ACCESSOR"
+      - name: Restored GREEN — confirm the live ITs pass again on unmutated source
+        id: restored
+        run: >-
+          mvn -pl "$KAFKA_ZK_IT_MODULES" -P develop-profile
+          -DKafkaClientServiceTests.enabled=true -DZooKeeperClientServiceTests.enabled=true
+          -Dit.test=ReactiveKafkaAccessorIT,ReactiveZooKeeperAccessorIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+          test-compile failsafe:integration-test failsafe:verify
+      - name: Record L-04 receipt
+        if: always()
+        run: |
+          {
+            echo '## internal work item 2536 L-04 live campaign receipt (epic internal work item 1135, internal work item 1297)'
+            echo '```'
+            echo "head_sha=${{ needs.changed-modules.outputs.head_sha }}"
+            echo "images: apache/kafka:3.7.1 (KRaft single-node, broker+controller); zookeeper:3.9 (standalone)"
+            echo "command: mvn -pl appbase-client-kafka,appbase-client-zookeeper -P develop-profile -DKafkaClientServiceTests.enabled=true -DZooKeeperClientServiceTests.enabled=true -Dit.test=ReactiveKafkaAccessorIT,ReactiveZooKeeperAccessorIT test-compile failsafe:integration-test failsafe:verify"
+            echo "GREEN (pre-mutation): ${{ steps.green.outcome }}"
+            echo "mutation: Kafka send -> shadow topic; ZooKeeper create -> shadow path (diff in the 'Apply mechanism mutation' step log)"
+            echo "RED (mutated): ${{ steps.red.outcome }}"
+            echo "restored GREEN: ${{ steps.restored.outcome }}"
+            echo "ZooKeeper-mode Kafka: not applicable — apache/kafka:3.7.1 is KRaft-only, no ZK-mode broker option exists to accidentally run"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release-profile-rehearsal:
+    # internal work item 1424: explicit, credential-free release-profile rehearsal. The runner permits only a
+    # whole-repository compile, release:prepare with dryRun=true, and release:clean. It also fails
+    # closed if any tracked POM, HEAD, or local tag changes, so this job cannot cut a release.
+    needs: changed-modules
+    outputs:
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.run_release_rehearsal == 'true'
+    concurrency:
+      group: ci-verify-release-rehearsal-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    # Measured hosted runs: head E's compile+prepare/clean step failed after 20m11s; head G reached
+    # 28m31s inside prepare's duplicate test execution before the 30-minute job ceiling cancelled it.
+    # The rehearsal now skips only that duplicate test execution, but 45 minutes retains bounded
+    # cold-run margin for the release-profile compile, Flutter build, dry-run prepare, and clean.
+    timeout-minutes: 45
+    env:
+      MAVEN_ARGS: -B -ntp
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Install ripgrep for build.sh bounded manifest scan
+        run: sudo apt-get update && sudo apt-get install -y ripgrep && rg --version
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Restore the ~/.m2 repository cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+      - name: Set up pinned Flutter SDK and warm locked frontend dependencies
+        # release-profile deliberately builds the shipping Config Wizard frontend. Match the pinned
+        # staging/config-wizard toolchain and warm pub's cache online before Maven's offline pub get.
+        run: |
+          set -euo pipefail
+          FLUTTER_VERSION=3.47.7
+          FLUTTER_SHA256=af7455f540df951184c7953fbe3cf884766e7541dacf8571f9f582db03dd6230
+          archive="$RUNNER_TEMP/flutter.tar.xz"
+          curl -fsSL "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz" \
+            -o "$archive"
+          echo "${FLUTTER_SHA256}  $archive" | sha256sum -c -
+          tar -xf "$archive" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+          export PATH="$RUNNER_TEMP/flutter/bin:$PATH"
+          flutter --version
+          cd appbase-config-wizard/frontend
+          flutter pub get
+          git diff --exit-code -- pubspec.lock
+      - name: Compile and rehearse release prepare/clean without mutation
+        id: rehearsal
+        run: bash .github/scripts/ci-release-rehearsal.sh
+      - name: Record the release rehearsal receipt
+        if: always()
+        run: |
+          {
+            echo '## internal work item 1424 release-profile dry-run receipt'
+            echo '```'
+            echo "head_sha=${{ needs.changed-modules.outputs.head_sha }}"
+            echo 'scope: whole-repository compile; release:prepare -DdryRun=true; release:clean'
+            echo 'forbidden: release:perform, deploy/publish, git push, persisted checkout credentials'
+            echo 'integrity: tracked POM content, HEAD, and local tags must remain unchanged'
+            echo "result: ${{ steps.rehearsal.outcome }}"
+            echo 'No artifact upload: workflow_dispatch is restore-only by CI policy.'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  live-l10-config-wizard-playwright:
+    # internal work item 2536 L-10 / epic row (internal work item 1304): config-wizard web Playwright suite against the real built JAR
+    # served by bin/start-web.sh on :8080, plus the row's own anti-vacuity requirement — stopping the
+    # server mid-run must fail the suite, not silently skip it.
+    needs: changed-modules
+    outputs:
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.run_l10_config_wizard_playwright == 'true'
+    concurrency:
+      group: ci-verify-live-l10-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Build config-wizard JAR (tests skipped)
+        # quick-profile leaves appbase-config-wizard.skipFrontend at its root-pom default (true), so
+        # this JAR carries no Flutter web app yet -- only staging-profile/release-profile flip that,
+        # and neither is right here (broader side effects, e.g. appbase-stacktest.skipTests=false).
+        # The real frontend is built and injected separately below.
+        run: mvn -B -P quick-profile -pl appbase-config-wizard -am -DskipTests install
+      - name: Set up the Flutter SDK (pinned, matching development-environment/Dockerfile)
+        # Measured 2026-10-08: this repo's own Maven-orchestrated frontend build
+        # (exec-maven-plugin's flutter-pub-get execution) hardcodes --offline, written for the
+        # devcontainer's pre-baked ~/.pub-cache -- a fresh GH Actions runner has no such cache, so
+        # going through Maven for this would fail regardless of profile or Flutter availability.
+        # Built directly with the Flutter SDK instead (real network, no --offline needed, verified
+        # working on a host with no pre-baked cache either), then injected into the already-built
+        # JAR below -- Maven never invokes flutter/dart itself in this job.
+        run: |
+          set -euo pipefail
+          FLUTTER_VERSION=3.47.7
+          FLUTTER_SHA256=af7455f540df951184c7953fbe3cf884766e7541dacf8571f9f582db03dd6230
+          curl -fsSL "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz" \
+            -o /tmp/flutter.tar.xz
+          echo "${FLUTTER_SHA256}  /tmp/flutter.tar.xz" | sha256sum -c -
+          tar -xf /tmp/flutter.tar.xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Build the Flutter web app and inject it into the JAR
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/flutter/bin:$PATH"
+          flutter --version
+          cd appbase-config-wizard/frontend
+          flutter pub get
+          dart run build_runner build
+          flutter build web --no-pub
+          cd "$GITHUB_WORKSPACE/appbase-config-wizard"
+          mkdir -p target/classes/static/web
+          cp -r frontend/build/web/. target/classes/static/web/
+          jar --update --file=target/appbase-config-wizard-1.0.0-SNAPSHOT.jar -C target/classes static/web
+      - name: jshell diagnostic — ConstSamplerConfiguration naming, plain vs configured mapper
+        if: github.event.inputs.l10_jshell_diagnostic == 'true'
+        working-directory: appbase-config-wizard
+        run: |
+          jshell --class-path target/appbase-config-wizard-1.0.0-SNAPSHOT.jar -q <<'JSHELL'
+          import com.fasterxml.jackson.databind.ObjectMapper;
+          import com.viveworks.appbase.core.service.tracer.configuration.sampler.ConstSamplerConfiguration;
+          import com.viveworks.appbase.core.service.tracer.configuration.sampler.JaegerSamplerConfiguration;
+          import com.viveworks.appbase.core.util.jackson.ObjectMapperConfigurator;
+          import java.util.Map;
+          import java.util.HashMap;
+
+          ObjectMapper plain = new ObjectMapper().findAndRegisterModules();
+          ObjectMapper configured = new ObjectMapper();
+          ObjectMapperConfigurator.configure(configured);
+
+          ConstSamplerConfiguration c = ConstSamplerConfiguration.builder().decision(true).build();
+
+          System.out.println("=== serialize ConstSamplerConfiguration AS JaegerSamplerConfiguration ===");
+          System.out.println("plain:      " + plain.writerFor(JaegerSamplerConfiguration.class).writeValueAsString(c));
+          System.out.println("configured: " + configured.writerFor(JaegerSamplerConfiguration.class).writeValueAsString(c));
+
+          System.out.println("=== convertValue(c, Map.class) -- what FieldPrompter's flattening actually does ===");
+          System.out.println("plain:      " + plain.convertValue(c, Map.class));
+          System.out.println("configured: " + configured.convertValue(c, Map.class));
+
+          Map<String, Object> simpleNameMap = new HashMap<>();
+          simpleNameMap.put("type", "ConstSamplerConfiguration");
+          simpleNameMap.put("decision", true);
+
+          System.out.println("=== convertValue(map-with-simple-name-type, JaegerSamplerConfiguration.class) ===");
+          try {
+            System.out.println("plain:      " + plain.convertValue(simpleNameMap, JaegerSamplerConfiguration.class));
+          } catch (Exception e) {
+            System.out.println("plain:      FAILED - " + e);
+          }
+          try {
+            System.out.println("configured: " + configured.convertValue(simpleNameMap, JaegerSamplerConfiguration.class));
+          } catch (Exception e) {
+            System.out.println("configured: FAILED - " + e);
+          }
+
+          import com.viveworks.appbase.core.service.tracer.configuration.DefaultTracerServiceConfiguration;
+
+          System.out.println("=== the REAL round trip: /default (configured mapper) -> /build (plain mapper) ===");
+          DefaultTracerServiceConfiguration defaultInstance = DefaultTracerServiceConfiguration.builder().build();
+          Map<String, Object> defaultAsMap = configured.convertValue(defaultInstance, Map.class);
+          System.out.println("flattened by CONFIGURED mapper (what GET /default actually returns): " + defaultAsMap.get("jaegerSamplerConfiguration"));
+          try {
+            Object rebuilt = plain.convertValue(defaultAsMap, DefaultTracerServiceConfiguration.class);
+            System.out.println("rebuilt by PLAIN mapper (what POST /build actually does): " + rebuilt);
+          } catch (Exception e) {
+            System.out.println("rebuilt by PLAIN mapper FAILED - " + e);
+          }
+
+          System.out.println("=== control: same mapper both ways (configured -> configured) ===");
+          try {
+            Object rebuiltSame = configured.convertValue(defaultAsMap, DefaultTracerServiceConfiguration.class);
+            System.out.println("rebuilt by CONFIGURED mapper: " + rebuiltSame);
+          } catch (Exception e) {
+            System.out.println("rebuilt by CONFIGURED mapper FAILED - " + e);
+          }
+          /exit
+          JSHELL
+      - name: Set up Node.js 20
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: '20'
+          cache: ''
+          package-manager-cache: false
+      - name: Install Playwright suite dependencies (chromium only)
+        working-directory: appbase-config-wizard/test/web
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+      - name: Start the config-wizard web server (:8080)
+        run: bash appbase-config-wizard/bin/start-web.sh 8080
+      - name: Sanity-check the server actually serves the Flutter web app
+        # Cheap, no-browser check before spending any Playwright time: confirms the server returns
+        # the real Flutter bootstrap HTML (a <flutter-view> mount point, a reference to its JS
+        # bundle) rather than an error page, a redirect, or an empty/wrong response. Narrows the
+        # search space if L-10's real failure turns out to be "the app never loaded" vs. "the app
+        # loaded but CanvasKit/WebGL rendering is slow or broken in headless Chromium."
+        run: |
+          set -euo pipefail
+          body="$(curl -sS -w '\n---HTTP_STATUS:%{http_code}---' http://localhost:8080/)"
+          echo "$body"
+          echo "$body" | grep -q 'HTTP_STATUS:200' || { echo "::error::root page did not return 200"; exit 1; }
+          echo "$body" | grep -qi 'flutter' || echo "::warning::root page body has no obvious 'flutter' reference — may not be the real app shell"
+      - name: GREEN — Playwright suite against the live server
+        id: green
+        working-directory: appbase-config-wizard/test/web
+        env:
+          PLAYWRIGHT_GREP: ${{ github.event.inputs.l10_playwright_grep }}
+        run: |
+          if [ -n "$PLAYWRIGHT_GREP" ]; then
+            echo "::notice::diagnostic run, narrowed to --grep '$PLAYWRIGHT_GREP' (not the full 81-test suite)"
+            npx playwright test --grep "$PLAYWRIGHT_GREP"
+          else
+            npm test
+          fi
+      - name: L-11 mutation A — Swagger OpenAPI URL literal (internal work item 1303 anti-vacuity, production resource)
+        # internal work item 1303's own quality-ledger TODO (internal-review/quality/implementation-T1303-20260918T000000Z.md)
+        # names this exact literal: swagger-initializer.js's `url: "/api/openapi.json"`, mutated back
+        # to the retired `/admin/openapi.json`. Mutates the TRACKED file in place (not a copy, and
+        # not outside Playwright's configured testDir) with a trap to restore it on any exit path.
+        # Stops the server and waits for its PID to actually die before touching the JAR (the file is
+        # a normal Maven resource, already baked into target/classes — not gated by
+        # appbase-config-wizard.skipFrontend like the Flutter bundle is — so jar --update is enough,
+        # no rebuild), restarts with a fresh PID via bin/start-web.sh (compatible with the existing
+        # "Stop the server" step below, which just reads whatever PID file is current), and probes
+        # readiness before the focused run. Fails closed: the mutant run's exit code is captured
+        # explicitly, and the step fails if it unexpectedly returns 0. The restored run must return 0.
+        # Ends with git diff --exit-code so no residue can reach later steps' evidence.
+        working-directory: appbase-config-wizard
+        run: |
+          set -euo pipefail
+          FILE="src/main/resources/static/swagger-ui/swagger-initializer.js"
+          cp "$FILE" "$FILE.l11-orig"
+          restore_a() {
+            mv -f "$FILE.l11-orig" "$FILE" 2>/dev/null || true
+            bash bin/stop-web.sh || true
+          }
+          trap restore_a EXIT INT TERM
+
+          sed -i 's#/api/openapi\.json#/admin/openapi.json#' "$FILE"
+
+          bash bin/stop-web.sh || true
+          for i in $(seq 1 30); do
+            [ -f .config-wizard-web.pid ] && kill -0 "$(cat .config-wizard-web.pid)" 2>/dev/null || break
+            sleep 1
+          done
+          mkdir -p target/classes/static/swagger-ui
+          cp "$FILE" target/classes/static/swagger-ui/swagger-initializer.js
+          jar --update --file=target/appbase-config-wizard-1.0.0-SNAPSHOT.jar -C target/classes static/swagger-ui/swagger-initializer.js
+          bash bin/start-web.sh 8080
+          for i in $(seq 1 30); do curl -sf http://localhost:8080/ >/dev/null && break; sleep 1; done
+          curl -sf http://localhost:8080/ >/dev/null || { echo "::error::server did not become ready within 30s (mutant run)"; exit 1; }
+
+          set +e
+          (cd test/web && npx playwright test --grep "W-SWAGGER")
+          mutant_rc=$?
+          set -e
+          if [ "$mutant_rc" -eq 0 ]; then
+            echo "::error::L-11 mutation A unexpectedly passed (rc=0) — vacuous Swagger test (internal work item 2536 L-11)"
+            exit 1
+          fi
+
+          bash bin/stop-web.sh || true
+          for i in $(seq 1 30); do
+            [ -f .config-wizard-web.pid ] && kill -0 "$(cat .config-wizard-web.pid)" 2>/dev/null || break
+            sleep 1
+          done
+          mv -f "$FILE.l11-orig" "$FILE"
+          trap - EXIT INT TERM
+          cp "$FILE" target/classes/static/swagger-ui/swagger-initializer.js
+          jar --update --file=target/appbase-config-wizard-1.0.0-SNAPSHOT.jar -C target/classes static/swagger-ui/swagger-initializer.js
+          bash bin/start-web.sh 8080
+          for i in $(seq 1 30); do curl -sf http://localhost:8080/ >/dev/null && break; sleep 1; done
+          curl -sf http://localhost:8080/ >/dev/null || { echo "::error::server did not become ready within 30s (restored run)"; exit 1; }
+
+          set +e
+          (cd test/web && npx playwright test --grep "W-SWAGGER")
+          restored_rc=$?
+          set -e
+          if [ "$restored_rc" -ne 0 ]; then
+            echo "::error::L-11 mutation A restored-GREEN failed (rc=$restored_rc) (internal work item 2536 L-11)"
+            exit 1
+          fi
+
+          git diff --exit-code -- "$FILE"
+      - name: L-11 mutation B — Swagger test navigation literal (internal work item 1303 anti-vacuity, spec file)
+        # The second literal internal work item 1303's ledger names: the test's own `page.goto('/api/swagger-ui/...')`,
+        # mutated back to the retired `/admin/swagger-ui/...`. No server restart needed — the server
+        # and its content are untouched; only the spec file's navigation target changes. Same
+        # trap-restore-on-original-file, fail-closed-on-unexpected-pass, restored-must-pass, and
+        # git diff --exit-code discipline as mutation A.
+        working-directory: appbase-config-wizard/test/web
+        run: |
+          set -euo pipefail
+          FILE="tests/swagger.spec.ts"
+          cp "$FILE" "$FILE.l11-orig"
+          restore_b() { mv -f "$FILE.l11-orig" "$FILE" 2>/dev/null || true; }
+          trap restore_b EXIT INT TERM
+
+          sed -i "s#/api/swagger-ui/index.html#/admin/swagger-ui/index.html#" "$FILE"
+
+          set +e
+          npx playwright test --grep "W-SWAGGER"
+          mutant_rc=$?
+          set -e
+          if [ "$mutant_rc" -eq 0 ]; then
+            echo "::error::L-11 mutation B unexpectedly passed (rc=0) — vacuous Swagger test (internal work item 2536 L-11)"
+            exit 1
+          fi
+
+          mv -f "$FILE.l11-orig" "$FILE"
+          trap - EXIT INT TERM
+
+          set +e
+          npx playwright test --grep "W-SWAGGER"
+          restored_rc=$?
+          set -e
+          if [ "$restored_rc" -ne 0 ]; then
+            echo "::error::L-11 mutation B restored-GREEN failed (rc=$restored_rc) (internal work item 2536 L-11)"
+            exit 1
+          fi
+
+          git diff --exit-code -- "$FILE"
+      - name: Dump the server's own log on failure (diagnostic only)
+        if: failure()
+        run: tail -c 200000 appbase-config-wizard/.config-wizard-web.log || true
+      - name: Stop the server
+        if: always()
+        run: bash appbase-config-wizard/bin/stop-web.sh || true
+      - name: Restart the server for the stop-mid-run check
+        run: bash appbase-config-wizard/bin/start-web.sh 8080
+      - name: RED — stop the server mid-run; the suite must FAIL, not skip (internal work item 2536 L-10 anti-vacuity)
+        id: mid-run-stop
+        working-directory: appbase-config-wizard/test/web
+        run: |
+          set +e
+          npm test > /tmp/l10-mid-run.log 2>&1 &
+          test_pid=$!
+          sleep 4
+          bash "$GITHUB_WORKSPACE/appbase-config-wizard/bin/stop-web.sh" || true
+          wait "$test_pid"
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          cat /tmp/l10-mid-run.log
+      - name: Enforce the mid-run stop actually failed the suite (not a skip, not a false green)
+        run: |
+          exit_code="${{ steps.mid-run-stop.outputs.exit_code }}"
+          if [[ "$exit_code" == "0" ]]; then
+            echo "::error::L-10 mid-run server stop did not fail the suite — vacuous run (internal work item 2536 L-10)"
+            exit 1
+          fi
+          if ! grep -qiE 'failed|error' /tmp/l10-mid-run.log; then
+            echo "::error::L-10 mid-run suite exited non-zero but logged no failure — looks like a skip, not a fail (internal work item 2536 L-10)"
+            exit 1
+          fi
+      - name: Clean up
+        if: always()
+        run: bash appbase-config-wizard/bin/stop-web.sh || true
+      - name: Record L-10 receipt
+        if: always()
+        run: |
+          {
+            echo '## internal work item 2536 L-10 live campaign receipt (epic internal work item 1135, internal work item 1304)'
+            echo '```'
+            echo "head_sha=${{ needs.changed-modules.outputs.head_sha }}"
+            echo "server: bin/start-web.sh 8080, built via mvn -P quick-profile -pl appbase-config-wizard -am -DskipTests install"
+            echo "suite: appbase-config-wizard/test/web (npm test, chromium only)"
+            echo "GREEN (full suite, live server): ${{ steps.green.outcome }}"
+            echo "mid-run stop check exit_code: ${{ steps.mid-run-stop.outputs.exit_code }} (non-zero required)"
+            echo "mid-run stop check: suite FAILED, not skipped — see job log step 'RED — stop the server mid-run'"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  summary:
+    needs: [changed-modules, maven-compile, api-inventory, maven-unit-tests, offline-shell-suites, config-wizard-console, emulator, stacktest, live-l04-kafka-zookeeper, release-profile-rehearsal, live-l10-config-wizard-playwright]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require every selected public gate
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          RUN_HOSTED: ${{ needs.changed-modules.outputs.run_hosted_tiers }}
+          RUN_SHELL: ${{ needs.changed-modules.outputs.run_shell_suites }}
+          RUN_CONSOLE: ${{ needs.changed-modules.outputs.run_console_suite }}
+          RUN_EMULATOR: ${{ needs.changed-modules.outputs.run_emulator }}
+          RUN_STACKTEST: ${{ needs.changed-modules.outputs.run_stacktest }}
+          RUN_L04: ${{ github.event.inputs.run_l04_kafka_zookeeper || 'false' }}
+          RUN_RELEASE: ${{ github.event.inputs.run_release_rehearsal || 'false' }}
+          RUN_L10: ${{ github.event.inputs.run_l10_config_wizard_playwright || 'false' }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          needs = json.loads(os.environ['NEEDS_JSON'])
+          selected = {
+              'changed-modules': True,
+              'api-inventory': True,
+              'maven-compile': os.environ['RUN_HOSTED'] == 'true',
+              'maven-unit-tests': os.environ['RUN_HOSTED'] == 'true',
+              'offline-shell-suites': os.environ['RUN_SHELL'] == 'true',
+              'config-wizard-console': os.environ['RUN_CONSOLE'] == 'true',
+              'emulator': os.environ['RUN_EMULATOR'] == 'true',
+              'stacktest': os.environ['RUN_STACKTEST'] == 'true',
+              'live-l04-kafka-zookeeper': os.environ['RUN_L04'] == 'true',
+              'release-profile-rehearsal': os.environ['RUN_RELEASE'] == 'true',
+              'live-l10-config-wizard-playwright': os.environ['RUN_L10'] == 'true',
+          }
+          failed = {name: data['result'] for name, data in needs.items()
+                    if data['result'] != ('success' if selected[name] else 'skipped')}
+          if failed:
+              raise SystemExit('public CI failure: ' + repr(failed))
+          print('public CI projection completed:', ', '.join(sorted(needs)))
+          PY

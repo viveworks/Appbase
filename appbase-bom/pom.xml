@@ -1,0 +1,285 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+  Copyright 2019 The original author or authors of Appbase
+
+  This project includes software developed by the author or authors of
+  Appbase (https://github.com/viveworks/Appbase).
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>appbase-bom</artifactId>
+    <packaging>pom</packaging>
+    <name>Appbase BOM</name>
+    <description>Bill of Materials — importable dependencyManagement pinning every publishable Appbase module to this release's version</description>
+
+    <!--
+    Consumers import this once:
+
+        <dependencyManagement>
+            <dependencies>
+                <dependency>
+                    <groupId>com.viveworks.appbase</groupId>
+                    <artifactId>appbase-bom</artifactId>
+                    <version>1.0.0-SNAPSHOT</version>
+                    <type>pom</type>
+                    <scope>import</scope>
+                </dependency>
+            </dependencies>
+        </dependencyManagement>
+
+    ...then declare any Appbase dependency without a <version> — this
+    BOM supplies it, so every Appbase artifact a consumer pulls in is
+    from the same coherent release.
+
+    Only leaf (packaging=jar) modules are listed — aggregator/pom-packaging
+    modules (appbase-client, appbase-service, appbase-bootstrap, appbase-java)
+    produce no artifact of their own and aren't consumable dependencies.
+
+    Release 1 also leaves OUT the leaf modules the lean baseline defers
+    (docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md §4.2/§4.3):
+      appbase-client-clamav, appbase-client-smtp, appbase-client-jasync,
+      appbase-client-spark,
+    and, by the owner's internal work item 1141 Q1 ruling (2026-09-27), appbase-service-user-account-r2dbc.
+    A BOM entry is a publication claim, and those are not supported. The single
+    list is scripts/test/release1-excluded-artifacts.txt; bom_release1_test.sh
+    derives the expected set from the reactor and fails on any drift, in both
+    directions, and when this comment disagrees with the list.
+    -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-aerospike</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-cloud-aws-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-cloud-aws-httpclient</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-cloud-aws-s3</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-cassandra</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-druid</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-elasticsearch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-firebase</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-jdbc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-jdbi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-jpa</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-kafka</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-r2dbc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-redis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-vitess</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-client-zookeeper</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-web-oauth</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-web-oauth-github</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-web-oauth-apple</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-web-oauth-google</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-web-oauth-microsoft</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-web-oauth-okta</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-web-oauth-reactive</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-web-oauth-tokencache-aerospike</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-web-oauth-tokencache-redis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-user</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-user-account-firebaseauth</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-user-account-jdbi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-user-session-aerospike</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-service-supportmessage</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-bootstrap-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-bootstrap-servlet-jetty</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-bootstrap-servlet</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-bootstrap-servlet-tomcat</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-bootstrap-servlet-undertow</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-bootstrap-reactor-netty</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-config-wizard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viveworks.appbase</groupId>
+                <artifactId>appbase-stacktest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

@@ -1,0 +1,146 @@
+# Copyright 2019 The original author or authors of Appbase
+#
+# This project includes software developed by the author or authors of
+# Appbase (https://github.com/viveworks/Appbase).
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+autoStart: true
+defaultDefaultKafkaProducerClientIntegrationServiceConfiguration:
+  clusterIdValueConfiguration:
+    clusterId: "primary"
+  keySerializerType: "org.apache.kafka.common.serialization.StringSerializer"
+  valueSerializerType: "org.apache.kafka.common.serialization.StringSerializer"
+  acks: "ALL"
+  bootstrapServerConfigurations:
+    - host: "localhost"
+      port: 9092
+  bufferMemorySizeConfiguration:
+    enabled: true
+    dataSize: 32
+    unit: "MEGABYTES"
+  compressionType: "NONE"
+  retries: 2147483647
+  batchSize: 16384
+  clientDnsLookup: "USE_ALL_DNS_IPS"
+  connectionsMaxIdleConfiguration:
+    enabled: true
+    time: 9
+    timeUnit: "MINUTES"
+  deliveryTimeoutConfiguration:
+    enabled: true
+    # Keep Kafka's own delivery failure ahead of the reactive accessor's 30s per-attempt timeout.
+    timeout: 10
+    timeoutTimeUnit: "SECONDS"
+  lingerTimeConfiguration:
+    enabled: true
+    time: 0
+    timeUnit: "MILLISECONDS"
+  maxBlockTimeConfiguration:
+    enabled: true
+    time: 5
+    timeUnit: "SECONDS"
+  maxRequestSizeConfiguration:
+    enabled: true
+    dataSize: 1
+    unit: "MEGABYTES"
+  partitionerType: "org.apache.kafka.clients.producer.internals.DefaultPartitioner"
+  receiveBufferSizeConfiguration:
+    enabled: true
+    dataSize: 32
+    unit: "KILOBYTES"
+  requestTimeoutConfiguration:
+    enabled: true
+    # Kafka requires delivery timeout >= request timeout + linger (0ms above).
+    timeout: 5
+    timeoutTimeUnit: "SECONDS"
+  sendBufferSizeConfiguration:
+    enabled: true
+    dataSize: 128
+    unit: "KILOBYTES"
+  enableIdempotence: false
+  interceptorTypes: []
+  maxInFlightRequestsPerConnection: 5
+  metadataMaxAgeConfiguration:
+    enabled: true
+    time: 5
+    timeUnit: "MINUTES"
+  metadataMaxIdleConfiguration:
+    enabled: true
+    time: 5
+    timeUnit: "MINUTES"
+  metricsReporterTypes: []
+  metricsNumSamples: 2
+  metricsRecordingLevel: "INFO"
+  metricsSampleWindowConfiguration:
+    enabled: true
+    time: 30
+    timeUnit: "SECONDS"
+  reconnectBackoffMaxConfiguration:
+    enabled: true
+    time: 1
+    timeUnit: "SECONDS"
+  reconnectBackoffConfiguration:
+    enabled: true
+    time: 50
+    timeUnit: "MILLISECONDS"
+  retryBackoffConfiguration:
+    enabled: true
+    time: 100
+    timeUnit: "MILLISECONDS"
+  transactionTimeoutConfiguration:
+    enabled: true
+    timeout: 1
+    timeoutTimeUnit: "MINUTES"
+  clientId: "Navaneeths-MacBook-Pro.local"
+  transactionalId: null
+  closeDuration: "PT2S"
+keyedDefaultKafkaProducerClientIntegrationServiceConfigurations: null
+globalEnableRegisterNotFoundAppbaseClientIntegrationServices: true
+disabledRegisterNotFoundAppbaseClientIntegrationServices: null
+checkKeyedAppbaseClientIntegrationServicesSanity: false
+appbaseClientPoolManagerInjectedTypeConfiguration: null
+customAppbaseClientPoolManagerConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.manager.DefaultAppbaseClientPoolManagerConfiguration"
+  unhealthyAppbaseClientIntegrationServiceManagementDisabled: false
+  clientPoolCheckerTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 0
+    interval: 30
+    timeUnit: "SECONDS"
+  clientIntegrationServiceRepairTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 60
+    interval: 30
+    timeUnit: "SECONDS"
+  useMediatorSharedScheduler: true
+  customScheduledExecutorServiceConfiguration: null
+  repairDisabledAppbaseClientKeyConfigurations: null
+  repairDisabledAppbaseClientIntegrationServiceTypeNames: null
+  enableGlobalMaxRepairAttemptsCheck: true
+  globalMaxRepairAttempts: 3
+  maxRepairAttemptsByAppbaseClientKeyConfigurations: null
+  maxRepairAttemptsByAppbaseClientIntegrationServiceTypeNameMap: null
+  globalDisableUnregisterUnhealthyIrreparableAppbaseClientIntegrationServices: false
+  disableUnregisterUnhealthyIrreparableByAppbaseClientKeyConfigurations: null
+  disableUnregisterUnhealthyIrreparableByAppbaseClientIntegrationServiceTypeNameMap: null
+  repairListenerImplObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+  unhealthyClientIntegrationServiceEntryObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+appbaseClientPoolInjectedTypeConfiguration: null
+customAppbaseClientPoolConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.DefaultAppbaseClientPoolConfiguration"
+  repairUnhealthyServices: true

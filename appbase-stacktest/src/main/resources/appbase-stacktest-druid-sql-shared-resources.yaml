@@ -1,0 +1,11 @@
+---
+autoStart: true
+sharedDruidQueryEventObjectPoolConfiguration:
+  enabled: true
+  objectPoolCapacity: 64
+sharedDruidResultSetObjectPoolConfiguration:
+  enabled: true
+  objectPoolCapacity: 64
+sharedDruidSqlParameterObjectPoolConfiguration:
+  enabled: true
+  objectPoolCapacity: 64

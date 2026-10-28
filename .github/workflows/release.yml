@@ -1,0 +1,78 @@
+# Release (manual, owner-gated) (internal work item 1432, AC13, N06 of internal work item 1009's public-repository export gate).
+#
+# Proves the OWNER-GATING MECHANISM, not a working Maven-Central publish -- that is a separate,
+# larger, not-yet-started gap (see the publish step below).
+#
+# `environment: release` is THE WALL (same reasoning as Setup-Guide.md Part 1's branch-protection
+# wall): GitHub pauses a job that carries `environment: release` until a required reviewer approves
+# the run, and that approval step happens server-side -- a non-owner dispatching this workflow
+# cannot get past it no matter what the YAML says. The owner-only console steps that make this a
+# real wall (creating the `release` environment, naming the owner as its required reviewer, and
+# scoping the secrets below to it rather than to the repository) are recorded in
+# docs/Setup-Guide.md Part 9 -- they cannot be performed from here; the agent's token deliberately
+# lacks Administration, same limitation as Setup-Guide Part 1.
+#
+# `workflow_dispatch` only, with a literal confirmation phrase -- a release is a deliberate act,
+# never a side effect of a push or a label.
+#
+# 🔴 THE PUBLISH STEP FAILS LOUDLY TODAY, ON PURPOSE. `pom.xml`'s own release-profile comment states
+# plainly there is no distributionManagement/GPG/Sonatype wiring yet, and the Sonatype namespace and
+# GPG key themselves do not exist yet either (docs/spec/1.0.0/P06/03-P06-E03-sonatype-account.md --
+# no GitHub issue filed, human-in-the-loop DNS/domain proof, unknown third-party lead time;
+# 04-P06-E04-release-mechanism.md's dropped-staging-deploy task is 8h of its own and depends on
+# E03). That is a separate, larger, not-yet-started epic, out of scope for internal work item 1432 to silently absorb.
+# Wiring this step to merely no-op or to claim success without a real deploy would misrepresent that
+# gap exactly the way a green build everyone learns to scroll past does -- so it refuses instead,
+# with a named reason, whether or not the environment secrets
+# below have been filled in. Replace this step, not its exit code, once P06-E03/E04 land.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type RELEASE to run this (a deliberate act, never a side effect)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: owner-approved release (environment-gated)
+    runs-on: ubuntu-24.04
+    environment: release
+    timeout-minutes: 60
+    steps:
+      - name: Require the literal confirmation phrase
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "RELEASE" ]; then
+            echo "::error::confirm input must be the literal word RELEASE" >&2
+            exit 1
+          fi
+
+      - name: Check out the dispatched ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: build.sh --mode release (release-profile build, no deploy)
+        run: ./build.sh --mode release
+
+      - name: Publish to Sonatype staging (dropped in rehearsal) — NOT YET WIRED
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_TOKEN: ${{ secrets.SONATYPE_TOKEN }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "::error::release publish is not wired yet -- pom.xml has no distributionManagement/" >&2
+          echo "::error::GPG/Sonatype config (P06-E04), and the Sonatype namespace + GPG key do not" >&2
+          echo "::error::exist yet either (P06-E03, no GitHub issue filed). Fails loudly rather than" >&2
+          echo "::error::silently skipping -- see docs/Setup-Guide.md Part 9. Do not fill the secrets" >&2
+          echo "::error::above in until P06-E03/E04 actually land." >&2
+          exit 1

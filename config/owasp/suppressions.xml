@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OWASP Dependency-Check suppression file (security-scan profile, internal work item 1207).
+
+  Every <suppress> entry MUST carry a reason: the CVE, why it does not apply to this codebase
+  (not reachable / false positive / accepted risk with owner sign-off), and the date it was added.
+  An unexplained suppression is a silenced finding, not a resolved one.
+
+  ⚠️ SCHEMA: every <suppress> MUST contain at least one of {cpe, cve, vulnerabilityName, cwe,
+  cvssBelow} in addition to its matcher (packageUrl/cpe/…), or the WHOLE file fails to parse and
+  EVERY suppression is silently ignored. To accept-risk an entire pinned artifact we use
+  <cvssBelow>10</cvssBelow> (covers all scores < 10.0); cvssBelow is exclusive and schema-capped at
+  10.0, so exactly-10.0 CVEs are listed explicitly alongside it.
+
+  hostedSuppressionsEnabled is FALSE in the pom, so this file is the ONLY suppression source — no
+  upstream-controlled file can add to it. Keep it that way.
+
+  @author Navaneeth Mysore G
+  @author Claude
+-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+    <!-- ==================================================================================== -->
+    <!-- S01 / internal work item 1363 — appbase-managed jetty/tomcat: post-cutoff CVE-2026-* with no in-line fix -->
+    <!-- (needs jetty-12 / tomcat-11 Jakarta EE migration). Owner-approved accepted risk         -->
+    <!-- (2026-08-14). Tracked internal work item 1208. Re-evaluate when a patched 11.0.x / 10.1.x ships.           -->
+    <!-- ==================================================================================== -->
+    <suppress>
+        <notes><![CDATA[
+          jetty-io / jetty-server 11.0.26 (latest 11.0.x). No patched 11.0.x for these CVEs; fix needs
+          jetty 12.x (Jakarta EE 11). Accepted risk, owner-approved S01/internal work item 1363. Tracked internal work item 1208.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty/[^@]+@11\.0\.26$</packageUrl>
+        <cve>CVE-2026-2332</cve>
+        <cve>CVE-2026-5795</cve>
+        <cve>CVE-2026-10050</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+          tomcat-embed-core 10.1.57 (latest 10.1.x). Bump cleared 31/32 CVEs; this one has no in-line
+          patch. Fix needs tomcat 11.x (Jakarta EE 11). Accepted risk, owner-approved S01/internal work item 1363. Tracked internal work item 1208.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-core@10\.1\.57$</packageUrl>
+        <cve>CVE-2026-66299</cve>
+    </suppress>
+
+    <!-- ==================================================================================== -->
+    <!-- S03 / internal work item 1365 — heavy-client-pinned transitives.                                         -->
+    <!--                                                                                        -->
+    <!-- Every coordinate below is a transitive dependency pinned by a heavy analytics / data-   -->
+    <!-- client stack (spark 3.0.0, hadoop 2.7.4, hive, avro 1.8.2, parquet, calcite,            -->
+    <!-- elasticsearch-rest 8.5.3, jasync 1.2.3). The vulnerable version is fixed by the client   -->
+    <!-- and cannot be upgraded without upgrading the client itself — a container-level           -->
+    <!-- undertaking out of N06's leaf scope. Accepted risk, owner-approved (2026-08-14).          -->
+    <!-- Version-scoped so a future client upgrade re-exposes the finding. The netty transitive    -->
+    <!-- family is NOT here — it was FIXED in this same PR via a netty-bom import (4.1.137).        -->
+    <!-- log4j 1.2.17 is NOT here — S02 (internal work item 1364, reload4j swap).                                     -->
+    <!--                                                                                          -->
+    <!-- ⚠️ REMEDIATION OWNERSHIP — RECONCILED 2026-09-12 (exact-head re-review finding 2).         -->
+    <!-- These suppressions originally cited "tracked P03/E02 (internal work item 1367)" as the home of the real fix  -->
+    <!-- (the client upgrades). **internal work item 1367 is now CLOSED/COMPLETED (2026-08-20) and no longer supplies  -->
+    <!-- remediation or periodic review.** Per internal work item 1567 Phase-3 (owner decision 2026-08-20) the heavy-   -->
+    <!-- client upgrade work was SPLIT and re-homed under P04/E01 internal work item 1135's driver-IT programme:        -->
+    <!--   • Elasticsearch  → internal work item 1298 (OPEN)  — driver ITs: Elasticsearch / R2DBC-MariaDB / Vitess.    -->
+    <!--   • Kafka          → internal work item 1297 (OPEN)  — driver ITs: Kafka (KRaft) / ZooKeeper. (No kafka        -->
+    <!--     coordinate is suppressed below — kafka-clients was cleared by bump, so internal work item 1297 is n/a here.)-->
+    <!--   • Spark / Hadoop / Hive / Avro / Parquet / Calcite + their ancient transitive family       -->
+    <!--     (google/jackson/libthrift/log4j2 pins), AND the jasync / kotlin / okio async-driver        -->
+    <!--     pins, AND the swagger-ui/DOMPurify dev-docs asset → the spark/hadoop remediation child      -->
+    <!--     authorized in internal work item 1567 Phase-3 was NEVER FILED, so these coordinates currently have           -->
+    <!--     **NO LIVE REMEDIATION OWNER (ticket).** This is disclosed, not hidden. The disposition was  -->
+    <!--     ASKED on internal work item 1132 and ANSWERED by the owner 2026-09-12 ("do as recommended" = option 1): a new  -->
+    <!--     heavy-client-upgrade child under internal work item 1135/P04·E01 owns the spark/hadoop + jasync bucket, and     -->
+    <!--     these suppressions are to be RE-POINTED at it. That child is NOT YET FILED — an authorized    -->
+    <!--     deferred follow-up (the session that reconciled this doc was constrained from opening a       -->
+    <!--     ticket); until it is filed each entry below carries "owner-approved 2026-09-12; internal work item 1135 child   -->
+    <!--     pending filing". Each entry names its live owner (internal work item 1298) or that pending internal work item 1135 child; none     -->
+    <!--     claims closed internal work item 1367.                                                                          -->
+    <!-- ==================================================================================== -->
+
+    <!-- FALSE POSITIVE — our own module CPE-matching Elastic's Elasticsearch, not Elastic's product. -->
+    <suppress>
+        <notes><![CDATA[
+          False positive: com.viveworks.appbase:appbase-client-elasticsearch is OUR snapshot module; its
+          name CPE-matches cpe:/a:elastic:elasticsearch. Not Elastic's product. Suppress as FP.
+          S03/internal work item 1365, 2026-08-14.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.viveworks\.appbase/appbase-client-elasticsearch@.*$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+
+    <!-- FALSE POSITIVE — netty version embedded in micrometer-registry-statsd's bundled META-INF pom. -->
+    <suppress>
+        <notes><![CDATA[
+          netty-transport 4.1.110.Final read from the META-INF/maven pom bundled INSIDE
+          micrometer-registry-statsd 1.13.1 — build metadata, not a separately-resolved artifact. The
+          actual resolved netty is 4.1.137 (aligned by the netty-bom import in this PR). FP of the jar
+          analyzer. S03/internal work item 1365, 2026-08-14.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/[^@]+@4\.1\.110\.Final$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+        <cve>CVE-2026-45674</cve>
+        <cve>CVE-2026-47691</cve>
+    </suppress>
+
+    <!-- Spark 3.0.0 stack (appbase-client-spark) + its shaded jetty 9.4. No live owner — internal work item 1367 CLOSED (see S03 header). -->
+    <suppress>
+        <notes><![CDATA[Apache Spark 3.0.0 modules — pinned by appbase-client-spark. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.spark/[^@]+@3\.0\.0$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[jetty 9.4.18 shaded inside spark-core 3.0.0's fat jar (META-INF) — un-bumpable via dependencyManagement; moves only with a spark upgrade. Version-scoped so it never masks our managed jetty 11.x. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty/[^@]+@9\.4\.18\.v20190429$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[jquery.datatables 1.10.18 bundled (pkg:javascript) inside spark-core 3.0.0's web UI. Moves only with a spark upgrade. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:javascript/jquery\.datatables@1\.10\.18$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+
+    <!-- Hadoop / Hive / Avro / Parquet / Calcite big-data stack. No live owner — internal work item 1367 CLOSED (see S03 header). -->
+    <suppress>
+        <notes><![CDATA[Hadoop 2.7.4 modules — pinned by the spark/hadoop stack. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.hadoop/[^@]+@2\.7\.4$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[Apache Hive storage-api 2.7.1 — pinned by the spark/hive stack. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.hive/[^@]+@2\.7\.1$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[Apache Avro 1.8.2 (avro-ipc, avro-guava-dependencies) — pinned by the spark stack. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.avro/[^@]+@1\.8\.2$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[Apache Parquet column 1.10.1 — pinned by the spark stack. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.parquet/[^@]+@1\.10\.1$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[Calcite Avatica core 1.19.0 — pinned by the spark/jdbc stack. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.calcite\.avatica/[^@]+@1\.19\.0$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[Ancient transitives pinned by the hadoop/spark/avro stacks: aircompressor 0.10, ivy 2.4.0, api-util 1.0.0-M20, commons-compress 1.8.1, xercesImpl 2.9.1, snappy-java 1.1.7.5. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/(io\.airlift/aircompressor@0\.10|org\.apache\.ivy/ivy@2\.4\.0|org\.apache\.directory\.api/api-util@1\.0\.0-M20|org\.apache\.commons/commons-compress@1\.8\.1|xerces/xercesImpl@2\.9\.1|org\.xerial\.snappy/snappy-java@1\.1\.7\.5)$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[Ancient Google transitives pinned by hadoop/spark/grpc: guava 11.0.2 & 14.0.1, protobuf-java 2.5.0/3.17.1/3.19.6/3.25.1/3.25.3, gson 2.2.4 & 2.8.6. Un-bumpable without the client upgrade. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/(com\.google\.guava/guava@(11\.0\.2|14\.0\.1)|com\.google\.protobuf/protobuf-java(-util)?@(2\.5\.0|3\.17\.1|3\.19\.6|3\.25\.1|3\.25\.3)|com\.google\.code\.gson/gson@(2\.2\.4|2\.8\.6))$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[Ancient Jackson / bean / servlet transitives pinned by hadoop: jackson-databind 2.4.0, jackson-mapper-asl 1.9.13 (codehaus), commons-beanutils 1.7.0, activation 1.1.1, javax.servlet-api 3.1.0, jsp-api 2.1. Distinct from our managed Jackson (2.22.1, S01). The CVE-2009-* entries at 10.0 are CPE mismatches on activation/servlet-api/jsp-api. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/(com\.fasterxml\.jackson\.core/jackson-databind@2\.4\.0|org\.codehaus\.jackson/jackson-mapper-asl@1\.9\.13|commons-beanutils/commons-beanutils@1\.7\.0|javax\.activation/activation@1\.1\.1|javax\.servlet/javax\.servlet-api@3\.1\.0|javax\.servlet\.jsp/jsp-api@2\.1)$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+        <cve>CVE-2009-2476</cve>
+        <cve>CVE-2009-2689</cve>
+        <cve>CVE-2009-2721</cve>
+        <cve>CVE-2009-2722</cve>
+        <cve>CVE-2009-2723</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[log4j2 log4j-api 2.17.1 — transitive under the heavy-client stack (distinct from log4j 1.2.17, which S02/internal work item 1364 swaps to reload4j). NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j-api@2\.17\.1$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+
+    <!-- Elasticsearch rest client (live owner internal work item 1298) + async DB drivers (jasync) and their kotlin/okio pins (no live owner — see S03 header). -->
+    <suppress>
+        <notes><![CDATA[org.elasticsearch.client elasticsearch-rest-client 8.5.3 — appbase elasticsearch-client.version; upgrade within 8.x touches appbase-client-elasticsearch. LIVE OWNER: internal work item 1298 (OPEN, P04·E01 driver ITs — Elasticsearch), to which internal work item 1567 Phase-3 routed the ES upgrade after internal work item 1367 closed. Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.elasticsearch\.client/elasticsearch-rest-client@8\.5\.3$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[jasync-sql 1.2.3 (mysql, postgresql) — appbase jasync.version; async DB driver upgrade. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20) and no jasync upgrade child was filed (jasync is not in internal work item 1298's ES/R2DBC-MariaDB/Vitess driver-IT scope). See S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing. Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.github\.jasync-sql/[^@]+@1\.2\.3$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[kotlin-stdlib / kotlin-stdlib-common 1.4.x and okio 2.8.0 — pinned transitively by jasync / okhttp. Move only with those client upgrades. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/(org\.jetbrains\.kotlin/[^@]+@1\.4\.[0-9]+|com\.squareup\.okio/okio@2\.8\.0)$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[libthrift 0.14.1 — pinned by the hive/thrift stack. NO LIVE remediation owner — P03/E02 internal work item 1367 is CLOSED (2026-08-20); the spark/hadoop upgrade child authorized in internal work item 1567 Phase-3 was never filed (see S03 header; owner-approved 2026-09-12 — internal work item 1135 child pending filing). Accepted risk, S03/internal work item 1365, 2026-08-14.]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.thrift/libthrift@0\.14\.1$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+
+    <!-- ==================================================================================== -->
+    <!-- S04 / internal work item 1366 — swagger-ui bundled JS (dev/docs asset).                                  -->
+    <!-- ==================================================================================== -->
+    <suppress>
+        <notes><![CDATA[
+          DOMPurify 3.0.6 bundled inside swagger-ui 5.9.0 (swagger-ui-bundle.js / -es-bundle.js),
+          CVE-2026-65898 (cvssv3 baseScore 7.2 — the scan line displays 5.1 but the gate reads the JSON
+          baseScore). Swagger UI is a DEV/DOCS asset (the API-docs page), not core app runtime, and it
+          renders our OWN generated OpenAPI spec — the XSS-sanitizer bypass has no untrusted-input path
+          here. Bumping swagger-ui to clear it (5.32.13) is deferred: that release bundles a .NET
+          assembly and npm-auditable content that make dependency-check's AssemblyAnalyzer and
+          NodeAuditAnalyzer fail in this offline / egress-filtered container (no dotnet; npmjs.org
+          403-filtered). Accepted risk, owner-approved S04/internal work item 1366, 2026-08-14. NO LIVE remediation owner
+          for the swagger-ui upgrade — P03/E02 internal work item 1367 is CLOSED (2026-08-20) and no successor was filed;
+          owner-approved 2026-09-12 — internal work item 1135 child pending filing (see S03 header).
+        ]]></notes>
+        <packageUrl regex="true">^pkg:javascript/DOMPurify@3\.0\.6$</packageUrl>
+        <cvssBelow>10</cvssBelow>
+    </suppress>
+
+</suppressions>

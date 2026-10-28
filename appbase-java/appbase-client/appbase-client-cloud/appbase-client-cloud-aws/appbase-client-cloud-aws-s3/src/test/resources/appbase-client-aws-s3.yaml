@@ -1,0 +1,132 @@
+# Copyright 2019 The original author or authors of Appbase
+#
+# This project includes software developed by the author or authors of
+# Appbase (https://github.com/viveworks/Appbase).
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+autoStart: true
+defaultDefaultS3ClientIntegrationServiceConfiguration:
+  clusterIdValueKeyConfiguration:
+    clusterId: "primary"
+  customDefaultAwsSdkHttpClientServiceConfiguration: null
+  awsSdkHttpClientIntegrationServiceKeyConfiguration:
+    text: "primary"
+  customDefaultAwsSdkAsyncHttpClientServiceConfiguration: null
+  awsSdkAsyncHttpClientIntegrationServiceKeyConfiguration:
+    text: "primary"
+  awsSdkClientOverrideConfiguration:
+    awsSdkAdvancedClientOptionsFactoryInjectedTypeConfiguration: null
+    awsSdkExecutionInterceptorsFactoryInjectedTypeConfiguration: null
+    headers: null
+    awsSdkRetryPolicyConfiguration:
+      useDefaultRetryPolicy: true
+      awsSdkRetryMode: "LEGACY"
+      useBuilderWithRetryMode: true
+      additionalRetryConditionsAllowed: true
+      awsSdkBackoffStrategyConfiguration:
+        type: "com.viveworks.appbase.client.cloud.aws.common.configuration.backoff.FullJitterBackoffStrategyConfiguration"
+        baseDelay: "PT0.5S"
+        maxBackoffTime: "PT20S"
+      retryCount: null
+      retryConditionInjectedTypeConfiguration: null
+      retryCapacityConditionInjectedTypeConfiguration: null
+      throttlingBackoffStrategyConfiguration: null
+    apiCallAttemptTimeoutConfiguration:
+      enabled: true
+      timeout: 10000
+      timeoutTimeUnit: "MILLISECONDS"
+    apiCallTimeoutConfiguration:
+      enabled: true
+      timeout: 10000
+      timeoutTimeUnit: "MILLISECONDS"
+    defaultAwsSdkProfileFileConfiguration:
+      useDefaultProfile: false
+      awsSdkConfigurationFileConfiguration:
+        location: "classpath:///aws-config.profile"
+      awsSdkCredentialsFileConfiguration:
+        location: "classpath:///aws-credentials.profile"
+    defaultProfileName: null
+  awsSdkClientAsyncConfiguration:
+    awsSdkAdvancedAsyncClientOptionsFactoryInjectedTypeConfiguration: null
+  awsSdkCredentialsProviderConfiguration:
+    asyncCredentialUpdateEnabled: false
+    awsSdkProfileFileConfiguration:
+      useDefaultProfile: false
+      awsSdkConfigurationFileConfiguration:
+        location: "classpath:///aws-config.profile"
+      awsSdkCredentialsFileConfiguration:
+        location: "classpath:///aws-credentials.profile"
+    profileName: "default"
+    reuseLastProviderEnabled: true
+  awsSdkS3Configuration:
+    accelerateModeEnabled: false
+    checksumValidationEnabled: true
+    chunkedEncodingEnabled: true
+    dualStackEnabled: false
+    pathStyleAccessEnabled: true
+    useArnRegionEnabled: null
+    awsSdkProfileFileConfiguration:
+      useDefaultProfile: false
+      awsSdkConfigurationFileConfiguration:
+        location: "classpath:///aws-config.profile"
+      awsSdkCredentialsFileConfiguration:
+        location: "classpath:///aws-credentials.profile"
+    profileName: "default"
+  # The module's infra/docker/s3 lifecycle runs MinIO on loopback port 9000. Keep this endpoint
+  # aligned with the StackTestMain S3 configuration.
+  endpointOverrideUri: "http://localhost:9000"
+  awsSdkRegionConfiguration:
+    # S3 treats the client region as the CreateBucket location constraint. `dev-region` is not an
+    # AWS region; us-east-1 uses S3's constraint-free CreateBucket default.
+    id: "us-east-1"
+    globalRegion: false
+keyedDefaultS3ClientIntegrationServiceConfigurations: null
+globalEnableRegisterNotFoundAppbaseClientIntegrationServices: true
+disabledRegisterNotFoundAppbaseClientIntegrationServices: null
+checkKeyedAppbaseClientIntegrationServicesSanity: false
+appbaseClientPoolManagerInjectedTypeConfiguration: null
+customAppbaseClientPoolManagerConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.manager.DefaultAppbaseClientPoolManagerConfiguration"
+  unhealthyAppbaseClientIntegrationServiceManagementDisabled: false
+  clientPoolCheckerTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 0
+    interval: 30
+    timeUnit: "SECONDS"
+  clientIntegrationServiceRepairTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 60
+    interval: 30
+    timeUnit: "SECONDS"
+  useMediatorSharedScheduler: true
+  customScheduledExecutorServiceConfiguration: null
+  repairDisabledAppbaseClientKeyConfigurations: null
+  repairDisabledAppbaseClientIntegrationServiceTypeNames: null
+  enableGlobalMaxRepairAttemptsCheck: true
+  globalMaxRepairAttempts: 3
+  maxRepairAttemptsByAppbaseClientKeyConfigurations: null
+  maxRepairAttemptsByAppbaseClientIntegrationServiceTypeNameMap: null
+  globalDisableUnregisterUnhealthyIrreparableAppbaseClientIntegrationServices: false
+  disableUnregisterUnhealthyIrreparableByAppbaseClientKeyConfigurations: null
+  disableUnregisterUnhealthyIrreparableByAppbaseClientIntegrationServiceTypeNameMap: null
+  repairListenerImplObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+  unhealthyClientIntegrationServiceEntryObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 1024
+appbaseClientPoolInjectedTypeConfiguration: null
+customAppbaseClientPoolConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.DefaultAppbaseClientPoolConfiguration"
+  repairUnhealthyServices: true

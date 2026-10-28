@@ -1,0 +1,13 @@
+# id	status	runner	description
+# Every row is executable. The shared dispatcher selects one independently reproducible scenario.
+LI-01	READY	scripts/licence-exit-scenario.sh	Dependency report completeness and fail-closed classification
+LI-02	READY	scripts/licence-exit-scenario.sh	Incompatible dependency reachability mutation
+LI-03	READY	scripts/licence-exit-scenario.sh	Main and test header removal mutation
+LI-04	READY	scripts/licence-exit-scenario.sh	Full tracked-source header coverage reconciliation
+LI-05	READY	scripts/licence-exit-scenario.sh	Canonical LICENSE comparison and drift mutation
+LI-06	READY	scripts/licence-exit-scenario.sh	Clean-tree deterministic NOTICE regeneration
+LI-07	READY	scripts/licence-exit-scenario.sh	NOTICE accuracy and stale dependency mutation
+LI-08	READY	scripts/licence-exit-scenario.sh	Trademark position and rename blast-radius propagation
+LI-09	READY	scripts/licence-exit-scenario.sh	DCO enforcement unsigned-commit mutation
+LI-10	READY	scripts/licence-exit-scenario.sh	Per-change direct and transitive licence mutation
+LI-11	READY	scripts/licence-exit-scenario.sh	Revision-pinned complete-matrix evidence

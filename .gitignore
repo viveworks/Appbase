@@ -1,0 +1,195 @@
+# build tools
+build
+.gradle
+project
+.config-wizard-web.log
+
+# IDE
+bin
+.settings
+target
+*/target
+*/*/target
+*/*/*/target
+target-maven
+target-idea
+target-eclipse
+
+# jdtls compiles here instead of target/ (internal work item 505 / N28), via the root pom's build-directory
+# indirection. A language server writing into target/ corrupted ~50% of whole-repo builds (internal work item 411),
+# and the pre-PR compile gate plus the mutation receipts both read target/classes.
+#
+# DEPTH-INDEPENDENT ON PURPOSE. The `target` patterns above are depth-LIMITED (three levels), which
+# covers today's tree but silently stops covering a module nested one level deeper. Every one of the
+# 47 module poms gets its own target-jdtls/ from the single root edit, so this one is globbed, not
+# enumerated.
+**/target-jdtls
+.cache
+overlays
+*.iml
+*.iws
+*.ipr
+.idea
+out
+
+#scratch
+logs
+.vertx
+.okhttpcache
+delete
+*.log
+
+# compiled output
+dist
+tmp
+out-tsc
+
+# dependencies
+node_modules
+
+# profiling files
+chrome-profiler-events.json
+speed-measure-plugin.json
+
+# IDEs and editors
+.idea
+.project
+.classpath
+.c9
+*.launch
+.settings
+.factorypath
+*.sublime-workspace
+
+# Agent tooling — these MUST live here, NOT in .git/info/exclude.
+#
+# .claude/ was ignored only via .git/info/exclude, which is LOCAL and UNVERSIONED: it does not
+# survive a `git clone`, so on any other machine .claude/ (agent worktrees, several GB) is unignored
+# and stageable. That is the same class of bug as .serena/ (internal work item 412) — a protection that looks in place
+# and evaporates on clone.
+#
+# It matters because an MCP server's TOOL surface does not bound its WRITE surface: Serena's
+# file-writing tools are disabled in this context and its language server still wrote 235 metadata
+# files into the source tree. A stray `git add -A` is all it takes to commit someone else's writes.
+#
+# EXCEPTION 1: `.claude/settings.json` is the COMMITTED, portable team declaration (P-046 T06 internal work item 438) —
+# marketplaces + plugin allowlist + telemetry-off. Everything else under .claude/ stays ignored
+# (worktrees, .cc-writes, and the machine-local settings.local.json). Uses `.claude/*` + a re-include,
+# not `.claude/` — git cannot re-include a file whose parent directory is excluded outright.
+#
+# EXCEPTION 2: `.claude/skills/` is where an agent discovers REPO-WIDE skills, so a skill that is not
+# re-included here is a skill nobody but its author can invoke (N06 S07, internal work item 731). It holds a SYMLINK,
+# `add-appbase-service` -> `appbase-codeagents/claude/skills/add-appbase-service`, so the recipes stay
+# where their history is and the discovery path stays one line.
+#
+# ⚠️ THE RE-INCLUDE IS PER-ENTRY, AND IT HAS TO BE. `!.claude/skills` alone un-ignores the WHOLE
+# SUBTREE at unlimited depth — `.claude/*` is single-segment, so `*` never crosses `/` and nothing
+# re-ignores the descendants. That is functionally identical to `!.claude/skills/**`, and it would hand
+# a stray `git add -A` everything that ever lands under `.claude/skills/` — which is exactly where
+# skill-authoring and plugin tooling writes. The paragraph above is about an MCP server putting 235
+# files into the tree with no tool call and no prompt; this is that same door, one level down.
+#
+# So: re-include the directory, RE-EXCLUDE its contents, then re-include the one entry by name. Adding
+# a second skill means adding a second `!` line — deliberately, so each one is a decision somebody made.
+#
+# ⚠️ Verified by execution in BOTH directions, because a rule like this cannot be read for correctness:
+#   discovery  — `claude -p` listing skills returns `add-appbase-service`; `NONE` with the symlink moved away
+#   breadth    — `.claude/skills/<probe>/evil.md` is IGNORED; `add-appbase-service` is NOT
+#   neighbours — `settings.local.json`, `worktrees/`, `.cc-writes/` all still ignored
+.claude/*
+!.claude/settings.json
+!.claude/skills
+.claude/skills/*
+!.claude/skills/add-appbase-service
+# The second `!` line the paragraph above asks for, and a decision somebody made: `appbase-code-review`
+# is the MANDATORY pre-PR gate (internal work item 833). Left un-re-included it would be discoverable only on the machine
+# that authored it — and the whole point of vendoring it was that the plugin's version was unreachable
+# to the agent and unrunnable in the container.
+!.claude/skills/appbase-code-review
+# The THIRD `!` line, same reasoning, and the reason is now measured rather than argued:
+# `appbase-security-review` (internal work item 733) replaces a harness gate that read the WRONG TREE four times --
+# ~400 files against a 10-file change -- and was aborted by hand every time. Left un-re-included it
+# would exist only on the machine that authored it, which for a MANDATORY gate is the same as not
+# existing. `scripts/test/claude_skills_test.sh` asserts every mandated skill is tracked, not merely
+# present, because a working-tree check passes happily over a file git will never ship.
+!.claude/skills/appbase-security-review
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# misc
+.sass-cache
+connect.lock
+coverage
+libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+typings
+
+# System Files
+.DS_Store
+Thumbs.db
+*.class
+
+# Python
+__pycache__/
+*.pyc
+
+.dual-graph/
+# .serena/ — REMOVED 2026-07-22 (internal work item 632 chore lane). Serena is not installed and will not be installed,
+# so the tracked .serena/project.yml that pinned languages: [] has nothing left to guard. The pin
+# existed to stop a fresh clone starting the Eclipse JDT language server (internal work item 411 — JDT autobuilds into
+# the same target/ tree Maven writes to and corrupted ~50% of whole-repo builds). ⚠️ THAT HAZARD IS
+# UNCHANGED: if Serena is ever reinstalled here, restore the pin BEFORE the first clone runs, because
+# nothing else prevents JDT from starting. internal work item 505/N28 owns the target/-clobber fix itself.
+.serena/
+# .specify/ — Spec Kit is NOT this repo's process and never was; its files were deleted in N06 S07
+# (internal work item 731). This entry stays anyway: a
+# stray `specify init` must land untracked rather than stageable, which is the same fail-safe posture
+# as .serena/ above.
+.specify/
+
+# SDD per-task scratch (durable ledger = docs/superpowers/sdd/progress*.md only)
+docs/superpowers/sdd/task-*-report.md
+docs/superpowers/sdd/task-*-brief.md
+docs/superpowers/sdd/*-review-package.md
+docs/superpowers/sdd/*-fix-report.md
+
+# Agent memory (per-machine, not repo content)
+/memory/
+
+# ── MCP-server write paths (internal work item 420 / N14, second pass) ────────────────────────────────────────────
+# All four installed MCP servers run with CWD = the REPO ROOT — verified with `lsof -a -p <pid> -d cwd`
+# on the live processes. Every relative-path write they make therefore lands in the source tree.
+#
+# These are ignored so they can never be COMMITTED, and listed in .tripwire-watch so that ignoring
+# them does not also make them INVISIBLE — `git status --porcelain` omits ignored entries, so before
+# the watch list a path was covered by one mechanism or the other and never both.
+#
+# firebase (`firebase experimental:mcp`): firebase_init/deploy write these into CWD; lib/utils.js
+# also builds its debug-log path as `path.join(process.cwd(), "firebase-debug.log")`.
+/.firebase/
+/.firebaserc
+/firebase.json
+# dart (`dart mcp-server`, 24 features all enabled): its root IS the repo root, so an analyzer or
+# `pub` invocation there lands at top level. Module-level .gitignore files do not cover the root.
+/.dart_tool/
+# Generated by the dart MCP's `pub` tool, never hand-edited. Previously TRACKED and unignored, so a
+# regeneration appeared as ` M` — indistinguishable from a deliberate edit. That is the CHANGELOG.adoc
+# sweep (internal work item 413) with a live writer attached. The sibling module already ignored its copies; the
+# inconsistency was the bug.
+# ⚠️ Ignoring these DOES reduce their visibility to zero, and that is accepted knowingly, not
+# overlooked: they are supposed to exist, so .tripwire-watch (whose criterion is "nothing should be
+# creating this") is the wrong instrument — see the note there. Change-detection for files that
+# legitimately exist is internal work item 581.
+
+# Generated Playwright HTML report (regenerated per run; not tracked)
+appbase-config-wizard/test/web/playwright-report/
+# Host-downloaded Druid distributions are verified build inputs, not source artifacts.
+appbase-java/appbase-client/appbase-client-druid/infra/docker/druid/.druid-dist/

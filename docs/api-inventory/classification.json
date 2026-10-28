@@ -1,0 +1,602 @@
+{
+  "schema": 1,
+  "_comment": "HAND-EDITED decisions joined with the build-derived artifact list by scripts/api-inventory.py; see docs/api-inventory/README.md. supported-public must cite the release baseline (§…), a test (test: …) or a recorded owner ruling (owner ruling: #<issue> comment <id>) — BOM membership is not evidence. 'unclassified' marks an OPEN owner decision and makes the check fail.",
+  "baseline": {
+    "source": "Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+    "deferred": {
+      "com.viveworks.appbase:appbase-client-clamav": "§4.2 ClamAV",
+      "com.viveworks.appbase:appbase-client-jasync": "§4.2 Jasync",
+      "com.viveworks.appbase:appbase-client-smtp": "§4.2 SMTP",
+      "com.viveworks.appbase:appbase-client-spark": "§4.2 Spark"
+    }
+  },
+  "excluded_trees": {
+    "appbase-codeagents": "agent configuration only — no build surface (mirrors EXCLUDED_TREES in build.sh)",
+    "orchestrator/console-web": "the private Web console (Flutter, internal work item 1616 Leaf 6): a standalone Flutter Web app with its own per-PR flutter gates, not a Maven surface (mirrors EXCLUDED_TREES in build.sh)",
+    "orchestrator/demo/console": "the retained-demo Flutter Web console (internal work item 1656): a standalone Flutter package with its own per-PR flutter gates, not a Maven surface (mirrors EXCLUDED_TREES in build.sh)"
+  },
+  "module_groups": [
+    {
+      "prefix": "appbase-java/appbase-bootstrap",
+      "group": "bootstrap",
+      "issue": 1400
+    },
+    {
+      "prefix": "appbase-java/appbase-client",
+      "group": "client",
+      "issue": 1401
+    },
+    {
+      "prefix": "appbase-java/appbase-core",
+      "group": "core",
+      "issue": 1402
+    },
+    {
+      "prefix": "appbase-java/appbase-service",
+      "group": "service",
+      "issue": 1403
+    },
+    {
+      "prefix": "appbase-java/appbase-client/appbase-client-cloud",
+      "group": "cloud",
+      "issue": 1404
+    },
+    {
+      "prefix": "appbase-config-wizard/frontend",
+      "group": "wizard-frontend",
+      "issue": 1406
+    },
+    {
+      "prefix": "appbase-config-wizard",
+      "group": "config-wizard",
+      "issue": null
+    },
+    {
+      "prefix": "appbase-stacktest",
+      "group": "stacktest",
+      "issue": null
+    }
+  ],
+  "artifacts": {
+    "com.viveworks.appbase:appbase": {
+      "family": "build",
+      "support": "internal-implementation",
+      "evidence": "root parent POM (packaging=pom); every module and the BOM inherit it, so it is deployed as a parent, but a consumer never declares it."
+    },
+    "com.viveworks.appbase:appbase-bom": {
+      "family": "build",
+      "support": "supported-public",
+      "evidence": "§5.7 names the BOM in the catalogue scope; §2 release promise (installable framework) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`<dependency><groupId>com.viveworks.appbase</groupId><artifactId>appbase-bom</artifactId><type>pom</type><scope>import</scope></dependency>`"
+      ],
+      "backend": "Maven `dependencyManagement` import; no runtime configuration",
+      "docs_destination": "usage comment in `appbase-bom/pom.xml`",
+      "limitations": "It also lists `appbase-stacktest`, which is an open classification decision (see *Open decisions*). It does NOT list ten reactor jars (also under *Open decisions*). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-bootstrap": {
+      "family": "build",
+      "support": "internal-implementation",
+      "evidence": "aggregator (packaging=pom); per appbase-bom/pom.xml it 'produces no artifact of its own and is not a consumable dependency'."
+    },
+    "com.viveworks.appbase:appbase-bootstrap-core": {
+      "family": "bootstrap",
+      "support": "supported-public",
+      "evidence": "§5.7 bootstrap/runtime implementations; §5.3 representative bootstrap paths — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`AppbaseCoreServiceFactory`, `AppbaseClientCoreFactory`, `AppbaseClientServiceFactory`, `AppbaseServiceFactory`, `AppbaseWebServer`, `AppbaseCoreServicesConfiguration`"
+      ],
+      "backend": "YAML bootstrap configuration; the backends are whatever clients the configuration enables",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)",
+      "limitations": "Pulls in several client modules transitively (Aerospike, AWS, Cassandra, and others). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-bootstrap-reactor-netty": {
+      "family": "bootstrap",
+      "support": "supported-public",
+      "evidence": "owner ruling: internal work item 1141 comment 5855318230 (Q1 (a): supported-public and exported by the Release-1 BOM). The lean baseline's §4 matrix and §5 are silent on the reactive bootstrap face.",
+      "entry_points": [
+        "`ReactorNettyAppbaseWebServer`, `ReactorNettyAppbaseWebServerConfiguration`, `ReactorNettyAppbaseServerModule` (Guice), `AppbaseRouteRegistry`"
+      ],
+      "backend": "bootstrap YAML web-server section; embedded Reactor Netty, no external server needed",
+      "docs_destination": "`appbase-java/appbase-bootstrap/appbase-bootstrap-reactor-netty/README.md`; Javadoc is not published yet (internal work item 1400)",
+      "limitations": "Its admin endpoints are a read-only subset of the ten core ones; the mutating operations stay servlet-only (parity is P-039, 2.0.0). Choose exactly one web server per service. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-bootstrap-servlet": {
+      "family": "bootstrap",
+      "support": "supported-public",
+      "evidence": "§5.7 bootstrap/runtime implementations — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`AppbaseServletDeployment`"
+      ],
+      "backend": "None of its own; used through a container module",
+      "docs_destination": "Javadoc is not published yet (internal work item 1400)",
+      "limitations": "Not used alone — pick one of the container modules. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-bootstrap-servlet-jetty": {
+      "family": "bootstrap",
+      "support": "supported-public",
+      "evidence": "§5.7 bootstrap/runtime implementations — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "the `com.viveworks.appbase.bootstrap.jetty.server` web server and its `…guice` module, selected through `appbase-bootstrap-core`"
+      ],
+      "backend": "bootstrap YAML web-server section; embedded Jetty 11 (jetty-server/jetty-servlet), no external server needed",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)",
+      "limitations": "Choose exactly one container per service. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-bootstrap-servlet-tomcat": {
+      "family": "bootstrap",
+      "support": "supported-public",
+      "evidence": "§5.7 bootstrap/runtime implementations — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "the `com.viveworks.appbase.bootstrap.tomcat.server` web server and its `…guice` module, selected through `appbase-bootstrap-core`"
+      ],
+      "backend": "bootstrap YAML web-server section; embedded Tomcat (tomcat-embed-core), no external server needed",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)",
+      "limitations": "Choose exactly one container per service. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-bootstrap-servlet-undertow": {
+      "family": "bootstrap",
+      "support": "supported-public",
+      "evidence": "§5.7 bootstrap/runtime implementations — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "the `com.viveworks.appbase.bootstrap.undertow.server` web server and its `…guice` module, selected through `appbase-bootstrap-core`"
+      ],
+      "backend": "bootstrap YAML web-server section; embedded Undertow (undertow-servlet), no external server needed",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)",
+      "limitations": "Choose exactly one container per service. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client": {
+      "family": "build",
+      "support": "internal-implementation",
+      "evidence": "aggregator (packaging=pom); per appbase-bom/pom.xml it 'produces no artifact of its own and is not a consumable dependency'."
+    },
+    "com.viveworks.appbase:appbase-client-aerospike": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 Aerospike — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`AerospikeClientService`, `AerospikeClientServiceConfiguration`, `AerospikeClientIntegrationService`"
+      ],
+      "backend": "YAML/`AerospikeClientServiceConfiguration`; needs a reachable Aerospike cluster. Built on aerospike-client + aerospike-reactor-client (Micrometer metrics).",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aerospike.yaml`; Javadoc is not published yet (internal work item 1401)",
+      "limitations": "Requires external Aerospike cluster infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-cassandra": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 Cassandra — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`CassandraClientService`, `CassandraClientServiceConfiguration`, `CassandraClientIntegrationService`"
+      ],
+      "backend": "YAML/`CassandraClientServiceConfiguration`; needs a reachable Cassandra cluster (local datacenter configured). Built on DataStax java-driver 4 (core, query builder, mapper, Micrometer metrics).",
+      "docs_destination": "Javadoc is not published yet (internal work item 1401); no stack-test example configuration",
+      "limitations": "Requires external Cassandra cluster (local datacenter configured) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-clamav": {
+      "family": "client",
+      "support": "deferred-unsupported",
+      "evidence": "§4.2 ClamAV — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28). Excluded from the Release-1 BOM."
+    },
+    "com.viveworks.appbase:appbase-client-cloud": {
+      "family": "build",
+      "support": "internal-implementation",
+      "evidence": "aggregator (packaging=pom); per appbase-bom/pom.xml it 'produces no artifact of its own and is not a consumable dependency'."
+    },
+    "com.viveworks.appbase:appbase-client-cloud-aws": {
+      "family": "build",
+      "support": "internal-implementation",
+      "evidence": "aggregator (packaging=pom); per appbase-bom/pom.xml it 'produces no artifact of its own and is not a consumable dependency'."
+    },
+    "com.viveworks.appbase:appbase-client-cloud-aws-common": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 S3 (required by the S3 client) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`AwsSdkCredentialsProviderFactory`, `AwsSdkClientOverrideConfigurationFactory`, `AwsSdkRetryPolicyFactory`, `AwsSdkBackoffStrategyConfiguration` and related factories"
+      ],
+      "backend": "YAML AWS SDK settings; AWS credentials/profile files",
+      "docs_destination": "example profiles `appbase-stacktest/src/main/resources/aws-config.profile` and `aws-credentials.profile`; Javadoc is not published yet (internal work item 1404)",
+      "limitations": "AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-cloud-aws-httpclient": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 S3 (required by the S3 client) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`AwsSdkHttpClientService`, `AwsSdkAsyncHttpClientService` and their `…Configuration`/`…IntegrationService` types"
+      ],
+      "backend": "YAML HTTP-client configuration; AWS SDK apache-client/netty-nio-client",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-http-client.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-async-http-client.yaml`; Javadoc is not published yet (internal work item 1404)",
+      "limitations": "AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-cloud-aws-s3": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 S3 — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`S3ClientsService`, `S3ClientsServiceConfiguration`, `S3Clients`, `ObjectStoreAccessor`"
+      ],
+      "backend": "YAML S3 configuration; needs an S3 endpoint (AWS, or an S3-compatible local store) and credentials",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-s3.yaml`; Javadoc is not published yet (internal work item 1404)",
+      "limitations": "Real AWS usage incurs cost; integration tests need an S3-compatible endpoint. AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-core": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 — the shared client foundation of every supported adapter — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`AppbaseClientCore`, `AppbaseClientCoreConfiguration`, `AppbaseClientIntegrationService`, `AppbaseClientPool`, `AppbaseClientPoolManager`, `AppbaseClientKey`"
+      ],
+      "backend": "YAML client-core configuration; no backend of its own",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-client-core.yaml`; Javadoc is not published yet (internal work item 1401)",
+      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-druid": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 Druid — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`DruidSqlClientService`, `DruidSqlClientServiceConfiguration`, `DruidSqlClientIntegrationService`"
+      ],
+      "backend": "YAML/`DruidSqlClientServiceConfiguration`; needs a reachable Apache Druid broker. Built on Apache Calcite Avatica.",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-druid-sql.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-druid-sql-shared-resources.yaml`; Javadoc is not published yet (internal work item 1401)",
+      "limitations": "Requires external Apache Druid broker infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-elasticsearch": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 Elasticsearch — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`ElasticsearchLowLevelRestClientService`, `ElasticsearchLowLevelRestClientServiceConfiguration`, `ElasticsearchLowLevelRestClientIntegrationService`"
+      ],
+      "backend": "YAML/`ElasticsearchLowLevelRestClientServiceConfiguration`; needs a reachable Elasticsearch cluster. Built on the Elasticsearch low-level REST client + Jackson.",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-elasticsearch-low-level.yaml`; Javadoc is not published yet (internal work item 1401)",
+      "limitations": "Requires external Elasticsearch cluster infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-firebase": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 Firebase Auth — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`FirebaseAppClientService`, `FirebaseAuthClientService`, their `…Configuration` types, `FirebaseAuthCommand`"
+      ],
+      "backend": "YAML Firebase app/auth configuration; needs a Firebase project and service-account credentials (firebase-admin)",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-app.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-auth.yaml`; Javadoc is not published yet (internal work item 1401)",
+      "limitations": "Requires a real Firebase project or the Firebase emulators; a real project may incur cost. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-jasync": {
+      "family": "client",
+      "support": "deferred-unsupported",
+      "evidence": "§4.2 Jasync — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28). Excluded from the Release-1 BOM."
+    },
+    "com.viveworks.appbase:appbase-client-jdbc": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 JDBC — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`JdbcClientService`, `JdbcClientServiceConfiguration`, `JdbcClientIntegrationService`"
+      ],
+      "backend": "YAML/`JdbcClientServiceConfiguration`; needs a reachable MariaDB/MySQL or PostgreSQL database. Built on HikariCP with the MariaDB and PostgreSQL drivers.",
+      "docs_destination": "Javadoc is not published yet (internal work item 1401); no stack-test example configuration",
+      "limitations": "Requires external MariaDB/MySQL or PostgreSQL database infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-jdbi": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 JDBI — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`JdbiClientService`, `JdbiClientServiceConfiguration`, `JdbiClientIntegrationService`"
+      ],
+      "backend": "YAML/`JdbiClientServiceConfiguration`; needs a reachable JDBC database (via `appbase-client-jdbc`). Built on Jdbi 3 (core, SQL objects, postgres) over `appbase-client-jdbc`.",
+      "docs_destination": "Javadoc is not published yet (internal work item 1401); no stack-test example configuration",
+      "limitations": "Requires external JDBC database (via `appbase-client-jdbc`) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-jpa": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 JPA — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`JpaClientService`, `JpaClientServiceConfiguration`, `JpaClientIntegrationService`"
+      ],
+      "backend": "YAML/`JpaClientServiceConfiguration`; needs a reachable JDBC database (via `appbase-client-jdbc`). Built on Hibernate ORM over `appbase-client-jdbc`.",
+      "docs_destination": "Javadoc is not published yet (internal work item 1401); no stack-test example configuration",
+      "limitations": "Requires external JDBC database (via `appbase-client-jdbc`) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-kafka": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 Kafka — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`KafkaProducerClientService`, `KafkaConsumerClientService` and their `…Configuration`/`…IntegrationService` types"
+      ],
+      "backend": "YAML/`KafkaProducerClientServiceConfiguration`; needs a reachable Kafka cluster. Built on kafka-clients + reactor-kafka (Micrometer metrics).",
+      "docs_destination": "Javadoc is not published yet (internal work item 1401); no stack-test example configuration",
+      "limitations": "Requires external Kafka cluster infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-r2dbc": {
+      "support": "supported-public",
+      "family": "client",
+      "evidence": "§4.1 R2DBC — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`R2dbcClientService`, `ReactiveSqlSession`"
+      ],
+      "backend": "MariaDB or PostgreSQL",
+      "docs_destination": "Javadoc is not published yet (internal work item 1401)",
+      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-redis": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 Redis — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`RedisClientService`, `RedisClientServiceConfiguration`, `RedisClientIntegrationService`"
+      ],
+      "backend": "YAML/`RedisClientServiceConfiguration`; needs a reachable Redis server. Built on Lettuce.",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-redis.yaml`; Javadoc is not published yet (internal work item 1401)",
+      "limitations": "Requires external Redis server infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-smtp": {
+      "family": "client",
+      "support": "deferred-unsupported",
+      "evidence": "§4.2 SMTP — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28). Excluded from the Release-1 BOM."
+    },
+    "com.viveworks.appbase:appbase-client-spark": {
+      "family": "client",
+      "support": "deferred-unsupported",
+      "evidence": "§4.2 Spark — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28). Excluded from the Release-1 BOM."
+    },
+    "com.viveworks.appbase:appbase-client-vitess": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 Vitess — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`VitessGrpcClientService`, `VitessGrpcClientServiceConfiguration`, `VitessGrpcClientIntegrationService`"
+      ],
+      "backend": "YAML/`VitessGrpcClientServiceConfiguration`; needs a reachable Vitess cluster (vtgate). Built on vitess-grpc-client + vitess-jdbc.",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-grpc.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-jdbc.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-jdbi.yaml`; Javadoc is not published yet (internal work item 1401)",
+      "limitations": "Requires external Vitess cluster (vtgate) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-client-zookeeper": {
+      "family": "client",
+      "support": "supported-public",
+      "evidence": "§4.1 ZooKeeper — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`ZooKeeperClientService`, `ZooKeeperClientServiceConfiguration`, `ZooKeeperClientIntegrationService`"
+      ],
+      "backend": "YAML/`ZooKeeperClientServiceConfiguration`; needs a reachable ZooKeeper ensemble. Built on Apache Curator (framework, recipes, async) (Micrometer metrics).",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-zookeeper.yaml`; Javadoc is not published yet (internal work item 1401)",
+      "limitations": "Requires external ZooKeeper ensemble infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-config-wizard": {
+      "family": "tool",
+      "support": "supported-public",
+      "evidence": "§5.7 configuration wizard; §5.2 config-wizard defects retained as Release 1 behavior — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`bin/start-console.sh`, `bin/start-web.sh [port]` / `bin/stop-web.sh` — a runnable tool, not a library API"
+      ],
+      "backend": "Local only; no backend",
+      "docs_destination": "`appbase-config-wizard/README.md`; the User Guide config-wizard chapter (internal work item 1416)",
+      "limitations": "Its Java classes are implementation detail, not an API. The web frontend is built only by `--wizard-frontend` or the staging/release modes. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-core": {
+      "family": "core",
+      "support": "supported-public",
+      "evidence": "§5.7 Core services family; §5.3 representative service paths — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`AppbaseCore`, `AppbaseCoreBootstrap`, `AppbaseCoreBootstrapConfiguration`, `AppbaseConfiguration`, `AppbaseFactory`, `AppbaseHandler`/`AppbaseHandlerChain`"
+      ],
+      "backend": "YAML core configuration (`AppbaseCoreBootstrapConfiguration`); no external backend required — the JPA and Lucene stores are optional",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-core.yaml`; Javadoc is not published yet (internal work item 1402)",
+      "limitations": "The largest public surface (about 560 public types); the published-vs-internal package split is still undecided (internal work item 1399 work list). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-java": {
+      "family": "build",
+      "support": "internal-implementation",
+      "evidence": "aggregator (packaging=pom); per appbase-bom/pom.xml it 'produces no artifact of its own and is not a consumable dependency'."
+    },
+    "com.viveworks.appbase:appbase-service": {
+      "family": "build",
+      "support": "internal-implementation",
+      "evidence": "aggregator (packaging=pom); per appbase-bom/pom.xml it 'produces no artifact of its own and is not a consumable dependency'."
+    },
+    "com.viveworks.appbase:appbase-service-core": {
+      "family": "service",
+      "support": "supported-public",
+      "evidence": "§5.7 application services — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`AppbaseServiceExchange`, `AppbaseServiceFilter`, `AppbaseServiceHandler`, `AuthorizationService`, `ClusterService`, `HealthCheckService`, `IdService`, `PasswordService`"
+      ],
+      "backend": "YAML service configuration; pulls in the Firebase, S3, ZooKeeper and Jdbi clients, whose backends are needed only for the features you enable",
+      "docs_destination": "`docs/configuration/authorization-and-path-matching.md`; Javadoc is not published yet (internal work item 1403)",
+      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-supportmessage": {
+      "family": "service",
+      "support": "supported-public",
+      "evidence": "§5.7 application services — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`SupportMessageService`, `SupportMessageStore`, `SupportMessageListener`"
+      ],
+      "backend": "YAML service configuration; a store backend",
+      "docs_destination": "Javadoc is not published yet (internal work item 1403)",
+      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-user": {
+      "family": "service",
+      "support": "supported-public",
+      "evidence": "§5.7 application services; §4.1 Firebase Auth derived user-account adapter — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`UserAccountService`, `UserAccountStore`, `UserSessionStore`, `ReactiveUserAccountStore`, `ReactiveUserSessionStore`, `IdpTokenVerifier`, `UserSessionFilter`"
+      ],
+      "backend": "YAML service configuration; the stores come from a backend module (Jdbi, Firebase Auth or Aerospike sessions)",
+      "docs_destination": "Javadoc is not published yet (internal work item 1403)",
+      "limitations": "Store implementations live in the backend modules; this module alone has no persistence. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-user-account-firebaseauth": {
+      "family": "service",
+      "support": "supported-public",
+      "evidence": "§4.1 Firebase Auth (derived user-account adapter) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`FirebaseAuthService`, `DefaultFirebaseAuthServiceConfiguration`"
+      ],
+      "backend": "YAML configuration plus `appbase-client-firebase` (a Firebase project and credentials)",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-auth.yaml`; Javadoc is not published yet (internal work item 1403)",
+      "limitations": "Requires a Firebase project or the emulators. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-user-account-jdbi": {
+      "family": "service",
+      "support": "supported-public",
+      "evidence": "§4.1 JDBI; test: appbase-stacktest StackTestMain wires JdbiUserAccountStore — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`JdbiUserAccountStore`, `JdbiUserAccountStoreConfiguration`"
+      ],
+      "backend": "YAML store configuration plus `appbase-client-jdbi` (a JDBC database)",
+      "docs_destination": "Javadoc is not published yet (internal work item 1403); no dedicated example",
+      "limitations": "Requires a relational database and the account schema. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-user-account-r2dbc": {
+      "family": "service",
+      "support": "deferred-unsupported",
+      "evidence": "owner ruling: internal work item 1141 comment 5855318230 (Q1 (b): deferred-unsupported, Release 2). §4.2 defers broader reactive/account extension work. Not exported by appbase-bom on this base, which agrees."
+    },
+    "com.viveworks.appbase:appbase-service-user-session-aerospike": {
+      "family": "service",
+      "support": "supported-public",
+      "evidence": "§4.1 Aerospike (derived session path) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`DefaultUserSessionStore`, `DefaultReactiveUserSessionStore`, `DefaultUserSessionStoreConfiguration`"
+      ],
+      "backend": "YAML store configuration plus `appbase-client-aerospike` (an Aerospike cluster)",
+      "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aerospike.yaml`; Javadoc is not published yet (internal work item 1403)",
+      "limitations": "Requires Aerospike. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-web": {
+      "family": "service",
+      "support": "supported-public",
+      "evidence": "§5.7 application services — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`AuthorizationFilter`, `CorsFilter`, the `…endpoint.servlet`/`…endpoint.jaxrs` resources and the `Abstract…Filter` base classes"
+      ],
+      "backend": "YAML web/service configuration; runs inside a bootstrap container",
+      "docs_destination": "`docs/configuration/authorization-and-path-matching.md`; Javadoc is not published yet (internal work item 1403)",
+      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-web-oauth": {
+      "family": "service",
+      "support": "supported-public",
+      "evidence": "§4.1 OAuth/OIDC providers; §4.1 Token cache (Caffeine in-memory default) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`OAuthFilter`, `OAuthConfiguration`, `TokenValidator`, `TokenCache`, `TokenKeyHasher`"
+      ],
+      "backend": "YAML OAuth configuration (issuer, audience, JWKS); needs the identity provider's endpoints",
+      "docs_destination": "`docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)",
+      "limitations": "The reactive face is `appbase-service-web-oauth-reactive`. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-web-oauth-apple": {
+      "support": "supported-public",
+      "family": "service",
+      "evidence": "§4.1 OAuth/OIDC providers (Apple) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "the Apple OAuth provider configuration"
+      ],
+      "backend": "Apple identity endpoints",
+      "docs_destination": "`docs/OAuth-Primer.md`",
+      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-web-oauth-github": {
+      "family": "service",
+      "support": "supported-public",
+      "evidence": "§4.1 OAuth/OIDC providers (GitHub) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "`GitHubOAuthConfiguration`, `GitHubTokenValidator`, `GitHubUserApi`"
+      ],
+      "backend": "YAML GitHub OAuth configuration; needs network access to the GitHub API",
+      "docs_destination": "`docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)",
+      "limitations": "GitHub is not OIDC — tokens are validated by calling the GitHub API rather than locally. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-web-oauth-google": {
+      "support": "supported-public",
+      "family": "service",
+      "evidence": "§4.1 OAuth/OIDC providers (Google) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "the Google OAuth provider configuration"
+      ],
+      "backend": "Google identity endpoints",
+      "docs_destination": "`docs/OAuth-Primer.md`",
+      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-web-oauth-microsoft": {
+      "support": "supported-public",
+      "family": "service",
+      "evidence": "§4.1 OAuth/OIDC providers (Microsoft Entra) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "the Microsoft OAuth provider configuration"
+      ],
+      "backend": "Microsoft identity endpoints",
+      "docs_destination": "`docs/OAuth-Primer.md`",
+      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-web-oauth-okta": {
+      "support": "supported-public",
+      "family": "service",
+      "evidence": "§4.1 OAuth/OIDC providers (Okta) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "the Okta OAuth provider configuration"
+      ],
+      "backend": "Okta org endpoints",
+      "docs_destination": "`docs/OAuth-Primer.md`",
+      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-web-oauth-reactive": {
+      "family": "service",
+      "support": "supported-public",
+      "evidence": "owner ruling: internal work item 1141 comment 5855318230 (Q1 (a): supported-public and exported by the Release-1 BOM). The lean baseline lists the OAuth providers (§4.1) but is silent on the reactive face.",
+      "entry_points": [
+        "`ReactiveOAuthFilter`, `ReactiveWebFilterChain`"
+      ],
+      "backend": "the same YAML OAuth configuration as `appbase-service-web-oauth`; runs on the Reactor Netty web server",
+      "docs_destination": "`docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)",
+      "limitations": "Reactive (Reactor Netty) face only; the servlet face is `appbase-service-web-oauth`. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-web-oauth-tokencache-aerospike": {
+      "support": "supported-public",
+      "family": "service",
+      "evidence": "§4.1 Token cache (Aerospike provider path) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "an Aerospike `TokenCache`"
+      ],
+      "backend": "Aerospike cluster",
+      "docs_destination": "Javadoc is not published yet (internal work item 1403)",
+      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-service-web-oauth-tokencache-redis": {
+      "support": "supported-public",
+      "family": "service",
+      "evidence": "§4.1 Token cache (Redis provider path) — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)",
+      "entry_points": [
+        "a Redis `TokenCache`"
+      ],
+      "backend": "Redis server",
+      "docs_destination": "Javadoc is not published yet (internal work item 1403)",
+      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+    },
+    "com.viveworks.appbase:appbase-stacktest": {
+      "family": "examples",
+      "support": "internal-implementation",
+      "evidence": "§5.3: the representative stacktest is the pre-release gate, not a consumer library; §5.7 catalogues it as the stacktest/examples surface — Lean baseline, docs/Appbase-Release-1.0-Lean-Requirements-LATEST.md (develop, reconciled 2026-08-28)"
+    },
+    "pub:appbase_config_wizard": {
+      "family": "tool",
+      "support": "generated-only",
+      "docs_destination": "dartdoc (internal work item 1406)",
+      "evidence": "publish_to: none (appbase-config-wizard/frontend/pubspec.yaml); built into and shipped only inside the appbase-config-wizard jar."
+    }
+  },
+  "packages": [
+    {
+      "prefix": "com.viveworks.appbase.configwizard",
+      "classification": "implementation-detail",
+      "reason": "appbase-config-wizard is a runnable tool; users drive its CLI/web UI, never program against its classes."
+    }
+  ]
+}

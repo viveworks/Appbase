@@ -1,0 +1,1016 @@
+Appbase
+Copyright 2019 The original author or authors of Appbase
+
+This product includes software developed by the author or authors of
+Appbase (https://github.com/viveworks/Appbase).
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at http://www.apache.org/licenses/LICENSE-2.0
+
+================================================================================
+THIRD-PARTY DEPENDENCIES
+================================================================================
+
+This product redistributes the 476 third-party works listed below, on a compile or
+runtime path. Test- and provided-scope dependencies are excluded: they are not
+redistributed, so Apache-2.0 section 4(d) attribution does not attach to them.
+
+HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
+
+  - It is GENERATED. Do not edit it by hand -- run the command in the project's
+    build documentation and commit the result. A check fails the build when this
+    file no longer matches the dependencies actually resolved. Every dependency
+    entry below begins with "  * "; the three notes in this section do not.
+
+  - Each licence below is the one THAT DEPENDENCY'S OWN POM DECLARES, except for
+    three exact-coordinate legacy overrides whose POMs omit usable metadata. Those
+    overrides, the five exact-coordinate LGPL-as-used notices, and their
+    upstream-artifact provenance are recorded in the N05 quality ledger. POM metadata is
+    publisher metadata, not a reading of the licence text, and not a check
+    against the upstream project. Where an entry reads "A or B" the dependency
+    offers a CHOICE of licences; this file records no election between them.
+
+  - It is ATTRIBUTION, NOT CLEARANCE. Listing a dependency here records that we
+    redistribute it. It does not record that anyone has approved, accepted or
+    cleared its licence position. Some entries carry open licence questions;
+    those are tracked with their evidence in
+    docs/spec/1.0.0/P05/decisions/E02-dependency-licences.md, and appearing in
+    this file neither answers them nor implies they are answered.
+
+--------------------------------------------------------------------------------
+
+  * Aerospike Java Client BC (com.aerospike:aerospike-client-bc-jdk21:8.1.5)
+      The Apache License, Version 2.0
+  * aerospike-reactor-client (com.aerospike:aerospike-reactor-client:8.1.2)
+      The Apache License, Version 2.0
+  * agrona (org.agrona:agrona:1.0.7)
+      The Apache License, Version 2.0
+  * aircompressor (io.airlift:aircompressor:0.10)
+      Apache License 2.0
+  * An implementation of the Apache Cassandra® native protocol (com.datastax.oss:native-protocol:1.5.1)
+      Apache 2
+  * Angus Activation Registries (org.eclipse.angus:angus-activation:2.0.0)
+      EDL 1.0
+  * Animal Sniffer Annotations (org.codehaus.mojo:animal-sniffer-annotations:1.14)
+      MIT license
+  * Animal Sniffer Annotations (org.codehaus.mojo:animal-sniffer-annotations:1.23)
+      MIT license
+  * annotations-api (org.apache.tomcat:annotations-api:6.0.53)
+      Apache License, Version 2.0
+  * ANTLR 4 Runtime (org.antlr:antlr4-runtime:4.13.0)
+      BSD-3-Clause
+  * AOP alliance (aopalliance:aopalliance:1.0)
+      Public Domain
+  * aopalliance version 1.0 repackaged as a module (org.glassfish.hk2.external:aopalliance-repackaged:3.0.4)
+      EPL 2.0 or GPL2 w/ CPE
+  * Apache Avro (org.apache.avro:avro:1.8.2)
+      The Apache Software License, Version 2.0
+  * Apache Avro IPC (org.apache.avro:avro-ipc:1.8.2)
+      The Apache Software License, Version 2.0
+  * Apache Avro Mapred API (org.apache.avro:avro-mapred:1.8.2)
+      The Apache Software License, Version 2.0
+  * Apache Calcite Avatica (org.apache.calcite.avatica:avatica-core:1.25.0)
+      The Apache License, Version 2.0
+  * Apache Calcite Avatica Metrics (org.apache.calcite.avatica:avatica-metrics:1.25.0)
+      The Apache License, Version 2.0
+  * Apache Commons CLI (commons-cli:commons-cli:1.5.0)
+      Apache License, Version 2.0
+  * Apache Commons Codec (commons-codec:commons-codec:1.16.1)
+      Apache-2.0
+  * Apache Commons Collections (commons-collections:commons-collections:3.2.2)
+      Apache License, Version 2.0
+  * Apache Commons Collections (org.apache.commons:commons-collections4:4.4)
+      Apache License, Version 2.0
+  * Apache Commons Compress (org.apache.commons:commons-compress:1.8.1)
+      The Apache Software License, Version 2.0
+  * Apache Commons Crypto (org.apache.commons:commons-crypto:1.0.0)
+      Apache License, Version 2.0
+  * Apache Commons IO (commons-io:commons-io:2.17.0)
+      Apache-2.0
+  * Apache Commons Lang (org.apache.commons:commons-lang3:3.20.0)
+      Apache-2.0
+  * Apache Commons Logging (commons-logging:commons-logging:1.2)
+      The Apache Software License, Version 2.0
+  * Apache Commons Math (org.apache.commons:commons-math3:3.4.1)
+      The Apache Software License, Version 2.0
+  * Apache Commons Pool (org.apache.commons:commons-pool2:2.6.2)
+      Apache License, Version 2.0
+  * Apache Commons Text (org.apache.commons:commons-text:1.15.0)
+      Apache-2.0
+  * Apache Directory API ASN.1 API (org.apache.directory.api:api-asn1-api:1.0.0-M20)
+      The Apache Software License, Version 2.0
+  * Apache Directory LDAP API Utilities (org.apache.directory.api:api-util:1.0.0-M20)
+      The Apache Software License, Version 2.0
+  * Apache Hadoop Annotations (org.apache.hadoop:hadoop-annotations:2.7.4)
+      Apache License, Version 2.0
+  * Apache Hadoop Auth (org.apache.hadoop:hadoop-auth:2.7.4)
+      Apache License, Version 2.0
+  * Apache Hadoop Client (org.apache.hadoop:hadoop-client:2.7.4)
+      Apache License, Version 2.0
+  * Apache Hadoop Common (org.apache.hadoop:hadoop-common:2.7.4)
+      Apache License, Version 2.0
+  * Apache Hadoop HDFS (org.apache.hadoop:hadoop-hdfs:2.7.4)
+      Apache License, Version 2.0
+  * Apache HTTP transport v2 for the Google HTTP Client Library for Java. (com.google.http-client:google-http-client-apache-v2:1.44.1)
+      The Apache Software License, Version 2.0
+  * Apache HttpAsyncClient (org.apache.httpcomponents:httpasyncclient:4.1.5)
+      Apache License, Version 2.0
+  * Apache HttpClient (org.apache.httpcomponents:httpclient:4.5.14)
+      Apache License, Version 2.0
+  * Apache HttpClient (org.apache.httpcomponents.client5:httpclient5:5.2.1)
+      Apache License, Version 2.0
+  * Apache HttpClient Mime (org.apache.httpcomponents:httpmime:4.5.14)
+      Apache License, Version 2.0
+  * Apache HttpComponents Core HTTP/1.1 (org.apache.httpcomponents.core5:httpcore5:5.2.3)
+      Apache License, Version 2.0
+  * Apache HttpComponents Core HTTP/2 (org.apache.httpcomponents.core5:httpcore5-h2:5.2)
+      Apache License, Version 2.0
+  * Apache HttpCore (org.apache.httpcomponents:httpcore:4.4.16)
+      Apache License, Version 2.0
+  * Apache HttpCore NIO (org.apache.httpcomponents:httpcore-nio:4.4.13)
+      Apache License, Version 2.0
+  * Apache Ivy (org.apache.ivy:ivy:2.4.0)
+      The Apache Software License, Version 2.0
+  * Apache Kafka (org.apache.kafka:kafka-clients:3.9.1)
+      The Apache License, Version 2.0
+  * Apache Log4j API (org.apache.logging.log4j:log4j-api:2.17.1)
+      Apache License, Version 2.0
+  * Apache Lucene (module: core) (org.apache.lucene:lucene-core:9.11.1)
+      Apache 2
+  * Apache Lucene (module: queries) (org.apache.lucene:lucene-queries:9.11.1)
+      Apache 2
+  * Apache Lucene (module: queryparser) (org.apache.lucene:lucene-queryparser:9.11.1)
+      Apache 2
+  * Apache Lucene (module: sandbox) (org.apache.lucene:lucene-sandbox:9.11.1)
+      Apache 2
+  * Apache Parquet Column (org.apache.parquet:parquet-column:1.10.1)
+      The Apache Software License, Version 2.0
+  * Apache Parquet Common (org.apache.parquet:parquet-common:1.10.1)
+      The Apache Software License, Version 2.0
+  * Apache Parquet Encodings (org.apache.parquet:parquet-encoding:1.10.1)
+      The Apache Software License, Version 2.0
+  * Apache Parquet Format (org.apache.parquet:parquet-format:2.4.0)
+      The Apache Software License, Version 2.0
+  * Apache Parquet Hadoop (org.apache.parquet:parquet-hadoop:1.10.1)
+      The Apache Software License, Version 2.0
+  * Apache Parquet Jackson (org.apache.parquet:parquet-jackson:1.10.1)
+      The Apache Software License, Version 2.0
+  * Apache Thrift (org.apache.thrift:libthrift:0.14.1)
+      The Apache Software License, Version 2.0
+  * Apache XBean :: ASM shaded (repackaged) (org.apache.xbean:xbean-asm7-shaded:4.15)
+      http://asm.ow2.org/license.html or http://www.apache.org/licenses/LICENSE-2.0.txt
+  * Apache Yetus - Audience Annotations (org.apache.yetus:audience-annotations:0.12.0)
+      Apache License, Version 2.0
+  * Apache ZooKeeper - Jute (org.apache.zookeeper:zookeeper-jute:3.9.5)
+      Apache License, Version 2.0
+  * Apache ZooKeeper - Server (org.apache.zookeeper:zookeeper:3.9.5)
+      Apache License, Version 2.0
+  * ApacheDS I18n (org.apache.directory.server:apacheds-i18n:2.0.0-M15)
+      The Apache Software License, Version 2.0
+  * ApacheDS Protocol Kerberos Codec (org.apache.directory.server:apacheds-kerberos-codec:2.0.0-M15)
+      The Apache Software License, Version 2.0
+  * API Common (com.google.api:api-common:2.31.0)
+      BSD-3-Clause
+  * Arrow Format (org.apache.arrow:arrow-format:0.15.1)
+      Apache License, Version 2.0
+  * Arrow Memory (org.apache.arrow:arrow-memory:0.15.1)
+      Apache License, Version 2.0
+  * Arrow Vectors (org.apache.arrow:arrow-vector:0.15.1)
+      Apache License, Version 2.0
+  * asm (org.ow2.asm:asm:9.2)
+      BSD-3-Clause
+  * asm-analysis (org.ow2.asm:asm-analysis:9.2)
+      BSD-3-Clause
+  * asm-commons (org.ow2.asm:asm-commons:9.2)
+      BSD-3-Clause
+  * asm-tree (org.ow2.asm:asm-tree:9.2)
+      BSD-3-Clause
+  * asm-util (org.ow2.asm:asm-util:9.2)
+      BSD-3-Clause
+  * AutoValue Annotations (com.google.auto.value:auto-value-annotations:1.10.4)
+      Apache 2.0
+  * AWS Event Stream (software.amazon.eventstream:eventstream:1.0.1)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Annotations (software.amazon.awssdk:annotations:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Arns (software.amazon.awssdk:arns:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Auth (software.amazon.awssdk:auth:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: AWS Core (software.amazon.awssdk:aws-core:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Core :: Protocols :: AWS Query Protocol (software.amazon.awssdk:aws-query-protocol:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Core :: Protocols :: AWS Xml Protocol (software.amazon.awssdk:aws-xml-protocol:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Core :: Protocols :: Json Utils (software.amazon.awssdk:json-utils:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Core :: Protocols :: Protocol Core (software.amazon.awssdk:protocol-core:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: HTTP Client Interface (software.amazon.awssdk:http-client-spi:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: HTTP Clients :: Apache (software.amazon.awssdk:apache-client:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: HTTP Clients :: Netty Non-Blocking I/O (software.amazon.awssdk:netty-nio-client:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Metrics SPI (software.amazon.awssdk:metrics-spi:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Profiles (software.amazon.awssdk:profiles:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Regions (software.amazon.awssdk:regions:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: SDK Core (software.amazon.awssdk:sdk-core:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Services :: Amazon S3 (software.amazon.awssdk:s3:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Third Party :: Jackson-core (software.amazon.awssdk:third-party-jackson-core:2.17.290)
+      Apache License, Version 2.0
+  * AWS Java SDK :: Utilities (software.amazon.awssdk:utils:2.17.290)
+      Apache License, Version 2.0
+  * Bouncy Castle Provider (org.bouncycastle:bcprov-jdk15on:1.69)
+      Bouncy Castle Licence
+  * Bouncy Castle Provider (org.bouncycastle:bcprov-jdk18on:1.80)
+      Bouncy Castle Licence
+  * Byte Buddy (without dependencies) (net.bytebuddy:byte-buddy:1.18.9)
+      Apache License, Version 2.0
+  * Caffeine cache (com.github.ben-manes.caffeine:caffeine:3.1.8)
+      Apache License, Version 2.0
+  * CDI APIs (javax.enterprise:cdi-api:2.0.SP1)
+      Apache License 2.0
+  * Checker Qual (org.checkerframework:checker-qual:3.55.1)
+      The MIT License
+  * chill (com.twitter:chill_2.12:0.9.5)
+      Apache 2
+  * chill-java (com.twitter:chill-java:0.9.5)
+      Apache 2
+  * ClassGraph (io.github.classgraph:classgraph:4.8.192)
+      The MIT License (MIT)
+  * ClassMate (com.fasterxml:classmate:1.5.1)
+      Apache License, Version 2.0
+  * Cloud Storage JSON API v1-rev20240319-2.0.0 (com.google.apis:google-api-services-storage:v1-rev20240319-2.0.0)
+      The Apache Software License, Version 2.0
+  * Commons CLI (commons-cli:commons-cli:1.2)
+      The Apache Software License, Version 2.0
+  * Commons Configuration (commons-configuration:commons-configuration:1.6)
+      The Apache Software License, Version 2.0
+  * Commons Lang (commons-lang:commons-lang:2.6)
+      The Apache Software License, Version 2.0
+  * Commons Net (commons-net:commons-net:3.1)
+      The Apache Software License, Version 2.0
+  * commons-beanutils (commons-beanutils:commons-beanutils:1.7.0)
+      Apache License 2.0 (Apache-2.0)
+      Upstream NOTICE: This product includes software developed by
+      The Apache Software Foundation (http://www.apache.org/).
+  * commons-compiler (org.codehaus.janino:commons-compiler:3.0.16)
+      New BSD License
+  * Compress-LZF (com.ning:compress-lzf:1.0.3)
+      Apache License 2.0
+  * config (com.typesafe:config:1.4.1)
+      Apache-2.0
+  * Core functionality for the Reactor Netty library (io.projectreactor.netty:reactor-netty-core:1.1.21)
+      The Apache Software License, Version 2.0
+  * Core functionality for the Reactor Netty library (io.projectreactor.netty:reactor-netty-core:1.1.22)
+      The Apache Software License, Version 2.0
+  * Curator Async (org.apache.curator:curator-x-async:5.1.0)
+      The Apache Software License, Version 2.0
+  * Curator Client (org.apache.curator:curator-client:5.1.0)
+      The Apache Software License, Version 2.0
+  * Curator Framework (org.apache.curator:curator-framework:5.1.0)
+      The Apache Software License, Version 2.0
+  * Curator Recipes (org.apache.curator:curator-recipes:5.1.0)
+      The Apache Software License, Version 2.0
+  * Data Mapper for Jackson (org.codehaus.jackson:jackson-mapper-asl:1.9.13)
+      The Apache Software License, Version 2.0
+  * DataStax Java driver for Apache Cassandra(R) - core (com.datastax.oss:java-driver-core:4.17.0)
+      Apache 2
+  * DataStax Java driver for Apache Cassandra(R) - Metrics - Micrometer (com.datastax.oss:java-driver-metrics-micrometer:4.17.0)
+      Apache 2
+  * DataStax Java driver for Apache Cassandra(R) - object mapper runtime (com.datastax.oss:java-driver-mapper-runtime:4.17.0)
+      Apache 2
+  * DataStax Java driver for Apache Cassandra(R) - query builder (com.datastax.oss:java-driver-query-builder:4.17.0)
+      Apache 2
+  * Digester (commons-digester:commons-digester:1.8)
+      The Apache Software License, Version 2.0
+  * Disruptor Framework (com.lmax:disruptor:3.4.2)
+      The Apache Software License, Version 2.0
+  * Eclipse Expressly (org.glassfish.expressly:expressly:5.0.0)
+      Eclipse Public License v. 2.0 or GNU General Public License, version 2 with the GNU Classpath Exception
+  * empty (org.spark-project.spark:unused:1.0.0)
+      The Apache License, Version 2.0
+  * error-prone annotations (com.google.errorprone:error_prone_annotations:2.26.1)
+      Apache 2.0
+  * FindBugs-Annotations (com.google.code.findbugs:annotations:3.0.1)
+      GNU Lesser Public License
+  * FindBugs-jsr305 (com.google.code.findbugs:jsr305:3.0.2)
+      The Apache Software License, Version 2.0
+  * firebase-admin (com.google.firebase:firebase-admin:9.3.0)
+      Apache License, Version 2.0
+  * FlatBuffers Java API (com.google.flatbuffers:flatbuffers-java:1.9.0)
+      Apache License V2.0
+  * gapic-google-cloud-storage-v2 (com.google.api.grpc:gapic-google-cloud-storage-v2:2.38.0-alpha)
+      Apache-2.0
+  * GAX (Google Api eXtensions) for Java (Core) (com.google.api:gax:2.48.0)
+      BSD-3-Clause
+  * GAX (Google Api eXtensions) for Java (gRPC) (com.google.api:gax-grpc:2.48.0)
+      BSD-3-Clause
+  * GAX (Google Api eXtensions) for Java (HTTP JSON) (com.google.api:gax-httpjson:2.48.0)
+      BSD-3-Clause
+  * GeantyRef (io.leangen.geantyref:geantyref:1.3.13)
+      The Apache Software License, Version 2.0
+  * Google Android Annotations Library (com.google.android:annotations:4.1.1.4)
+      Apache 2.0
+  * Google APIs Client Library for Java (com.google.api-client:google-api-client:2.4.0)
+      The Apache Software License, Version 2.0
+  * Google App Engine extensions to the Google HTTP Client Library for Java. (com.google.http-client:google-http-client-appengine:1.44.1)
+      The Apache Software License, Version 2.0
+  * Google Auth Library for Java - Credentials (com.google.auth:google-auth-library-credentials:1.23.0)
+      BSD New license
+  * Google Auth Library for Java - OAuth2 HTTP (com.google.auth:google-auth-library-oauth2-http:1.23.0)
+      BSD New license
+  * Google Cloud Core (com.google.cloud:google-cloud-core:2.38.0)
+      Apache-2.0
+  * Google Cloud Core gRPC (com.google.cloud:google-cloud-core-grpc:2.38.0)
+      Apache-2.0
+  * Google Cloud Core HTTP (com.google.cloud:google-cloud-core-http:2.38.0)
+      Apache-2.0
+  * Google Cloud Firestore (com.google.cloud:google-cloud-firestore:3.21.1)
+      Apache-2.0
+  * Google Cloud Storage (com.google.cloud:google-cloud-storage:2.38.0)
+      Apache-2.0
+  * Google Guice - Core Library (com.google.inject:guice:4.2.2)
+      The Apache Software License, Version 2.0
+  * Google HTTP Client Library for Java (com.google.http-client:google-http-client:1.44.1)
+      The Apache Software License, Version 2.0
+  * Google OAuth Client Library for Java (com.google.oauth-client:google-oauth-client:1.35.0)
+      The Apache Software License, Version 2.0
+  * Graphite Integration for Metrics (io.dropwizard.metrics:metrics-graphite:4.1.1)
+      Apache License 2.0
+  * grpc-google-cloud-storage-v2 (com.google.api.grpc:grpc-google-cloud-storage-v2:2.38.0-alpha)
+      Apache-2.0
+  * Gson (com.google.code.gson:gson:2.10.1)
+      Apache-2.0
+  * GSON extensions to the Google APIs Client Library for Java (com.google.api-client:google-api-client-gson:2.4.0)
+      The Apache Software License, Version 2.0
+  * GSON extensions to the Google HTTP Client Library for Java. (com.google.http-client:google-http-client-gson:1.44.1)
+      The Apache Software License, Version 2.0
+  * Guava InternalFutureFailureAccess and InternalFutures (com.google.guava:failureaccess:1.0.2)
+      The Apache Software License, Version 2.0
+  * Guava ListenableFuture only (com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava)
+      The Apache Software License, Version 2.0
+  * Guava: Google Core Libraries for Java (com.google.guava:guava:33.2.1-jre)
+      Apache License, Version 2.0
+  * hadoop-mapreduce-client-app (org.apache.hadoop:hadoop-mapreduce-client-app:2.7.4)
+      Apache License, Version 2.0
+  * hadoop-mapreduce-client-common (org.apache.hadoop:hadoop-mapreduce-client-common:2.7.4)
+      Apache License, Version 2.0
+  * hadoop-mapreduce-client-core (org.apache.hadoop:hadoop-mapreduce-client-core:2.7.4)
+      Apache License, Version 2.0
+  * hadoop-mapreduce-client-jobclient (org.apache.hadoop:hadoop-mapreduce-client-jobclient:2.7.4)
+      Apache License, Version 2.0
+  * hadoop-mapreduce-client-shuffle (org.apache.hadoop:hadoop-mapreduce-client-shuffle:2.7.4)
+      Apache License, Version 2.0
+  * hadoop-yarn-api (org.apache.hadoop:hadoop-yarn-api:2.7.4)
+      Apache License, Version 2.0
+  * hadoop-yarn-client (org.apache.hadoop:hadoop-yarn-client:2.7.4)
+      Apache License, Version 2.0
+  * hadoop-yarn-common (org.apache.hadoop:hadoop-yarn-common:2.7.4)
+      Apache License, Version 2.0
+  * hadoop-yarn-server-common (org.apache.hadoop:hadoop-yarn-server-common:2.7.4)
+      Apache License, Version 2.0
+  * HdrHistogram (org.hdrhistogram:HdrHistogram:2.2.2)
+      BSD-2-Clause or Public Domain, per Creative Commons CC0
+  * Hibernate Commons Annotations (org.hibernate.common:hibernate-commons-annotations:6.0.6.Final)
+      GNU Library General Public License v2.1 or later
+      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
+      LGPL-2.1-or-later. Corresponding source:
+      https://repo1.maven.org/maven2/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final-sources.jar
+  * Hibernate ORM - hibernate-core (org.hibernate.orm:hibernate-core:6.5.3.Final)
+      GNU Library General Public License v2.1 or later
+      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
+      LGPL-2.1-or-later. Corresponding source:
+      https://repo1.maven.org/maven2/org/hibernate/orm/hibernate-core/6.5.3.Final/hibernate-core-6.5.3.Final-sources.jar
+  * Hibernate Validator Engine (org.hibernate.validator:hibernate-validator:8.0.1.Final)
+      Apache License 2.0
+  * HikariCP (com.zaxxer:HikariCP:5.0.0)
+      The Apache Software License, Version 2.0
+  * Hive Storage API (org.apache.hive:hive-storage-api:2.7.1)
+      Apache License, Version 2.0
+  * HK2 API module (org.glassfish.hk2:hk2-api:3.0.4)
+      EPL 2.0 or GPL2 w/ CPE
+  * HK2 Implementation Utilities (org.glassfish.hk2:hk2-utils:3.0.4)
+      EPL 2.0 or GPL2 w/ CPE
+  * htrace-core (org.apache.htrace:htrace-core:3.1.0-incubating)
+      The Apache Software License, Version 2.0
+  * HTTP functionality for the Reactor Netty library (io.projectreactor.netty:reactor-netty-http:1.1.21)
+      The Apache Software License, Version 2.0
+  * HttpClient (commons-httpclient:commons-httpclient:3.1)
+      Apache License
+  * IntelliJ IDEA Annotations (com.intellij:annotations:12.0)
+      Apache License 2
+  * IntelliJ IDEA Annotations (org.jetbrains:annotations:13.0)
+      The Apache Software License, Version 2.0
+  * io.grpc:grpc-alts (io.grpc:grpc-alts:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-api (io.grpc:grpc-api:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-auth (io.grpc:grpc-auth:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-context (io.grpc:grpc-context:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-core (io.grpc:grpc-core:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-googleapis (io.grpc:grpc-googleapis:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-grpclb (io.grpc:grpc-grpclb:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-inprocess (io.grpc:grpc-inprocess:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-netty (io.grpc:grpc-netty:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-netty-shaded (io.grpc:grpc-netty-shaded:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-protobuf (io.grpc:grpc-protobuf:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-protobuf-lite (io.grpc:grpc-protobuf-lite:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-rls (io.grpc:grpc-rls:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-services (io.grpc:grpc-services:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-stub (io.grpc:grpc-stub:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-util (io.grpc:grpc-util:1.64.2)
+      Apache 2.0
+  * io.grpc:grpc-xds (io.grpc:grpc-xds:1.64.2)
+      Apache 2.0
+  * io.opentracing.contrib:opentracing-grpc (io.opentracing.contrib:opentracing-grpc:0.0.12)
+      The Apache Software License, Version 2.0
+  * istack common utility code runtime (com.sun.istack:istack-commons-runtime:4.1.1)
+      Eclipse Distribution License - v 1.0
+  * J2ObjC Annotations (com.google.j2objc:j2objc-annotations:3.0.0)
+      Apache License, Version 2.0
+  * Jackson (org.codehaus.jackson:jackson-core-asl:1.9.13)
+      The Apache Software License, Version 2.0
+  * Jackson 2 extensions to the Google HTTP Client Library for Java. (com.google.http-client:google-http-client-jackson2:1.44.1)
+      The Apache Software License, Version 2.0
+  * Jackson dataformat: CBOR (com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.22.1)
+      The Apache Software License, Version 2.0
+  * Jackson datatype: jdk8 (com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.22.1)
+      The Apache Software License, Version 2.0
+  * Jackson datatype: JSR310 (com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.1)
+      The Apache Software License, Version 2.0
+  * Jackson Integration for Metrics (io.dropwizard.metrics:metrics-json:4.1.1)
+      Apache License 2.0
+  * Jackson Jakarta-RS: base (com.fasterxml.jackson.jakarta.rs:jackson-jakarta-rs-base:2.22.1)
+      The Apache Software License, Version 2.0
+  * Jackson Jakarta-RS: JSON (com.fasterxml.jackson.jakarta.rs:jackson-jakarta-rs-json-provider:2.22.1)
+      The Apache Software License, Version 2.0
+  * Jackson module: Jakarta XML Bind Annotations (jakarta.xml.bind) (com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations:2.22.1)
+      The Apache Software License, Version 2.0
+  * Jackson-annotations (com.fasterxml.jackson.core:jackson-annotations:2.22)
+      The Apache Software License, Version 2.0
+  * Jackson-core (com.fasterxml.jackson.core:jackson-core:2.22.1)
+      The Apache Software License, Version 2.0
+  * jackson-databind (com.fasterxml.jackson.core:jackson-databind:2.22.1)
+      The Apache Software License, Version 2.0
+  * Jackson-dataformat-YAML (com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.22.1)
+      The Apache Software License, Version 2.0
+  * Jackson-module-parameter-names (com.fasterxml.jackson.module:jackson-module-parameter-names:2.22.1)
+      The Apache Software License, Version 2.0
+  * jackson-module-scala (com.fasterxml.jackson.module:jackson-module-scala_2.12:2.22.1)
+      The Apache Software License, Version 2.0
+  * jaeger-client (io.jaegertracing:jaeger-client:1.6.0)
+      The Apache License, Version 2.0
+  * jaeger-client (io.jaegertracing:jaeger-core:1.6.0)
+      The Apache License, Version 2.0
+  * jaeger-client (io.jaegertracing:jaeger-micrometer:1.6.0)
+      The Apache License, Version 2.0
+  * jaeger-client (io.jaegertracing:jaeger-thrift:1.6.0)
+      The Apache License, Version 2.0
+  * jaeger-client (io.jaegertracing:jaeger-tracerresolver:1.6.0)
+      The Apache License, Version 2.0
+  * Jakarta Activation API (jakarta.activation:jakarta.activation-api:2.1.1)
+      EDL 1.0
+  * Jakarta Annotations API (jakarta.annotation:jakarta.annotation-api:2.1.1)
+      EPL 2.0 or GPL2 w/ CPE
+  * Jakarta Bean Validation API (jakarta.validation:jakarta.validation-api:3.0.2)
+      Apache License 2.0
+  * Jakarta Dependency Injection (jakarta.inject:jakarta.inject-api:2.0.1)
+      The Apache Software License, Version 2.0
+  * Jakarta Expression Language API (jakarta.el:jakarta.el-api:5.0.1)
+      Eclipse Public License v. 2.0 or GNU General Public License, version 2 with the GNU Classpath Exception
+  * Jakarta Expression Language Implementation (org.glassfish:jakarta.el:5.0.0-M1)
+      Eclipse Public License v. 2.0 or GNU General Public License, version 2 with the GNU Classpath Exception
+  * Jakarta Persistence API (jakarta.persistence:jakarta.persistence-api:3.1.0)
+      Eclipse Distribution License v. 1.0 or Eclipse Public License v. 2.0
+  * Jakarta RESTful WS API (jakarta.ws.rs:jakarta.ws.rs-api:3.1.0)
+      EPL-2.0 or GPL-2.0-with-classpath-exception
+  * Jakarta Servlet (jakarta.servlet:jakarta.servlet-api:6.0.0)
+      EPL 2.0 or GPL2 w/ CPE
+  * Jakarta XML Binding API (jakarta.xml.bind:jakarta.xml.bind-api:4.0.0)
+      Eclipse Distribution License - v 1.0
+  * jakarta.transaction API (jakarta.transaction:jakarta.transaction-api:2.0.1)
+      EPL 2.0 or GPL2 w/ CPE
+  * Jandex: Core (io.smallrye:jandex:3.1.2)
+      Apache License, Version 2.0
+  * janino (org.codehaus.janino:janino:3.0.16)
+      New BSD License
+  * jasync-sql (com.github.jasync-sql:jasync-common:1.2.3)
+      The Apache Software License, Version 2.0
+  * jasync-sql (com.github.jasync-sql:jasync-mysql:1.2.3)
+      The Apache Software License, Version 2.0
+  * jasync-sql (com.github.jasync-sql:jasync-pool:1.2.3)
+      The Apache Software License, Version 2.0
+  * jasync-sql (com.github.jasync-sql:jasync-postgresql:1.2.3)
+      The Apache Software License, Version 2.0
+  * Java Native Access (net.java.dev.jna:jna:4.2.1)
+      ASL, version 2 or LGPL, version 2.1
+  * Java Native Access Platform (net.java.dev.jna:jna-platform:4.2.1)
+      ASL, version 2 or LGPL, version 2.1
+  * Java Servlet API (javax.servlet:javax.servlet-api:3.1.0)
+      CDDL + GPLv2 with classpath exception
+  * JavaBeans Activation Framework API jar (javax.activation:javax.activation-api:1.2.0)
+      CDDL/GPLv2+CE
+  * JavaBeans(TM) Activation Framework (javax.activation:activation:1.1.1)
+      COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
+  * Javassist (org.javassist:javassist:3.30.2-GA)
+      Apache License 2.0 or LGPL 2.1 or MPL 1.1
+  * javax.annotation API (javax.annotation:javax.annotation-api:1.3.2)
+      CDDL + GPLv2 with classpath exception
+  * javax.inject (javax.inject:javax.inject:1)
+      The Apache Software License, Version 2.0
+  * javax.interceptor API (javax.interceptor:javax.interceptor-api:1.2)
+      CDDL + GPLv2 with classpath exception
+  * javax.ws.rs-api (javax.ws.rs:javax.ws.rs-api:2.0.1)
+      CDDL 1.1 or GPL2 w/ CPE
+  * JAX-RS provider for JSON content type (org.codehaus.jackson:jackson-jaxrs:1.9.13)
+      GNU Lesser General Public License (LGPL), Version 2.1 or The Apache Software License, Version 2.0
+  * JAXB Core (org.glassfish.jaxb:jaxb-core:4.0.2)
+      Eclipse Distribution License - v 1.0
+  * JAXB Runtime (org.glassfish.jaxb:jaxb-runtime:4.0.2)
+      Eclipse Distribution License - v 1.0
+  * jaxb-api (javax.xml.bind:jaxb-api:2.3.1)
+      CDDL 1.1 or GPL2 w/ CPE
+  * jBCrypt (org.mindrot:jbcrypt:0.4)
+      ISC
+  * JBoss Logging 3 (org.jboss.logging:jboss-logging:3.6.1.Final)
+      Apache License 2.0
+  * JBoss Threads (org.jboss.threads:jboss-threads:3.7.0.Final)
+      Apache License 2.0
+  * JCIP Annotations under Apache License (com.github.stephenc.jcip:jcip-annotations:1.0-1)
+      Apache License, Version 2.0
+  * JCL 1.2 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.30)
+      Apache License, Version 2.0
+  * jdbi3 Core (org.jdbi:jdbi3-core:3.28.0)
+      Apache License 2.0
+  * jdbi3 Postgres (org.jdbi:jdbi3-postgres:3.28.0)
+      Apache License 2.0
+  * jdbi3 SqlObject (org.jdbi:jdbi3-sqlobject:3.28.0)
+      Apache License 2.0
+  * jersey-container-jetty-http (org.glassfish.jersey.containers:jersey-container-jetty-http:3.1.3)
+      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
+  * jersey-container-jetty-servlet (org.glassfish.jersey.containers:jersey-container-jetty-servlet:3.1.3)
+      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
+  * jersey-container-servlet (org.glassfish.jersey.containers:jersey-container-servlet:3.1.3)
+      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
+  * jersey-container-servlet-core (org.glassfish.jersey.containers:jersey-container-servlet-core:3.1.3)
+      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
+  * jersey-core-client (org.glassfish.jersey.core:jersey-client:3.1.3)
+      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
+  * jersey-core-common (org.glassfish.jersey.core:jersey-common:3.1.3)
+      Apache License, 2.0 or EPL 2.0 or Public Domain or The GNU General Public License (GPL), Version 2, With Classpath Exception
+  * jersey-core-server (org.glassfish.jersey.core:jersey-server:3.1.3)
+      Apache License, 2.0 or EPL 2.0 or Modified BSD or The GNU General Public License (GPL), Version 2, With Classpath Exception
+  * jersey-ext-bean-validation (org.glassfish.jersey.ext:jersey-bean-validation:3.1.3)
+      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
+  * jersey-ext-entity-filtering (org.glassfish.jersey.ext:jersey-entity-filtering:3.1.3)
+      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
+  * jersey-inject-hk2 (org.glassfish.jersey.inject:jersey-hk2:3.1.3)
+      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
+  * jersey-media-json-jackson (org.glassfish.jersey.media:jersey-media-json-jackson:3.1.3)
+      Apache License, 2.0 or EPL 2.0 or The GNU General Public License (GPL), Version 2, With Classpath Exception
+  * jersey-media-multipart (org.glassfish.jersey.media:jersey-media-multipart:3.1.3)
+      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
+  * Jetty :: Http Utility (org.eclipse.jetty:jetty-http:11.0.26)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
+  * Jetty :: IO Utility (org.eclipse.jetty:jetty-io:11.0.26)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
+  * Jetty :: Jakarta Servlet API and Schemas for JPMS and OSGi (org.eclipse.jetty.toolchain:jetty-jakarta-servlet-api:5.0.2)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  * Jetty :: Security (org.eclipse.jetty:jetty-security:11.0.26)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
+  * Jetty :: Server Core (org.eclipse.jetty:jetty-server:11.0.26)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
+  * Jetty :: Servlet Handling (org.eclipse.jetty:jetty-servlet:11.0.26)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
+  * Jetty :: Utilities (org.eclipse.jetty:jetty-util:11.0.26)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
+  * Jetty :: Webapp Application Support (org.eclipse.jetty:jetty-webapp:11.0.26)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
+  * Jetty :: XML utilities (org.eclipse.jetty:jetty-xml:11.0.26)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
+  * Jetty SSLEngine (org.mortbay.jetty:jetty-sslengine:6.1.26)
+      Apache License Version 2
+  * Jetty Utilities (org.mortbay.jetty:jetty-util:6.1.26)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  * jffi (com.github.jnr:jffi:1.3.9)
+      The Apache Software License, Version 2.0
+  * JLine Bundle (org.jline:jline:3.26.3)
+      The BSD License
+  * jnr-a64asm (com.github.jnr:jnr-a64asm:1.0.0)
+      The Apache Software License, Version 2.0
+  * jnr-constants (com.github.jnr:jnr-constants:0.10.3)
+      The Apache Software License, Version 2.0
+  * jnr-ffi (com.github.jnr:jnr-ffi:2.2.11)
+      The Apache Software License, Version 2.0
+  * jnr-posix (com.github.jnr:jnr-posix:3.1.15)
+      Eclipse Public License - v 2.0 or GNU General Public License Version 2 or GNU Lesser General Public License Version 2.1
+  * jnr-x86asm (com.github.jnr:jnr-x86asm:1.0.2)
+      MIT License
+  * Joda-Convert (org.joda:joda-convert:1.8.1)
+      Apache 2
+  * Joda-Time (joda-time:joda-time:2.10)
+      Apache 2
+  * Joda-Time (joda-time:joda-time:2.9.7)
+      Apache 2
+  * json4s-ast (org.json4s:json4s-ast_2.12:3.6.6)
+      Apache-2.0
+  * json4s-core (org.json4s:json4s-core_2.12:3.6.6)
+      Apache-2.0
+  * json4s-jackson (org.json4s:json4s-jackson_2.12:3.6.6)
+      Apache-2.0
+  * json4s-scalap (org.json4s:json4s-scalap_2.12:3.6.6)
+      Apache-2.0
+  * jsp-api (javax.servlet.jsp:jsp-api:2.1)
+      CDDL 1.0 or GPLv2 with Classpath Exception (CDDL-1.0 OR GPL-2.0-only WITH Classpath-exception-2.0)
+      Upstream source attribution: Copyright 2005 Sun Microsystems, Inc. All rights reserved.
+      Portions Copyright Apache Software Foundation.
+  * JSR107 API and SPI (javax.cache:cache-api:1.1.0)
+      Apache License, Version 2.0
+  * JUL to SLF4J bridge (org.slf4j:jul-to-slf4j:1.7.30)
+      MIT License
+  * JVM Integration for Metrics (io.dropwizard.metrics:metrics-jvm:4.1.1)
+      Apache License 2.0
+  * Kafka 0.10+ Source for Structured Streaming (org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0)
+      Apache 2.0 License
+  * Kafka 0.10+ Token Provider for Streaming (org.apache.spark:spark-token-provider-kafka-0-10_2.12:3.0.0)
+      Apache 2.0 License
+  * Kotlin Reflect (org.jetbrains.kotlin:kotlin-reflect:1.4.20)
+      The Apache License, Version 2.0
+  * Kotlin Stdlib (org.jetbrains.kotlin:kotlin-stdlib:1.4.20)
+      The Apache License, Version 2.0
+  * Kotlin Stdlib Common (org.jetbrains.kotlin:kotlin-stdlib-common:1.4.20)
+      The Apache License, Version 2.0
+  * Kotlin Stdlib Jdk7 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.20)
+      The Apache License, Version 2.0
+  * Kotlin Stdlib Jdk8 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.20)
+      The Apache License, Version 2.0
+  * kotlin-logging (io.github.microutils:kotlin-logging:1.7.6)
+      The Apache Software License, Version 2.0
+  * kotlinx-coroutines-core (org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2)
+      The Apache Software License, Version 2.0
+  * kotlinx-coroutines-core (org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.4.2)
+      The Apache Software License, Version 2.0
+  * kotlinx-coroutines-jdk8 (org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.2)
+      The Apache Software License, Version 2.0
+  * Kryo Shaded (com.esotericsoftware:kryo-shaded:4.0.2)
+      3-Clause BSD License
+  * LatencyUtils (org.latencyutils:LatencyUtils:2.0.3)
+      Public Domain, per Creative Commons CC0
+  * Lettuce (io.lettuce:lettuce-core:6.3.2.RELEASE)
+      Apache License, Version 2.0
+  * leveldbjni-all (org.fusesource.leveldbjni:leveldbjni-all:1.8)
+      The BSD 3-Clause License
+  * Logback Classic Module (ch.qos.logback:logback-classic:1.5.6)
+      Eclipse Public License - v 1.0 or GNU Lesser General Public License
+  * Logback Core Module (ch.qos.logback:logback-core:1.5.6)
+      Eclipse Public License - v 1.0 or GNU Lesser General Public License
+  * luaj-jse (org.luaj:luaj-jse:3.0.1)
+      MIT License
+  * LZ4 and xxHash (org.lz4:lz4-java:1.8.0)
+      The Apache Software License, Version 2.0
+  * mariadb-java-client (org.mariadb.jdbc:mariadb-java-client:2.7.4)
+      LGPL-2.1
+      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
+      LGPL-2.1-only. Corresponding source:
+      https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/2.7.4/mariadb-java-client-2.7.4-sources.jar
+  * Metrics Core (io.dropwizard.metrics:metrics-core:4.2.26)
+      Apache License 2.0
+  * Metrics Integration with JMX (io.dropwizard.metrics:metrics-jmx:4.2.26)
+      Apache License 2.0
+  * micrometer-commons (io.micrometer:micrometer-commons:1.13.1)
+      The Apache Software License, Version 2.0
+  * micrometer-core (io.micrometer:micrometer-core:1.13.1)
+      The Apache Software License, Version 2.0
+  * micrometer-observation (io.micrometer:micrometer-observation:1.13.1)
+      The Apache Software License, Version 2.0
+  * micrometer-registry-jmx (io.micrometer:micrometer-registry-jmx:1.13.1)
+      The Apache Software License, Version 2.0
+  * micrometer-registry-statsd (io.micrometer:micrometer-registry-statsd:1.13.1)
+      The Apache Software License, Version 2.0
+  * MicroProfile Config API (org.eclipse.microprofile.config:microprofile-config-api:1.4)
+      Apache License, Version 2.0
+  * MicroProfile Health API (org.eclipse.microprofile.health:microprofile-health-api:2.2)
+      Apache License, Version 2.0
+  * MicroProfile Metrics API (org.eclipse.microprofile.metrics:microprofile-metrics-api:3.0-M1)
+      Apache License, Version 2.0
+  * MIME streaming extension (org.jvnet.mimepull:mimepull:1.9.15)
+      Eclipse Distribution License - v 1.0
+  * MinLog (com.esotericsoftware:minlog:1.3.0)
+      New BSD License
+  * Netty/Buffer (io.netty:netty-buffer:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Codec (io.netty:netty-codec:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Codec/DNS (io.netty:netty-codec-dns:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Codec/HTTP (io.netty:netty-codec-http:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Codec/HTTP2 (io.netty:netty-codec-http2:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Codec/SMTP (io.netty:netty-codec-smtp:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Codec/Socks (io.netty:netty-codec-socks:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Common (io.netty:netty-common:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Handler (io.netty:netty-handler:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Handler/Proxy (io.netty:netty-handler-proxy:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Resolver (io.netty:netty-resolver:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Resolver/DNS (io.netty:netty-resolver-dns:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Resolver/DNS/Classes/MacOS (io.netty:netty-resolver-dns-classes-macos:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Resolver/DNS/Native/MacOS (io.netty:netty-resolver-dns-native-macos:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/TomcatNative [BoringSSL - Static] (io.netty:netty-tcnative-boringssl-static:2.0.81.Final)
+      The Apache Software License, Version 2.0
+  * Netty/TomcatNative [OpenSSL - Classes] (io.netty:netty-tcnative-classes:2.0.81.Final)
+      The Apache Software License, Version 2.0
+  * Netty/Transport (io.netty:netty-transport:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Transport/Classes/Epoll (io.netty:netty-transport-classes-epoll:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Transport/Classes/KQueue (io.netty:netty-transport-classes-kqueue:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Transport/Native/Epoll (io.netty:netty-transport-native-epoll:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Transport/Native/KQueue (io.netty:netty-transport-native-kqueue:4.1.137.Final)
+      Apache License, Version 2.0
+  * Netty/Transport/Native/Unix/Common (io.netty:netty-transport-native-unix-common:4.1.137.Final)
+      Apache License, Version 2.0
+  * Nimbus JOSE+JWT (com.nimbusds:nimbus-jose-jwt:10.9.1)
+      The Apache Software License, Version 2.0
+  * NioSmtpClient (com.hubspot:NioSmtpClient:1.1.0)
+      Apache License, Version 2.0
+  * Non-Blocking Reactive Foundation for the JVM (io.projectreactor:reactor-core:3.6.8)
+      Apache License, Version 2.0
+  * Objenesis (org.objenesis:objenesis:3.3)
+      Apache License, Version 2.0
+  * okhttp (com.squareup.okhttp3:okhttp:4.9.0)
+      The Apache Software License, Version 2.0
+  * Okio (com.squareup.okio:okio:2.8.0)
+      The Apache Software License, Version 2.0
+  * OpenCensus (io.opencensus:opencensus-api:0.31.1)
+      The Apache License, Version 2.0
+  * OpenCensus (io.opencensus:opencensus-contrib-grpc-util:0.31.1)
+      The Apache License, Version 2.0
+  * OpenCensus (io.opencensus:opencensus-contrib-http-util:0.31.1)
+      The Apache License, Version 2.0
+  * OpenCensus (io.opencensus:opencensus-proto:0.2.0)
+      The Apache License, Version 2.0
+  * OpenHFT/Java-Thread-Affinity/affinity (net.openhft:affinity:3.0.6)
+      GNU General Lesser Public License (LGPL) version 3.0
+      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
+      LGPL-3.0-only. Corresponding source:
+      https://repo1.maven.org/maven2/net/openhft/affinity/3.0.6/affinity-3.0.6-sources.jar
+  * OpenTracing API (io.opentracing:opentracing-api:0.33.0)
+      The Apache Software License, Version 2.0
+  * OpenTracing-noop (io.opentracing:opentracing-noop:0.33.0)
+      The Apache Software License, Version 2.0
+  * OpenTracing-util (io.opentracing:opentracing-util:0.33.0)
+      The Apache Software License, Version 2.0
+  * ORC Core (org.apache.orc:orc-core:1.5.10)
+      Apache License, Version 2.0
+  * ORC MapReduce (org.apache.orc:orc-mapreduce:1.5.10)
+      Apache License, Version 2.0
+  * ORC Shims (org.apache.orc:orc-shims:1.5.10)
+      Apache License, Version 2.0
+  * org.conscrypt:conscrypt-openjdk-uber (org.conscrypt:conscrypt-openjdk-uber:2.5.2)
+      Apache 2
+  * org.jetbrains.kotlin:kotlin-stdlib (org.jetbrains.kotlin:kotlin-stdlib:1.4.10)
+      The Apache License, Version 2.0
+  * org.osgi:org.osgi.annotation.versioning (org.osgi:org.osgi.annotation.versioning:1.0.0)
+      Apache License, Version 2.0
+  * oro (oro:oro:2.0.8)
+      Apache Software License 1.1 (Apache-1.1)
+      Upstream attribution: Copyright (c) 2000-2002 The Apache Software Foundation.
+      This product includes software developed by the Apache Software Foundation
+      (http://www.apache.org/).
+  * OSGi resource locator (org.glassfish.hk2:osgi-resource-locator:1.0.3)
+      EPL 2.0 or GPL2 w/ CPE
+  * ParaNamer Core (com.thoughtworks.paranamer:paranamer:2.8.3)
+      BSD
+  * perfmark:perfmark-api (io.perfmark:perfmark-api:0.27.0)
+      Apache 2.0
+  * picocli (info.picocli:picocli:4.7.6)
+      The Apache Software License, version 2.0
+  * PostgreSQL JDBC Driver (org.postgresql:postgresql:42.7.13)
+      BSD-2-Clause
+  * proto-google-cloud-firestore-bundle-v1 (com.google.cloud:proto-google-cloud-firestore-bundle-v1:3.21.1)
+      Apache-2.0
+  * proto-google-cloud-firestore-v1 (com.google.api.grpc:proto-google-cloud-firestore-v1:3.21.1)
+      Apache-2.0
+  * proto-google-cloud-storage-v2 (com.google.api.grpc:proto-google-cloud-storage-v2:2.38.0-alpha)
+      Apache-2.0
+  * proto-google-common-protos (com.google.api.grpc:proto-google-common-protos:2.39.0)
+      Apache-2.0
+  * proto-google-iam-v1 (com.google.api.grpc:proto-google-iam-v1:1.34.0)
+      Apache-2.0
+  * Protocol Buffers [Core] (com.google.protobuf:protobuf-java:3.25.3)
+      BSD-3-Clause
+  * Protocol Buffers [Util] (com.google.protobuf:protobuf-java-util:3.25.3)
+      BSD-3-Clause
+  * Py4J (net.sf.py4j:py4j:0.10.9)
+      The New BSD License
+  * pyrolite (net.razorvine:pyrolite:4.30)
+      MIT License
+  * R2DBC driver for MariaDB (org.mariadb:r2dbc-mariadb:1.3.0)
+      Apache License 2.0
+  * RE2/J (com.google.re2j:re2j:1.7)
+      Go License
+  * Reactive Relational Database Connectivity - Connection Pooling (io.r2dbc:r2dbc-pool:1.0.2.RELEASE)
+      Apache License 2.0
+  * Reactive Relational Database Connectivity - Postgresql (org.postgresql:r2dbc-postgresql:1.0.7.RELEASE)
+      Apache License 2.0
+  * Reactive Relational Database Connectivity - SPI (io.r2dbc:r2dbc-spi:1.0.0.RELEASE)
+      Apache License 2.0
+  * reactive-streams (org.reactivestreams:reactive-streams:1.0.4)
+      MIT-0
+  * Reactor Kafka: A reactive API for Apache Kafka (io.projectreactor.kafka:reactor-kafka:1.3.25)
+      The Apache Software License, Version 2.0
+  * Reactor Pool (io.projectreactor.addons:reactor-pool:1.0.8)
+      The Apache Software License, Version 2.0
+  * reload4j (ch.qos.reload4j:reload4j:1.2.26)
+      The Apache Software License, Version 2.0
+  * resilience4j (io.github.resilience4j:resilience4j-all:2.2.0)
+      Apache-2.0
+  * resilience4j (io.github.resilience4j:resilience4j-bulkhead:2.2.0)
+      Apache-2.0
+  * resilience4j (io.github.resilience4j:resilience4j-cache:2.2.0)
+      Apache-2.0
+  * resilience4j (io.github.resilience4j:resilience4j-circuitbreaker:2.2.0)
+      Apache-2.0
+  * resilience4j (io.github.resilience4j:resilience4j-core:2.2.0)
+      Apache-2.0
+  * resilience4j (io.github.resilience4j:resilience4j-micrometer:2.2.0)
+      Apache-2.0
+  * resilience4j (io.github.resilience4j:resilience4j-ratelimiter:2.2.0)
+      Apache-2.0
+  * resilience4j (io.github.resilience4j:resilience4j-reactor:2.2.0)
+      Apache-2.0
+  * resilience4j (io.github.resilience4j:resilience4j-retry:2.2.0)
+      Apache-2.0
+  * resilience4j (io.github.resilience4j:resilience4j-timelimiter:2.2.0)
+      Apache-2.0
+  * rest (org.elasticsearch.client:elasticsearch-rest-client:8.5.3)
+      The Apache Software License, Version 2.0
+  * RoaringBitmap (org.roaringbitmap:RoaringBitmap:0.7.45)
+      Apache 2
+  * saslprep (com.ongres.stringprep:saslprep:1.1)
+      The 2-Clause BSD License
+  * Scala Compiler (org.scala-lang:scala-reflect:2.12.10)
+      Apache-2.0
+  * Scala Library (org.scala-lang:scala-library:2.12.21)
+      Apache-2.0
+  * scala-parser-combinators (org.scala-lang.modules:scala-parser-combinators_2.12:1.1.2)
+      Apache-2.0
+  * scala-xml (org.scala-lang.modules:scala-xml_2.12:1.2.0)
+      Apache-2.0
+  * SCRAM - client (com.ongres.scram:client:2.1)
+      The 2-Clause BSD License
+  * SCRAM - common (com.ongres.scram:common:2.1)
+      The 2-Clause BSD License
+  * ServiceLocator Default Implementation (org.glassfish.hk2:hk2-locator:3.0.4)
+      EPL 2.0 or GPL2 w/ CPE
+  * Shaded Guava artifact for use in the DataStax Java driver for Apache Cassandra® (com.datastax.oss:java-driver-shaded-guava:25.1-jre-graal-sub-1)
+      Apache 2
+  * shims (org.roaringbitmap:shims:0.7.45)
+      Apache 2
+  * SLF4J API Module (org.slf4j:slf4j-api:2.0.18)
+      MIT
+  * SLF4J LOG4J-12 Binding (org.slf4j:slf4j-log4j12:1.7.30)
+      MIT License
+  * SmallRye Common: Annotations (io.smallrye.common:smallrye-common-annotation:2.6.0)
+      Apache License, Version 2.0
+  * SmallRye Common: Constraints (io.smallrye.common:smallrye-common-constraint:2.6.0)
+      Apache License, Version 2.0
+  * SmallRye Common: CPU (io.smallrye.common:smallrye-common-cpu:2.6.0)
+      Apache License, Version 2.0
+  * SmallRye Common: Functions (io.smallrye.common:smallrye-common-function:2.6.0)
+      Apache License, Version 2.0
+  * SnakeYAML (org.yaml:snakeyaml:2.6)
+      Apache License, Version 2.0
+  * snappy-java (org.xerial.snappy:snappy-java:1.1.10.5)
+      Apache-2.0
+  * Spark Integration for Kafka 0.10 (org.apache.spark:spark-streaming-kafka-0-10_2.12:3.0.0)
+      Apache 2.0 License
+  * Spark Project Catalyst (org.apache.spark:spark-catalyst_2.12:3.0.0)
+      Apache 2.0 License
+  * Spark Project Core (org.apache.spark:spark-core_2.12:3.0.0)
+      Apache 2.0 License
+  * Spark Project Launcher (org.apache.spark:spark-launcher_2.12:3.0.0)
+      Apache 2.0 License
+  * Spark Project Local DB (org.apache.spark:spark-kvstore_2.12:3.0.0)
+      Apache 2.0 License
+  * Spark Project Networking (org.apache.spark:spark-network-common_2.12:3.0.0)
+      Apache 2.0 License
+  * Spark Project Shuffle Streaming Service (org.apache.spark:spark-network-shuffle_2.12:3.0.0)
+      Apache 2.0 License
+  * Spark Project Sketch (org.apache.spark:spark-sketch_2.12:3.0.0)
+      Apache 2.0 License
+  * Spark Project SQL (org.apache.spark:spark-sql_2.12:3.0.0)
+      Apache 2.0 License
+  * Spark Project Streaming (org.apache.spark:spark-streaming_2.12:3.0.0)
+      Apache 2.0 License
+  * Spark Project Tags (org.apache.spark:spark-tags_2.12:3.0.0)
+      Apache 2.0 License
+  * Spark Project Unsafe (org.apache.spark:spark-unsafe_2.12:3.0.0)
+      Apache 2.0 License
+  * SpotBugs Annotations (com.github.spotbugs:spotbugs-annotations:4.10.3)
+      GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
+      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
+      LGPL-2.1-only. Corresponding source:
+      https://repo1.maven.org/maven2/com/github/spotbugs/spotbugs-annotations/4.10.3/spotbugs-annotations-4.10.3-sources.jar
+  * stream-lib (com.clearspring.analytics:stream:2.9.6)
+      Apache License, Version 2.0
+  * stringprep (com.ongres.stringprep:stringprep:1.1)
+      The 2-Clause BSD License
+  * Swagger UI (org.webjars:swagger-ui:5.9.0)
+      Apache 2.0
+  * swagger-annotations (io.swagger.core.v3:swagger-annotations:2.2.55)
+      Apache License 2.0
+  * swagger-annotations-jakarta (io.swagger.core.v3:swagger-annotations-jakarta:2.2.55)
+      Apache License 2.0
+  * swagger-core (io.swagger.core.v3:swagger-core:2.2.55)
+      Apache License 2.0
+  * swagger-core-jakarta (io.swagger.core.v3:swagger-core-jakarta:2.2.55)
+      Apache License 2.0
+  * swagger-integration-jakarta (io.swagger.core.v3:swagger-integration-jakarta:2.2.55)
+      Apache License 2.0
+  * swagger-jaxrs2-jakarta (io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.55)
+      Apache License 2.0
+  * swagger-jaxrs2-servlet-initializer-jakarta (io.swagger.core.v3:swagger-jaxrs2-servlet-initializer-jakarta:2.2.55)
+      Apache License 2.0
+  * swagger-models (io.swagger.core.v3:swagger-models:2.2.55)
+      Apache License 2.0
+  * swagger-models-jakarta (io.swagger.core.v3:swagger-models-jakarta:2.2.55)
+      Apache License 2.0
+  * ThreeTen backport (org.threeten:threetenbp:1.6.9)
+      BSD-3-Clause
+  * ThreeTen-Extra (org.threeten:threeten-extra:1.5.0)
+      BSD 3-clause
+  * tomcat-annotations-api (org.apache.tomcat:tomcat-annotations-api:10.1.57)
+      Apache License, Version 2.0
+  * tomcat-embed-core (org.apache.tomcat.embed:tomcat-embed-core:10.1.57)
+      Apache License, Version 2.0
+  * Tracer resolver (io.opentracing.contrib:opentracing-tracerresolver:0.1.8)
+      Apache License, Version 2.0
+  * TXW2 Runtime (org.glassfish.jaxb:txw2:4.0.2)
+      Eclipse Distribution License - v 1.0
+  * Undertow Core (io.undertow:undertow-core:2.3.26.Final)
+      Apache License Version 2.0
+  * Undertow Servlet (io.undertow:undertow-servlet:2.3.26.Final)
+      Apache License Version 2.0
+  * univocity-parsers (com.univocity:univocity-parsers:2.8.3)
+      Apache 2
+  * vitess-client (io.vitess:vitess-client:17.0.0)
+      Apache Version 2.0
+  * vitess-grpc-client (io.vitess:vitess-grpc-client:17.0.0)
+      Apache Version 2.0
+  * vitess-jdbc (io.vitess:vitess-jdbc:17.0.0)
+      Apache Version 2.0
+  * WildFly Client Configuration (org.wildfly.client:wildfly-client-config:1.0.1.Final)
+      Apache License 2.0
+  * wildfly-common (org.wildfly.common:wildfly-common:1.5.4.Final)
+      Apache License 2.0
+  * Xerces2 Java Parser (xerces:xercesImpl:2.9.1)
+      The Apache Software License, Version 2.0
+  * XML Commons External Components XML APIs (xml-apis:xml-apis:1.3.04)
+      The Apache Software License, Version 2.0
+  * Xml Compatibility extensions for Jackson (org.codehaus.jackson:jackson-xc:1.9.13)
+      GNU Lesser General Public License (LGPL), Version 2.1 or The Apache Software License, Version 2.0
+  * xmlenc Library (xmlenc:xmlenc:0.52)
+      The BSD License
+  * XNIO API (org.jboss.xnio:xnio-api:3.8.16.Final)
+      Apache License 2.0
+  * XNIO NIO Implementation (org.jboss.xnio:xnio-nio:3.8.16.Final)
+      Apache License 2.0
+  * XZ for Java (org.tukaani:xz:1.5)
+      Public Domain
+  * zstd-jni (com.github.luben:zstd-jni:1.5.6-4)
+      BSD 2-Clause License
