@@ -14,9 +14,9 @@ KAFKA_DIR=$CLIENT_ROOT/appbase-client-kafka/infra/docker/kafka
 MARIADB_DIR=$CLIENT_ROOT/appbase-client-jdbc/infra/docker/mariadb
 POSTFIX_DIR=$CLIENT_ROOT/appbase-client-smtp/infra/docker/postfix
 POSTGRESQL_DIR=$CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql
-# The S3 backend is LocalStack, not MinIO: the MinIO lifecycle lived in appbase-client-aws, a module
-# deleted from the tree in 81c9f2389, and the MINIO_DIR that still pointed at it was stripped by N01
-# (internal work item 1291). This row is the replacement N01 left the slot for (internal work item 1299 / N09).
+# The S3 backend is the owner-selected pinned MinIO lifecycle under the current AWS S3 module. The
+# obsolete MINIO_DIR pointed at a module deleted in 81c9f2389; S3_DIR is the canonical replacement
+# wired by N09 (internal work item 1299), regardless of the backend's product name.
 S3_DIR=$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3
 SPARK_DIR=$CLIENT_ROOT/appbase-client-spark/infra/docker/spark
 VITESS_DIR=$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess
