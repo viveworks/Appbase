@@ -1,0 +1,72 @@
+---
+autoStart: true
+defaultDefaultZooKeeperClientIntegrationServiceConfiguration:
+  clusterIdValueConfiguration:
+    clusterId: "primary"
+  hostPortConfigurations:
+    - host: "localhost"
+      port: 2181
+  connectionTimeoutConfiguration:
+    enabled: true
+    timeout: 15
+    timeoutTimeUnit: "SECONDS"
+  sessionTimeoutConfiguration:
+    enabled: true
+    timeout: 60
+    timeoutTimeUnit: "SECONDS"
+  maxCloseWaitTimeoutConfiguration:
+    enabled: true
+    timeout: 1
+    timeoutTimeUnit: "MILLISECONDS"
+  waitForShutdownTimeoutConfiguration:
+    enabled: true
+    timeout: 0
+    timeoutTimeUnit: "MILLISECONDS"
+  retryPolicyConfiguration:
+    type: "com.viveworks.appbase.client.service.zookeeper.configuration.retry.RetryForeverConfiguration"
+    retryIntervalMillis: 5000
+  canBeReadOnly: true
+  simulatedSessionExpirationPercent: 100
+  ensembleTracker: true
+  useContainerParents: false
+  namespace: null
+  defaultDataUtf8: null
+keyedDefaultAerospikeClientIntegrationServiceConfigurations: null
+globalEnableRegisterNotFoundAppbaseClientIntegrationServices: true
+disabledRegisterNotFoundAppbaseClientIntegrationServices: null
+checkKeyedAppbaseClientIntegrationServicesSanity: false
+appbaseClientPoolManagerInjectedTypeConfiguration: null
+customAppbaseClientPoolManagerConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.manager.DefaultAppbaseClientPoolManagerConfiguration"
+  unhealthyAppbaseClientIntegrationServiceManagementDisabled: false
+  clientPoolCheckerTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 0
+    interval: 30
+    timeUnit: "SECONDS"
+  clientIntegrationServiceRepairTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 60
+    interval: 30
+    timeUnit: "SECONDS"
+  useMediatorSharedScheduler: true
+  customScheduledExecutorServiceConfiguration: null
+  repairDisabledAppbaseClientKeyConfigurations: null
+  repairDisabledAppbaseClientIntegrationServiceTypeNames: null
+  enableGlobalMaxRepairAttemptsCheck: true
+  globalMaxRepairAttempts: 3
+  maxRepairAttemptsByAppbaseClientKeyConfigurations: null
+  maxRepairAttemptsByAppbaseClientIntegrationServiceTypeNameMap: null
+  globalDisableUnregisterUnhealthyIrreparableAppbaseClientIntegrationServices: false
+  disableUnregisterUnhealthyIrreparableByAppbaseClientKeyConfigurations: null
+  disableUnregisterUnhealthyIrreparableByAppbaseClientIntegrationServiceTypeNameMap: null
+  repairListenerImplObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+  unhealthyClientIntegrationServiceEntryObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+appbaseClientPoolInjectedTypeConfiguration: null
+customAppbaseClientPoolConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.DefaultAppbaseClientPoolConfiguration"
+  repairUnhealthyServices: true

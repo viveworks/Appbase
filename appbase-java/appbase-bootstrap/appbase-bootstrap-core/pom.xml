@@ -1,0 +1,284 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+  Copyright 2019 The original author or authors of Appbase
+
+  This project includes software developed by the author or authors of
+  Appbase (https://github.com/viveworks/Appbase).
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase-bootstrap</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>appbase-bootstrap-core</artifactId>
+    <name>Appbase Bootstrap Core</name>
+    <description>Bootstrap containers and builders for Appbase core, client, and application services; container-neutral web-server abstraction</description>
+    <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+    <scm>
+        <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+    </scm>
+    <distributionManagement>
+        <site>
+            <id>${project.artifactId}</id>
+            <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+        </site>
+    </distributionManagement>
+
+
+    <dependencies>
+        <!-- Appbase layers — bootstrap depends on all modules -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-core</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <!-- Client sub-modules -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-core</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-aerospike</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-cloud-aws-httpclient</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-cloud-aws-s3</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-cassandra</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-clamav</artifactId>
+            <version>${appbase.version}</version>
+            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, PR internal work item 2504). -->
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-druid</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-elasticsearch</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-firebase</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-jasync</artifactId>
+            <version>${appbase.version}</version>
+            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, PR internal work item 2504). -->
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-jdbc</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-jdbi</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-jpa</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-kafka</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-r2dbc</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-redis</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-smtp</artifactId>
+            <version>${appbase.version}</version>
+            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, PR internal work item 2504). -->
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-spark</artifactId>
+            <version>${appbase.version}</version>
+            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, PR internal work item 2504). -->
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-vitess</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-zookeeper</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <!-- Service sub-modules -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-core</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-user</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-user-account-firebaseauth</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-user-session-aerospike</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-user-account-jdbi</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-user-account-r2dbc</artifactId>
+            <version>${appbase.version}</version>
+            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, PR internal work item 2504). -->
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-supportmessage</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <!-- Guice for module-based bootstrap path -->
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+        </dependency>
+
+        <!-- YAML deserialization for fromYaml() — version managed by jackson-bom -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>
+                                ${archive.addClasspath}
+                            </addClasspath>
+                            <addDefaultImplementationEntries>
+                                ${archive.addDefaultImplementationEntries}
+                            </addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>
+                                ${archive.addDefaultSpecificationEntries}
+                            </addDefaultSpecificationEntries>
+                            <useUniqueVersions>
+                                ${archive.useUniqueVersions}
+                            </useUniqueVersions>
+                            <packageName>com.viveworks.appbase.bootstrap</packageName>
+                        </manifest>
+                    </archive>
+                    <instructions>
+                        <Export-Package>com.viveworks.appbase.bootstrap</Export-Package>
+                        <!-- Exclude the default (unnamed) package from Import-Package to avoid
+                             OSGi manifest errors when Eclipse incremental compiler writes class
+                             files with MissingTypes referencing unresolved types. -->
+                        <Import-Package>!.,*</Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>@{argLine} -XX:-OmitStackTraceInFastThrow</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>ban-servlet-api</id>
+                        <goals><goal>enforce</goal></goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <searchTransitive>false</searchTransitive>
+                                    <excludes>
+                                        <exclude>jakarta.servlet:jakarta.servlet-api</exclude>
+                                        <exclude>javax.servlet:javax.servlet-api</exclude>
+                                    </excludes>
+                                    <message>appbase-bootstrap-core must stay transport-neutral: no servlet API (P-033).</message>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

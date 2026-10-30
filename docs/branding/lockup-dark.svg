@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Placeholder lockup for dark backgrounds (e.g. #1A1918) (internal work item 1415). Transparent background.
+     Swap the name by editing the text of id="wordmark" and the line by editing id="tagline";
+     the group id="mark" must stay identical to icon.svg (validate.py checks it).
+     @author Navaneeth Mysore G
+     @author Claude -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="256" viewBox="0 0 1040 256">
+  <title>Placeholder lockup: icon, name and tagline</title>
+  <rect id="icon-backing" x="24" y="24" width="208" height="208" rx="48" fill="#FAF8F3"/>
+  <g transform="translate(32 32) scale(0.375)">
+  <g id="mark">
+    <rect id="tile" x="0" y="0" width="512" height="512" rx="112" fill="#0F5C56"/>
+    <rect id="block-top" x="160" y="108" width="192" height="72" rx="20" fill="#F2EDE0"/>
+    <rect id="block-middle" x="120" y="220" width="272" height="72" rx="20" fill="#FFFFFF"/>
+    <rect id="block-base" x="80" y="332" width="352" height="72" rx="20" fill="#FFFFFF"/>
+  </g>
+  </g>
+  <text id="wordmark" x="256" y="138" font-family="ui-serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif" font-size="104" font-weight="600" fill="#F2EDE0">Appbase</text>
+  <text id="tagline" x="260" y="196" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="400" fill="#B3ADA0">Building blocks for Java services</text>
+</svg>

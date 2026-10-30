@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<entity-mappings xmlns="https://jakarta.ee/xml/ns/persistence/orm"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence/orm
+                 https://jakarta.ee/xml/ns/persistence/orm/orm_3_1.xsd" version="3.1">
+    <access>FIELD</access>
+    <entity class="com.viveworks.appbase.core.service.exception.store.ExceptionMessageDetails">
+        <table name="ExceptionMessage"/>
+        <attribute-override name="throwableTypeName">
+            <column name="exceptionTypeName"/>
+        </attribute-override>
+        <attribute-override name="timestamp">
+            <column name="exceptionTimestamp"/>
+        </attribute-override>
+        <attribute-override name="stackTrace">
+            <column length="2048"/>
+        </attribute-override>
+    </entity>
+    <entity class="com.viveworks.appbase.core.service.configuration.accessor.store.ConfigurationEntity">
+    </entity>
+</entity-mappings>

@@ -1,0 +1,33 @@
+name: appbase_config_wizard
+description: Flutter web UI for appbase-config-wizard
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^3.4.3
+  riverpod_annotation: ^4.0.7
+  http: ^1.3.0
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.12.0
+  # The web build's directory picker (directory_picker_web.dart). `dart:html` was removed
+  # from the Dart 3.x toolchain the container pins, and package:web is its replacement;
+  # it is reached only through a conditional import so VM/widget tests never load it.
+  web: ^1.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^5.1.1
+  build_runner: ^2.15.1
+  riverpod_generator: ^4.0.9
+  # Keep this migration on the tested Freezed 4 API; newer releases are separate upgrades.
+  freezed: 4.0.1
+  json_serializable: ^6.14.1
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,117 @@
+{
+  "_comment": "Placeholder palette (internal work item 1415). Every colour used in the SVGs must be listed here; every pair below is checked by validate.py.",
+  "_authors": [
+    "Navaneeth Mysore G",
+    "Claude"
+  ],
+  "colors": {
+    "tile": "#0F5C56",
+    "glyph": "#FFFFFF",
+    "accent": "#F2EDE0",
+    "ink-light": "#1B1B18",
+    "muted-light": "#4A4740",
+    "ink-dark": "#F2EDE0",
+    "muted-dark": "#B3ADA0",
+    "page-light": "#FAF8F3",
+    "raised-light": "#FFFFFF",
+    "page-dark": "#1A1918",
+    "raised-dark": "#232120",
+    "rule-light": "#DDD6C4",
+    "rule-dark": "#38352F",
+    "brand-accent": "#0F5C56",
+    "accent-text-dark": "#38BAA0"
+  },
+  "pairs": [
+    {
+      "fg": "glyph",
+      "bg": "tile",
+      "min": 4.5,
+      "why": "white blocks on the tile; held to the text minimum because they carry the mark at 32 px"
+    },
+    {
+      "fg": "accent",
+      "bg": "tile",
+      "min": 4.5,
+      "why": "accent block on the tile, same reason"
+    },
+    {
+      "fg": "tile",
+      "bg": "page-light",
+      "min": 3.0,
+      "why": "icon edge on a light page (WCAG 1.4.11 non-text contrast)"
+    },
+    {
+      "fg": "page-light",
+      "bg": "page-dark",
+      "min": 3.0,
+      "why": "required light icon backing on the actual dark page (WCAG 1.4.11 non-text contrast)"
+    },
+    {
+      "fg": "page-light",
+      "bg": "raised-dark",
+      "min": 3.0,
+      "why": "required light icon backing on the actual dark raised surface (WCAG 1.4.11 non-text contrast)"
+    },
+    {
+      "fg": "ink-light",
+      "bg": "page-light",
+      "min": 4.5,
+      "why": "wordmark text, light lockup (WCAG 1.4.3)"
+    },
+    {
+      "fg": "muted-light",
+      "bg": "page-light",
+      "min": 4.5,
+      "why": "tagline text, light lockup (WCAG 1.4.3)"
+    },
+    {
+      "fg": "ink-dark",
+      "bg": "page-dark",
+      "min": 4.5,
+      "why": "wordmark text, dark lockup (WCAG 1.4.3)"
+    },
+    {
+      "fg": "muted-dark",
+      "bg": "page-dark",
+      "min": 4.5,
+      "why": "tagline text, dark lockup (WCAG 1.4.3)"
+    }
+  ],
+  "small_size_probes": {
+    "_comment": "Pixel (x, y) in the 32 px export and the palette colour it must be. Each probe pixel lies fully inside its shape, so it has no anti-aliasing.",
+    "size": 32,
+    "probes": [
+      {
+        "x": 2,
+        "y": 16,
+        "expect": "tile"
+      },
+      {
+        "x": 16,
+        "y": 9,
+        "expect": "accent"
+      },
+      {
+        "x": 16,
+        "y": 12,
+        "expect": "tile"
+      },
+      {
+        "x": 16,
+        "y": 16,
+        "expect": "glyph"
+      },
+      {
+        "x": 16,
+        "y": 19,
+        "expect": "tile"
+      },
+      {
+        "x": 16,
+        "y": 23,
+        "expect": "glyph"
+      }
+    ],
+    "min_adjacent_contrast": 4.5
+  }
+}

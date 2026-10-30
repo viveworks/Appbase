@@ -1,0 +1,19 @@
+# Fixture for ZooKeeperKeyedConfigurationKeyTest (P-050 N02, internal work item 921).
+#
+# The keyed set is POPULATED here on purpose. The shipped test resource has it as `null`, which is why a
+# misspelled key sat unnoticed: null-under-the-wrong-name and null-under-the-right-name are the same
+# object. Only a populated value can tell the two apart.
+zooKeeperKeyed:
+  autoStart: true
+  defaultDefaultZooKeeperClientIntegrationServiceConfiguration:
+    clusterIdValueConfiguration:
+      clusterId: "primary"
+    hostPortConfigurations:
+      - host: "localhost"
+        port: 2181
+  keyedDefaultZooKeeperClientIntegrationServiceConfigurations:
+    - clusterIdValueConfiguration:
+        clusterId: "secondary"
+      hostPortConfigurations:
+        - host: "localhost"
+          port: 2182

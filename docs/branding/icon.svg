@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Placeholder icon (internal work item 1415). Name-independent on purpose: no letterform, so it survives a rename (internal work item 1940).
+     Replacement points: the colours come from palette.json; the mark is the group id="mark".
+     @author Navaneeth Mysore G
+     @author Claude -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>Placeholder icon: three stacked blocks on a teal tile</title>
+  <g id="mark">
+    <rect id="tile" x="0" y="0" width="512" height="512" rx="112" fill="#0F5C56"/>
+    <rect id="block-top" x="160" y="108" width="192" height="72" rx="20" fill="#F2EDE0"/>
+    <rect id="block-middle" x="120" y="220" width="272" height="72" rx="20" fill="#FFFFFF"/>
+    <rect id="block-base" x="80" y="332" width="352" height="72" rx="20" fill="#FFFFFF"/>
+  </g>
+</svg>
