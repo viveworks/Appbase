@@ -1,0 +1,168 @@
+# Copyright 2019 The original author or authors of Appbase
+#
+# This project includes software developed by the author or authors of
+# Appbase (https://github.com/viveworks/Appbase).
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+autoStart: true
+defaultDefaultVitessGrpcClientIntegrationServiceConfiguration:
+  customGrpcClientFactoryConfiguration:
+    retryingInterceptorConfiguration:
+      enabled: true
+      initialBackoffConfiguration:
+        enabled: true
+        time: 10
+        timeUnit: "MILLISECONDS"
+      maxBackoffConfiguration:
+        enabled: true
+        time: 2
+        timeUnit: "MINUTES"
+      backoffMultiplier: 1.6
+    useTracing: true
+    contextConfiguration:
+      deadlineDuration: "PT10S"
+      callerIdConfiguration: null
+    nettyChannelConfiguration:
+      hostPortConfiguration:
+        host: "localhost"
+        port: 15991
+      channelFactoryConfiguration: null
+      channelType: null
+      channelOptionsConfiguration:
+        connectTimeoutMillis: 7200
+        autoRead: true
+        autoClose: true
+        socketBacklog: 512
+        socketLingerSeconds: 5
+        socketReceiveBufferBytes: 87380
+        socketSendBufferBytes: 16384
+        socketTimeoutConfiguration: null
+        socketBroadcast: false
+        socketKeepAlive: true
+        socketReuseAddress: false
+        singleEventExecutorPerGroup: true
+      channelOptionsFactoryConfiguration: null
+      useSharedEventLoopGroup: false
+      eventLoopGroupConfiguration: null
+      useDirectExecutor: true
+      useSharedExecutorServiceConfiguration: true
+      executorServiceConfiguration:
+        executorServiceType: "FIXED"
+        fixedThreadPoolSize: 30
+        threadFactoryConfiguration:
+          nameFormat: "appbase-vitess-executor-thread-%d"
+          daemon: true
+          enableThreadAffinity: true
+      useSharedOffloadExecutorServiceConfiguration: true
+      offloadExecutorServiceConfiguration:
+        executorServiceType: "FIXED"
+        fixedThreadPoolSize: 30
+        threadFactoryConfiguration:
+          nameFormat: "appbase-vitess-offload-executor-thread-%d"
+          daemon: true
+          enableThreadAffinity: true
+      flowControlWindow: 1048576
+      initialFlowControlWindow: 1048576
+      maxInboundMessageSize: 4194304
+      maxInboundMetadataSize: 8192
+      maxHedgedAttempts: null
+      maxRetryAttempts: null
+      maxTraceEvents: null
+      perRpcBufferLimit: null
+      retryBufferSizeConfiguration: null
+      keepAliveWithoutCalls: false
+      enableRetry: null
+      enableServiceConfigLookUp: true
+      enableFullStreamDecompression: null
+      keepAliveTimeConfiguration:
+        enabled: true
+        time: 1000
+        timeUnit: "DAYS"
+      keepAliveTimeoutConfiguration:
+        enabled: true
+        timeout: 20
+        timeoutTimeUnit: "SECONDS"
+      idleTimeoutConfiguration:
+        enabled: true
+        timeout: 30
+        timeoutTimeUnit: "MINUTES"
+      userAgent: null
+      proxyDetectorConfiguration: null
+      localSocketPairConfiguration: null
+      defaultLoadBalancingPolicy: null
+      compressorRegistryConfiguration: null
+      decompressorRegistryConfiguration: null
+      http2NegotiationType: "PLAINTEXT"
+      overrideAuthority: null
+      sslClientContextConfiguration: null
+      clientInterceptorListFactoryConfiguration: null
+      binaryLogConfiguration: null
+    targetConfiguration:
+      keyspace: "appbase-vitess-test-keyspace"
+      shard: "0"
+      vitessTabletType: "PRIMARY"
+    tlsOptionsConfiguration: null
+    callCredentialsConfiguration:
+      callCredentialsInjectedTypeConfiguration: null
+      staticAuthCredentialsConfiguration:
+        username: "appbase-vitess-user"
+        password: "password"
+    loadBalancerFactoryConfiguration: null
+    nameResolverFactoryConfiguration: null
+  executeOptionsConfiguration:
+    clientFoundRows: false
+    skipQueryPlanCache: false
+    sqlSelectLimit: 1000
+    vitessTransactionIsolation: "REPEATABLE_READ"
+    vitessWorkload: "UNSPECIFIED"
+  clusterIdValueKeyConfiguration: null
+keyedDefaultVitessGrpcClientIntegrationServiceConfigurations: null
+globalEnableRegisterNotFoundAppbaseClientIntegrationServices: true
+disabledRegisterNotFoundAppbaseClientIntegrationServices: null
+checkKeyedAppbaseClientIntegrationServicesSanity: false
+appbaseClientPoolManagerInjectedTypeConfiguration: null
+customAppbaseClientPoolManagerConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.manager.DefaultAppbaseClientPoolManagerConfiguration"
+  unhealthyAppbaseClientIntegrationServiceManagementDisabled: false
+  clientPoolCheckerTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 0
+    interval: 30
+    timeUnit: "SECONDS"
+  clientIntegrationServiceRepairTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 60
+    interval: 30
+    timeUnit: "SECONDS"
+  useMediatorSharedScheduler: true
+  customScheduledExecutorServiceConfiguration: null
+  repairDisabledAppbaseClientKeyConfigurations: null
+  repairDisabledAppbaseClientIntegrationServiceTypeNames: null
+  enableGlobalMaxRepairAttemptsCheck: true
+  globalMaxRepairAttempts: 3
+  maxRepairAttemptsByAppbaseClientKeyConfigurations: null
+  maxRepairAttemptsByAppbaseClientIntegrationServiceTypeNameMap: null
+  globalDisableUnregisterUnhealthyIrreparableAppbaseClientIntegrationServices: false
+  disableUnregisterUnhealthyIrreparableByAppbaseClientKeyConfigurations: null
+  disableUnregisterUnhealthyIrreparableByAppbaseClientIntegrationServiceTypeNameMap: null
+  repairListenerImplObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+  unhealthyClientIntegrationServiceEntryObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 1024
+appbaseClientPoolInjectedTypeConfiguration: null
+customAppbaseClientPoolConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.DefaultAppbaseClientPoolConfiguration"
+  repairUnhealthyServices: true

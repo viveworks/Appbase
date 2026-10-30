@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase-service</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>appbase-service-user</artifactId>
+    <packaging>jar</packaging>
+    <name>Appbase Service User</name>
+    <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+    <scm>
+        <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+    </scm>
+    <distributionManagement>
+        <site>
+            <id>${project.artifactId}</id>
+            <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+        </site>
+    </distributionManagement>
+
+    <dependencies>
+        <!-- Test-only: ClientCoreTestHelper resolves appbase-core.yaml from core's test resources (internal work item 503, N04b) -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-core</artifactId>
+            <version>${appbase.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <packageName>com.viveworks.appbase.service.user</packageName>
+                        </manifest>
+                    </archive>
+                    <instructions>
+                        <Export-Package>com.viveworks.appbase.service.user.*,com.viveworks.appbase.service.web.filter.servlet.sync.*</Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

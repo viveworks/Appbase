@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase-client</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>appbase-client-spark</artifactId>
+    <packaging>jar</packaging>
+    <name>Appbase Client Spark</name>
+    <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+    <scm>
+        <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+    </scm>
+    <distributionManagement>
+        <site>
+            <id>${project.artifactId}</id>
+            <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+        </site>
+    </distributionManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-core</artifactId>
+        </dependency>
+
+        <!-- S02/internal work item 1364 (N06 CVE triage): spark-core 3.0.0 pulls the EOL log4j 1.2.17
+             (CVE-2020-9493 9.8, CVE-2022-23305 9.8, CVE-2019-17571 9.8, CVE-2022-23302/23307 8.8,
+             CVE-2023-26464 7.5) — no fixed 1.x release exists. reload4j is a drop-in replacement that
+             ships the same org.apache.log4j classes with those CVEs fixed. log4j:log4j is excluded from
+             every spark artifact below (each has a spark-core -> log4j path; Maven exclusions are
+             per-subtree), so reload4j is the only 1.2.x logging API on the classpath. Spark's own
+             upgrade off 3.0.0 remains tracked under P03/E02 (internal work item 1367). -->
+        <dependency>
+            <groupId>ch.qos.reload4j</groupId>
+            <artifactId>reload4j</artifactId>
+            <version>1.2.26</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.12</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.12</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql-kafka-0-10_2.12</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_2.12</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming-kafka-0-10_2.12</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Test-only (internal work item 503): appbase-core.yaml for ClientCoreTestHelper, from the core test-jar -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-core</artifactId>
+            <version>${appbase.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <packageName>com.viveworks.appbase.client.service.spark</packageName>
+                        </manifest>
+                    </archive>
+                    <instructions>
+                        <Export-Package>com.viveworks.appbase.client.service.spark</Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

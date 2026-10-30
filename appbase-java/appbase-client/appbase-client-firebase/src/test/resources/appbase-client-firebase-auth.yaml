@@ -1,0 +1,45 @@
+---
+autoStart: true
+customAppbaseClientPoolManagerConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.manager.DefaultAppbaseClientPoolManagerConfiguration"
+  unhealthyAppbaseClientIntegrationServiceManagementDisabled: true
+customAppbaseClientPoolConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.DefaultAppbaseClientPoolConfiguration"
+defaultDefaultFirebaseAuthClientIntegrationServiceConfiguration:
+  emulatedEnvironment: true
+  useDefaultFirebaseAppClientIntegrationService: true
+appbaseClientPoolManagerInjectedTypeConfiguration: null
+customAppbaseClientPoolManagerConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.manager.DefaultAppbaseClientPoolManagerConfiguration"
+  unhealthyAppbaseClientIntegrationServiceManagementDisabled: false
+  clientPoolCheckerTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 0
+    interval: 30
+    timeUnit: "SECONDS"
+  clientIntegrationServiceRepairTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 60
+    interval: 30
+    timeUnit: "SECONDS"
+  useMediatorSharedScheduler: true
+  customScheduledExecutorServiceConfiguration: null
+  repairDisabledAppbaseClientKeyConfigurations: null
+  repairDisabledAppbaseClientIntegrationServiceTypeNames: null
+  enableGlobalMaxRepairAttemptsCheck: true
+  globalMaxRepairAttempts: 3
+  maxRepairAttemptsByAppbaseClientKeyConfigurations: null
+  maxRepairAttemptsByAppbaseClientIntegrationServiceTypeNameMap: null
+  globalDisableUnregisterUnhealthyIrreparableAppbaseClientIntegrationServices: false
+  disableUnregisterUnhealthyIrreparableByAppbaseClientKeyConfigurations: null
+  disableUnregisterUnhealthyIrreparableByAppbaseClientIntegrationServiceTypeNameMap: null
+  repairListenerImplObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+  unhealthyClientIntegrationServiceEntryObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+appbaseClientPoolInjectedTypeConfiguration: null
+customAppbaseClientPoolConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.DefaultAppbaseClientPoolConfiguration"
+  repairUnhealthyServices: true

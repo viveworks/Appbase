@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase-client-cloud-aws</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>appbase-client-cloud-aws-httpclient</artifactId>
+    <packaging>jar</packaging>
+    <name>Appbase Client Cloud AWS HTTP Client</name>
+
+    <dependencies>
+        <!-- Intra-appbase deps pinned via the shared ${appbase.version} property, the same
+             pattern used by appbase-client-cloud-aws-common (and appbase-client-core's
+             dependency on appbase-core). -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-cloud-aws-common</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-core</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-core</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>http-client-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>netty-nio-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>apache-client</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <packageName>com.viveworks.appbase.client.cloud.aws.httpclient</packageName>
+                        </manifest>
+                    </archive>
+                    <instructions>
+                        <Export-Package>com.viveworks.appbase.client.cloud.aws.httpclient.*</Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

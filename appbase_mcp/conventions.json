@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "conventions": [
+    {
+      "id": "live-test-system-property",
+      "title": "Gate live-backend tests with a system property",
+      "summary": "Use JUnit EnabledIfSystemProperty with an explicit true match so live infrastructure tests stay opt-in without becoming permanently disabled.",
+      "keywords": ["live", "backend", "integration", "test", "gate", "EnabledIfSystemProperty"],
+      "examples": [
+        {
+          "path": "appbase-stacktest/src/test/java/com/viveworks/appbase/service/user/account/DefaultUserAccountServiceTest.java",
+          "annotation": "@EnabledIfSystemProperty(named = \"AerospikeClientServiceTests.enabled\", matches = \"true\")"
+        }
+      ],
+      "validation": {
+        "type": "java_enabled_if_system_property",
+        "path": "appbase-stacktest/src/test/java/com/viveworks/appbase/service/user/account/DefaultUserAccountServiceTest.java",
+        "property": "AerospikeClientServiceTests.enabled"
+      }
+    },
+    {
+      "id": "stacktest-default-skip-fast-allowlist",
+      "title": "Skip live stacktests by default and allowlist offline regressions",
+      "summary": "The stacktest module inherits a default-on skip property; staging and release turn it off, while one Surefire execution explicitly runs a small named set of infrastructure-free regressions in ordinary tests.",
+      "keywords": ["stacktest", "skip", "whitelist", "allowlist", "Surefire", "offline", "fast"],
+      "examples": [
+        {"path": "pom.xml", "property": "appbase-stacktest.skipTests"},
+        {"path": "appbase-stacktest/pom.xml", "execution": "status-regressions-fast"}
+      ],
+      "validation": {
+        "type": "maven_stacktest_selection",
+        "root_pom": "pom.xml",
+        "module_pom": "appbase-stacktest/pom.xml",
+        "execution_id": "status-regressions-fast",
+        "includes": [
+          "**/UnsentRequestSweepTest.java",
+          "**/HttpHelperConnectionReleaseTest.java",
+          "**/StatusEndpointRouteContractTest.java",
+          "**/GitHubOAuthWebPathStackTest.java",
+          "**/OAuthProviderWebPathStackTest.java",
+          "**/OAuthTwinParityStackTest.java"
+        ]
+      }
+    }
+  ]
+}

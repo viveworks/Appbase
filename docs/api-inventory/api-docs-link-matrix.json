@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "required_roles": [
+    "catalogue",
+    "supported-modules",
+    "supported-adapters",
+    "known-limitations"
+  ],
+  "links": [
+    {
+      "role": "catalogue",
+      "source": "README.md",
+      "target": "docs/Module-and-Service-Catalog.md"
+    },
+    {
+      "role": "supported-modules",
+      "source": "target/release-javadocs/index.html",
+      "target": "docs/Module-and-Service-Catalog.md#supported-public-artifacts-at-a-glance",
+      "status": "pending",
+      "reason": "release-profile Javadoc output and its navigation are owned by internal work item 1405"
+    },
+    {
+      "role": "supported-adapters",
+      "source": "target/release-javadocs/index.html",
+      "target": "docs/Module-and-Service-Catalog.md#supported-public-artifacts-at-a-glance",
+      "status": "pending",
+      "reason": "generated documentation has no checked-in adapter-matrix link until internal work item 1405"
+    },
+    {
+      "role": "known-limitations",
+      "source": "README.md",
+      "target": "docs/Known-Limitations.md"
+    }
+  ]
+}

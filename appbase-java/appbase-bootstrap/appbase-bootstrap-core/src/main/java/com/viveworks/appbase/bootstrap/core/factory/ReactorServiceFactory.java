@@ -1,0 +1,83 @@
+/*
+ * Copyright 2019 The original author or authors of Appbase
+ *
+ * This project includes software developed by the author or authors of
+ * Appbase (https://github.com/viveworks/Appbase).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.viveworks.appbase.bootstrap.core.factory;
+
+import com.viveworks.appbase.bootstrap.core.AppbaseCoreServiceFactory;
+import com.viveworks.appbase.bootstrap.core.AppbaseCoreServices;
+import com.viveworks.appbase.bootstrap.core.CoreServiceOrder;
+import com.viveworks.appbase.core.AppbaseException;
+import com.viveworks.appbase.core.service.configuration.ConfigurationService;
+import com.viveworks.appbase.core.service.log.LogService;
+import com.viveworks.appbase.core.service.mediator.MediatorService;
+import com.viveworks.appbase.core.service.metric.MetricService;
+import com.viveworks.appbase.core.service.reactive.reactor.DefaultReactorService;
+import com.viveworks.appbase.core.service.reactive.reactor.DefaultReactorServiceConfiguration;
+import com.viveworks.appbase.core.service.reactive.reactor.ReactorService;
+import com.viveworks.appbase.core.service.validation.ValidationService;
+
+import java.util.Objects;
+
+/**
+ * Factory that creates the optional {@link ReactorService}.
+ *
+ * <p>The supplied {@link DefaultReactorServiceConfiguration} is registered with the
+ * {@link ConfigurationService} before constructing {@link DefaultReactorService}, which
+ * looks up that configuration at construction time.
+ *
+ * <p>This factory is only registered when
+ * {@link com.viveworks.appbase.bootstrap.core.AppbaseCoreServicesConfiguration#getReactorServiceConfiguration()}
+ * returns a non-{@code null} value.
+ */
+public final class ReactorServiceFactory implements AppbaseCoreServiceFactory<ReactorService> {
+
+    private final DefaultReactorServiceConfiguration config;
+
+    /**
+     * Creates the factory with the given reactor service configuration.
+     *
+     * @param config reactor service configuration (must not be null)
+     */
+    public ReactorServiceFactory(DefaultReactorServiceConfiguration config) {
+        this.config = Objects.requireNonNull(config, "config");
+    }
+
+    @Override
+    public Class<ReactorService> serviceType() {
+        return ReactorService.class;
+    }
+
+    @Override
+    public int initializationOrder() {
+        return CoreServiceOrder.REACTOR.order();
+    }
+
+    @Override
+    public ReactorService create(AppbaseCoreServices partial) throws AppbaseException {
+        LogService          log        = partial.get(LogService.class);
+        MetricService       metric     = partial.get(MetricService.class);
+        MediatorService     mediator   = partial.get(MediatorService.class);
+        ValidationService   validation = partial.get(ValidationService.class);
+        ConfigurationService configSvc = partial.get(ConfigurationService.class);
+
+        configSvc.putTypedConfiguration(DefaultReactorServiceConfiguration.class, config);
+
+        return new DefaultReactorService(log, metric, mediator, validation, configSvc);
+    }
+}
