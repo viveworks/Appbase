@@ -98,8 +98,9 @@ Outlining the text to paths is a final-brand step, deferred with the rest of it 
 
 ## Where it goes — placements
 
-This file edits only `docs/branding/`. The placements below are applied elsewhere in the tree. They
-are listed here so every surface uses the same asset the same way.
+This file edits only `docs/branding/`. The placements below are applied elsewhere in the tree, or
+retained as explicit handoffs where the row says so. They are listed here so every surface uses the
+same asset the same way.
 
 | Surface | Asset | How |
 |---|---|---|

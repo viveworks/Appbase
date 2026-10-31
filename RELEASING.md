@@ -102,7 +102,7 @@ Stop unless every item below has a timestamped, redacted evidence record:
 
 The public workflow must have an unprivileged, secret-free preflight job. Its release job must depend on preflight, reference the protected `release` Environment, and request only the permissions needed to create and clean up the public release commit and tag. It must run both `release:prepare` and `release:perform` with `-P release-profile`. This repository does not author that workflow; it is owned and maintained separately.
 
-Before N03 may use that workflow, verify its full contract in `PUBLIC_REPO`:
+Before relying on that workflow, verify its full contract in `PUBLIC_REPO`:
 
 - the only trigger is `workflow_dispatch`;
 - required string inputs are `correlation_id`, `release_sha`, and `release_branch`, and the run name is exactly `correlation_id`;
