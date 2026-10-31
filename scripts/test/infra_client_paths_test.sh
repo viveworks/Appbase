@@ -59,6 +59,7 @@ $CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client
 $CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/start-elasticsearch.sh
 $CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/start-firebase.sh
 $CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/start-s3.sh
+$CLIENT_ROOT/appbase-client-redis/infra/docker/redis|$CLIENT_ROOT/appbase-client-redis/infra/docker/redis/start-redis.sh
 $CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess|$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess/start-vitess.sh
 EOF
 assert_script_calls appbase-stacktest/infra/start-infra.sh "$STACK_EXPECT"
@@ -72,6 +73,7 @@ $CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client
 $CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/run-elasticsearch.sh
 $CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/run-firebase.sh
 $CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/run-s3.sh
+$CLIENT_ROOT/appbase-client-redis/infra/docker/redis|$CLIENT_ROOT/appbase-client-redis/infra/docker/redis/run-redis.sh
 $CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess|$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess/remove-vitess.sh
 $CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess|$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess/run-vitess.sh
 EOF
@@ -84,6 +86,7 @@ $CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client
 $CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/stop-elasticsearch.sh
 $CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/stop-firebase.sh
 $CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/stop-s3.sh
+$CLIENT_ROOT/appbase-client-redis/infra/docker/redis|$CLIENT_ROOT/appbase-client-redis/infra/docker/redis/stop-redis.sh
 $CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess|$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess/stop-vitess.sh
 $CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql|$CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql/stop-postgresql.sh
 $CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper|$CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper/stop-zookeeper.sh
@@ -101,6 +104,7 @@ $CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client
 $CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/start-elasticsearch.sh
 $CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/start-firebase.sh
 $CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/start-s3.sh
+$CLIENT_ROOT/appbase-client-redis/infra/docker/redis|$CLIENT_ROOT/appbase-client-redis/infra/docker/redis/start-redis.sh
 $REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-start.sh
 EOF
 assert_script_calls appbase-stacktest/infra/start-infra.sh "$STACK_EXPECT" local
@@ -113,6 +117,7 @@ $CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client
 $CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/run-elasticsearch.sh
 $CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/run-firebase.sh
 $CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/run-s3.sh
+$CLIENT_ROOT/appbase-client-redis/infra/docker/redis|$CLIENT_ROOT/appbase-client-redis/infra/docker/redis/run-redis.sh
 $REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-purge.sh
 $REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-start.sh
 EOF
@@ -124,6 +129,7 @@ $CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client
 $CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/stop-elasticsearch.sh
 $CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/stop-firebase.sh
 $CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/stop-s3.sh
+$CLIENT_ROOT/appbase-client-redis/infra/docker/redis|$CLIENT_ROOT/appbase-client-redis/infra/docker/redis/stop-redis.sh
 $REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-stop.sh
 $CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql|$CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql/stop-postgresql.sh
 $CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper|$CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper/stop-zookeeper.sh

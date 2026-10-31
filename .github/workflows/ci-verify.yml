@@ -455,6 +455,7 @@ jobs:
           bash appbase-java/appbase-client/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/build-s3.sh
           bash appbase-java/appbase-client/appbase-client-druid/infra/docker/druid/build-druid.sh
           bash appbase-java/appbase-client/appbase-client-firebase/infra/docker/firebase/build-firebase.sh
+          bash appbase-java/appbase-client/appbase-client-redis/infra/docker/redis/build-redis.sh
           bash appbase-java/appbase-client/appbase-client-vitess/infra/docker/vitess/build-vitess.sh
       - name: Start public product infrastructure
         timeout-minutes: 15
@@ -481,7 +482,7 @@ jobs:
           echo "::group::docker ps -a"
           docker ps -a || true
           echo "::endgroup::"
-          for name in vitess.local aerospike.local druid.local firebase.local minio-s3.local; do
+          for name in vitess.local aerospike.local druid.local firebase.local minio-s3.local redis.local; do
             echo "::group::docker logs --tail 200 $name"
             docker logs --tail 200 "$name" 2>&1 || true
             echo "::endgroup::"

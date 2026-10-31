@@ -54,6 +54,10 @@ S3_DIR="$APPBASE_CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appba
 cd "$S3_DIR"
 "$APPBASE_CHILD_BASH" "$S3_DIR/run-s3.sh"
 
+REDIS_DIR="$APPBASE_CLIENT_ROOT/appbase-client-redis/infra/docker/redis"
+cd "$REDIS_DIR"
+"$APPBASE_CHILD_BASH" "$REDIS_DIR/run-redis.sh"
+
 # Vitess backend selector (default: docker). The local-binary path assumes vttablet/vtgate/etc. are
 # installed on the machine running this script and a hard-coded local data root -- true on a
 # maintainer's own workstation, never on a hosted CI runner. Unset, or set

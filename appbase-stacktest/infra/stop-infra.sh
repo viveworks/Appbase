@@ -43,6 +43,10 @@ S3_DIR="$APPBASE_CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appba
 cd "$S3_DIR"
 "$APPBASE_CHILD_BASH" "$S3_DIR/stop-s3.sh"
 
+REDIS_DIR="$APPBASE_CLIENT_ROOT/appbase-client-redis/infra/docker/redis"
+cd "$REDIS_DIR"
+"$APPBASE_CHILD_BASH" "$REDIS_DIR/stop-redis.sh"
+
 # See run-infra.sh for why this defaults to the Docker vttestserver lifecycle instead of the
 # local-binary scripts, how to opt back into the local path on a machine that has Vitess installed
 # (APPBASE_STACKTEST_VITESS_BACKEND=local), and why any OTHER value already failed closed at the top
