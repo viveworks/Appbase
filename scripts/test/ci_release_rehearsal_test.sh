@@ -5,6 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 RUNNER="$ROOT/.github/scripts/ci-release-rehearsal.sh"
 WORKFLOW="$ROOT/.github/workflows/ci-verify.yml"
+CONTRACT_CHECKER="$ROOT/scripts/test/ci_release_rehearsal_contract.py"
 PASSED=0
 FAILED=0
 
@@ -188,22 +189,16 @@ workflow_contract() {
     grep -Fq '          git diff --exit-code -- pubspec.lock' <<< "$job" &&
     grep -Fq 'run: bash .github/scripts/ci-release-rehearsal.sh' <<< "$job" &&
     grep -Fq 'release-profile-rehearsal' <<< "$(grep 'needs:' <<< "$summary")" &&
-    summary_accounts_for_rehearsal_result "$summary" &&
-    offline_arm_invokes_test "$offline" 'ci_release_rehearsal_test.sh'
+    python3 "$CONTRACT_CHECKER" verify "$file"
 }
 
-# This file ships into both repos (classified PUBLIC for export). Confirmed two genuinely
-# different, both-correct implementations exist for "the summary job accounts for the
-# release-rehearsal job's result": the private repo's named-env-var receipt-table style
-# (RELEASE_REHEARSAL_RESULT/_TESTED_SHA feeding a per-job receipt row), and the public repo's
-# generic selected/result JSON accounting (the private-side public-CI projection tool's
-# `summary` template, not shipped in this tree, which checks
-# needs['release-profile-rehearsal']['result'] against the selected dict). Accept either --
+# This file ships into both repos (classified PUBLIC for export). Two genuinely different,
+# both-correct implementations exist for "the summary job accounts for the release-rehearsal
+# job's result": a named-env-var receipt-table style and a generic selected/result JSON style.
+# Accept either --
 # this is not a weaker check, it is the same property proven by whichever real mechanism is
-# actually present. Known, disclosed, out-of-scope-for-this-fix gap: the public generic
-# mechanism has no per-job tested_sha cross-check at all (private's RELEASE_REHEARSAL_TESTED_SHA
-# has no public equivalent), so this helper does not require one when the generic form is what's
-# present.
+# actually present. The generic mechanism has no per-job tested_sha cross-check, so this helper
+# does not require one when the generic form is what's present.
 #
 # APP review finding (receipt 6527519002, round 1 Medium): the prior version of this helper
 # accepted EITHER form's marker text alone, which a comment or dead code containing that exact
@@ -213,46 +208,17 @@ workflow_contract() {
 # public form's two strings merely co-occurring anywhere in the section -- dead code reachable
 # by neither a `#` nor isolated from the real path (e.g. nested under `if False:`, or split
 # into an unreachable function) still satisfied two independent `grep -Fq` substring checks.
-# Fixed by requiring each line's EXACT real indentation (14 and 20 spaces -- confirmed directly
-# against the private-side public-CI projection tool's own template, not shipped in this
-# tree), not a substring match that ignores leading whitespace. This is sound, not just
+# Fixed by requiring each line's EXACT real indentation (14 and 20 spaces), not a substring
+# match that ignores leading whitespace. This is sound, not just
 # narrow: Python requires MORE indentation to nest code inside any guard or function body, so
 # reindenting either line to make it dead necessarily breaks the exact-indentation match.
 #
-# APP review finding (receipt 6528849657, round 3 Medium): round 2's fixes each had one
-# remaining gap. (a) The private form accepted the marker line on ANY non-comment line,
-# including one with no further proof it is actually consumed -- now also requires the real
-# downstream consumption line (`release_rehearsal_receipt_result="$RELEASE_REHEARSAL_RESULT"`),
-# confirmed against the private workflow's own text, proving the captured value feeds the
-# receipt rather than being declared and orphaned. (b) The public form's exact-indentation
-# match can still be satisfied by identically-indented text inside an INACTIVE triple-quoted
-# string (a Python docstring), which is real non-comment text but not executable code -- now
-# also requires an even count of `'''`/`"""` delimiters before each matched line (an odd count
-# means the match sits inside an open string literal).
-not_inside_triple_quoted_string() {
-  local text="$1" target_ln="$2" before count
-  before="$(head -n "$((target_ln - 1))" <<< "$text")"
-  count="$(grep -o "'''" <<< "$before" | wc -l | tr -d ' ')"
-  count=$((count + $(grep -o '"""' <<< "$before" | wc -l | tr -d ' ')))
-  [ $((count % 2)) -eq 0 ]
-}
-
+# Follow-up internal work item 2883 replaces those textual proofs. The verifier parses the workflow as YAML,
+# parses the public summary program as a Python AST, and executes the exact parsed private or
+# public summary scalar with sentinel results. A disconnected assignment, nested dead block,
+# or triple-quoted marker is therefore not an active module-scope gate.
 summary_accounts_for_rehearsal_result() {
-  local text="$1" line
-  line="$(grep -F 'RELEASE_REHEARSAL_RESULT: ${{ needs.release-profile-rehearsal.result }}' <<< "$text" | head -1)"
-  if [[ -n "$line" ]]; then
-    case "$(sed -E 's/^[[:space:]]*//' <<< "$line")" in
-      '#'*) : ;; # a comment containing the text does not count
-      *)
-        grep -Fq 'release_rehearsal_receipt_result="$RELEASE_REHEARSAL_RESULT"' <<< "$text" && return 0
-        ;;
-    esac
-  fi
-  local dict_ln cmp_ln
-  dict_ln="$(grep -Fnx "              'release-profile-rehearsal': os.environ['RUN_RELEASE'] == 'true'," <<< "$text" | head -1 | cut -d: -f1)"
-  cmp_ln="$(grep -Fnx "                    if data['result'] != ('success' if selected[name] else 'skipped')}" <<< "$text" | head -1 | cut -d: -f1)"
-  [[ -n "$dict_ln" && -n "$cmp_ln" ]] || return 1
-  not_inside_triple_quoted_string "$text" "$dict_ln" && not_inside_triple_quoted_string "$text" "$cmp_ln"
+  printf '%s\n' "$1" | python3 "$CONTRACT_CHECKER" summary-fragment
 }
 
 # APP review finding (receipt 6527519002, round 1 Medium): accepting the bare filename
@@ -265,29 +231,12 @@ summary_accounts_for_rehearsal_result() {
 # specifically to the `for suite in ...; do` list itself, and the invocation marker
 # specifically to that same loop's own body (between its `do` and `done`).
 #
-# APP review finding (receipt 6528849657, round 3 Medium): the private form still accepted the
-# filename and the runner name merely co-occurring anywhere in the whole section -- now binds
-# the filename to appearing within the actual bounded argument span of the real private
-# runner's own multi-line invocation (from the runner line through the next blank line, which
-# is where that YAML folded-scalar command ends), not merely present somewhere else nearby.
+# Follow-up internal work item 2883 executes the exact YAML-parsed offline command in an isolated fixture and
+# requires the named rehearsal suite to write a sentinel. A filename in a comment, unrelated
+# step, argument-free runner, or non-executing loop cannot satisfy that proof.
 offline_arm_invokes_test() {
-  local offline="$1" name="$2" private_runner header body
-  private_runner="scripts/run"
-  private_runner="${private_runner}-suites.sh"
-  grep -Fq "$name" <<< "$offline" || return 1
-  if grep -Fq "$private_runner" <<< "$offline"; then
-    local invocation_span
-    invocation_span="$(awk -v runner="$private_runner" '
-      index($0, runner) { f=1 }
-      f { print; if (/^[[:space:]]*$/) exit }
-    ' <<< "$offline")"
-    grep -Fq "$name" <<< "$invocation_span" && return 0
-    return 1
-  fi
-  header="$(awk '/for suite in/{f=1} f{print; if (/do[[:space:]]*$/) exit}' <<< "$offline")"
-  body="$(awk '/for suite in/{f=1; next} f{print; if (/^[[:space:]]*done[[:space:]]*$/) exit}' <<< "$offline")"
-  grep -Fq "$name" <<< "$header" || return 1
-  grep -Fq 'bash "scripts/test/$suite"' <<< "$body"
+  [[ "$2" == 'ci_release_rehearsal_test.sh' ]] || return 1
+  printf '%s\n' "$1" | python3 "$CONTRACT_CHECKER" offline-fragment
 }
 
 if workflow_contract "$WORKFLOW"; then
@@ -296,6 +245,41 @@ else
   bad 'workflow exposes and accounts for a credential-free, false-by-default opt-in job'
 fi
 
+if python3 "$CONTRACT_CHECKER" control disconnected-summary; then
+  ok 'test_AC2883_1_disconnected_summary_markers_fail_closed'
+else
+  bad 'test_AC2883_1_disconnected_summary_markers_fail_closed'
+fi
+if python3 "$CONTRACT_CHECKER" control runner-not-executed; then
+  ok 'test_AC2883_2_runner_requires_execution_evidence'
+else
+  bad 'test_AC2883_2_runner_requires_execution_evidence'
+fi
+if python3 "$CONTRACT_CHECKER" control docstring-markers; then
+  ok 'test_AC2883_3_docstring_markers_fail_real_ast_parse'
+else
+  bad 'test_AC2883_3_docstring_markers_fail_real_ast_parse'
+fi
+if python3 "$CONTRACT_CHECKER" control private-decoy-row; then
+  ok 'test_AC2883_1_private_release_row_rejects_disconnected_decoy'
+else
+  bad 'test_AC2883_1_private_release_row_rejects_disconnected_decoy'
+fi
+if python3 "$CONTRACT_CHECKER" control runner-verifier-env; then
+  ok 'test_AC2883_2_runner_rejects_verifier_only_execution_condition'
+else
+  bad 'test_AC2883_2_runner_rejects_verifier_only_execution_condition'
+fi
+if python3 "$CONTRACT_CHECKER" control missing-runner; then
+  ok 'EXTRA_offline_binding: a nonexistent runner fails closed'
+else
+  bad 'EXTRA_offline_binding: a nonexistent runner was accepted'
+fi
+if python3 "$CONTRACT_CHECKER" control existing-non-runner; then
+  ok 'EXTRA_offline_binding: an existing non-runner executable fails closed'
+else
+  bad 'EXTRA_offline_binding: an existing non-runner executable was accepted'
+fi
 if python3 - "$ROOT/pom.xml" <<'PY'
 import sys
 import xml.etree.ElementTree as ET
@@ -482,38 +466,6 @@ if summary_accounts_for_rehearsal_result "$INSIDE_DOCSTRING"; then
   bad 'EXTRA_summary_binding: the exact lines inside an inactive triple-quoted docstring were wrongly accepted'
 else
   ok 'EXTRA_summary_binding: the exact lines inside an inactive triple-quoted docstring are rejected'
-fi
-
-# The private runner path is assembled at runtime, not written as one contiguous literal, so an
-# exported-tree denylist scan sees no reference to a path that doesn't resolve there (same
-# technique offline_arm_invokes_test() itself already uses for the same reason).
-fixture_runner_path="scripts/run"
-fixture_runner_path="${fixture_runner_path}-suites.sh"
-
-FILENAME_OUTSIDE_RUNNER_SPAN="$(cat <<TEXT
-          ${fixture_runner_path} --timeout 900
-          aerospike_container_contract_test.sh other_test.sh
-
-      - name: Unrelated later step mentions it
-        run: echo "ci_release_rehearsal_test.sh mentioned here, not in the runner's own list"
-TEXT
-)"
-if offline_arm_invokes_test "$FILENAME_OUTSIDE_RUNNER_SPAN" 'ci_release_rehearsal_test.sh'; then
-  bad 'EXTRA_offline_binding: a filename outside the private runners own argument span was wrongly accepted'
-else
-  ok 'EXTRA_offline_binding: a filename outside the private runners own argument span is rejected'
-fi
-
-FILENAME_INSIDE_RUNNER_SPAN="$(cat <<TEXT
-          ${fixture_runner_path} --timeout 900
-          aerospike_container_contract_test.sh ci_release_rehearsal_test.sh ci_verify_compile_prereqs_test.sh
-
-TEXT
-)"
-if offline_arm_invokes_test "$FILENAME_INSIDE_RUNNER_SPAN" 'ci_release_rehearsal_test.sh'; then
-  ok 'EXTRA_offline_binding: a filename genuinely inside the private runners own argument span is accepted'
-else
-  bad 'EXTRA_offline_binding: a filename genuinely inside the private runners own argument span was wrongly rejected'
 fi
 
 echo "ci-release-rehearsal-test: $PASSED passed, $FAILED failed"

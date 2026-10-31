@@ -31,9 +31,12 @@ chmod +x "$FAKE_BIN/bash" "$FAKE_BIN/sleep"
 assert_script_calls() {
     script=$1
     expected=$2
+    # Optional: APPBASE_STACKTEST_VITESS_BACKEND override ("" leaves it unset -> docker default).
+    backend_env=${3:-}
     : > "$CALLS"
 
-    APPBASE_CHILD_BASH=$FAKE_BIN/bash \
+    APPBASE_STACKTEST_VITESS_BACKEND=$backend_env \
+        APPBASE_CHILD_BASH=$FAKE_BIN/bash \
         APPBASE_TEST_CALLS=$CALLS \
         PATH=$FAKE_BIN:$PATH \
         /bin/bash "$REPO_ROOT/$script"
@@ -55,7 +58,8 @@ $CLIENT_ROOT/appbase-client-aerospike/infra/docker/aerospike|$CLIENT_ROOT/appbas
 $CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client-druid/infra/docker/druid/start-druid.sh
 $CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/start-elasticsearch.sh
 $CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/start-firebase.sh
-$REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-start.sh
+$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/start-s3.sh
+$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess|$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess/start-vitess.sh
 EOF
 assert_script_calls appbase-stacktest/infra/start-infra.sh "$STACK_EXPECT"
 cp "$STACK_EXPECT" "$TEST_TMP/stack-start"
@@ -67,8 +71,9 @@ $CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql|$CLIENT_ROOT/appbase-cl
 $CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client-druid/infra/docker/druid/run-druid.sh
 $CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/run-elasticsearch.sh
 $CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/run-firebase.sh
-$REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-purge.sh
-$REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-start.sh
+$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/run-s3.sh
+$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess|$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess/remove-vitess.sh
+$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess|$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess/run-vitess.sh
 EOF
 assert_script_calls appbase-stacktest/infra/run-infra.sh "$STACK_EXPECT"
 cp "$STACK_EXPECT" "$TEST_TMP/stack-run"
@@ -78,12 +83,72 @@ $CLIENT_ROOT/appbase-client-aerospike/infra/docker/aerospike|$CLIENT_ROOT/appbas
 $CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client-druid/infra/docker/druid/stop-druid.sh
 $CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/stop-elasticsearch.sh
 $CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/stop-firebase.sh
-$REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-stop.sh
+$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/stop-s3.sh
+$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess|$CLIENT_ROOT/appbase-client-vitess/infra/docker/vitess/stop-vitess.sh
 $CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql|$CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql/stop-postgresql.sh
 $CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper|$CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper/stop-zookeeper.sh
 EOF
 assert_script_calls appbase-stacktest/infra/stop-infra.sh "$STACK_EXPECT"
 cp "$STACK_EXPECT" "$TEST_TMP/stack-stop"
+
+# ── APPBASE_STACKTEST_VITESS_BACKEND=local opt-in: StackTest's three orchestrators must still reach
+# the original local-binary scripts for a maintainer whose machine has Vitess installed (internal work item 2655). ──────
+cat > "$STACK_EXPECT" <<EOF
+$CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql|$CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql/start-postgresql.sh
+$CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper|$CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper/start-zookeeper.sh
+$CLIENT_ROOT/appbase-client-aerospike/infra/docker/aerospike|$CLIENT_ROOT/appbase-client-aerospike/infra/docker/aerospike/start-aerospike.sh
+$CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client-druid/infra/docker/druid/start-druid.sh
+$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/start-elasticsearch.sh
+$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/start-firebase.sh
+$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/start-s3.sh
+$REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-start.sh
+EOF
+assert_script_calls appbase-stacktest/infra/start-infra.sh "$STACK_EXPECT" local
+
+cat > "$STACK_EXPECT" <<EOF
+$CLIENT_ROOT/appbase-client-aerospike/infra/docker/aerospike|$CLIENT_ROOT/appbase-client-aerospike/infra/docker/aerospike/run-aerospike.sh
+$CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper|$CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper/run-zookeeper.sh
+$CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql|$CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql/run-postgresql.sh
+$CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client-druid/infra/docker/druid/run-druid.sh
+$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/run-elasticsearch.sh
+$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/run-firebase.sh
+$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/run-s3.sh
+$REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-purge.sh
+$REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-start.sh
+EOF
+assert_script_calls appbase-stacktest/infra/run-infra.sh "$STACK_EXPECT" local
+
+cat > "$STACK_EXPECT" <<EOF
+$CLIENT_ROOT/appbase-client-aerospike/infra/docker/aerospike|$CLIENT_ROOT/appbase-client-aerospike/infra/docker/aerospike/stop-aerospike.sh
+$CLIENT_ROOT/appbase-client-druid/infra/docker/druid|$CLIENT_ROOT/appbase-client-druid/infra/docker/druid/stop-druid.sh
+$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch|$CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch/stop-elasticsearch.sh
+$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase|$CLIENT_ROOT/appbase-client-firebase/infra/docker/firebase/stop-firebase.sh
+$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3|$CLIENT_ROOT/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/stop-s3.sh
+$REPO_ROOT/appbase-stacktest/infra/vitess|$REPO_ROOT/appbase-stacktest/infra/vitess/local-vitess-stop.sh
+$CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql|$CLIENT_ROOT/appbase-client-jdbc/infra/docker/postgresql/stop-postgresql.sh
+$CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper|$CLIENT_ROOT/appbase-client-zookeeper/infra/docker/zookeeper/stop-zookeeper.sh
+EOF
+assert_script_calls appbase-stacktest/infra/stop-infra.sh "$STACK_EXPECT" local
+
+# An unrecognized backend value must fail closed, in ALL THREE orchestrators -- each carries its own
+# copy of the same case statement, so each needs its own proof (fresh CALLS each time so no prior
+# invocation is mistaken for one). A nonzero exit alone is NOT sufficient: it must also make ZERO
+# child-process calls -- i.e. fail before mutating ANY backend, not after bringing up (run-infra.sh),
+# starting (start-infra.sh), or partially stopping (stop-infra.sh) the other six.
+for orch in run-infra.sh start-infra.sh stop-infra.sh; do
+    : > "$CALLS"
+    if APPBASE_STACKTEST_VITESS_BACKEND=bogus \
+        APPBASE_CHILD_BASH=$FAKE_BIN/bash APPBASE_TEST_CALLS=$CALLS PATH=$FAKE_BIN:$PATH \
+        /bin/bash "$REPO_ROOT/appbase-stacktest/infra/$orch" >/dev/null 2>&1; then
+        echo "FAIL: APPBASE_STACKTEST_VITESS_BACKEND=bogus did not fail closed in $orch" >&2
+        exit 1
+    fi
+    if [ -s "$CALLS" ]; then
+        echo "FAIL: APPBASE_STACKTEST_VITESS_BACKEND=bogus failed closed in $orch but only after $(wc -l < "$CALLS" | tr -d ' ') child call(s) -- validation must run before any side effect:" >&2
+        cat "$CALLS" >&2
+        exit 1
+    fi
+done
 
 cat > "$SERVICE_EXPECT" <<EOF
 $CLIENT_ROOT/appbase-client-aerospike/infra/docker/aerospike|$CLIENT_ROOT/appbase-client-aerospike/infra/docker/aerospike/start-aerospike.sh

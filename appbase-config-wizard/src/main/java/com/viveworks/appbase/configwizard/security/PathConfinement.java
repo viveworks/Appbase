@@ -105,11 +105,12 @@ public final class PathConfinement {
         final Path normalized = written.toAbsolutePath().normalize();
         if (root != null) {
             // Relativise against the CANONICAL root, not the raw field. confine() returns a
-            // symlink-resolved path, so relativising it against a merely-normalised root produces a
-            // leaky `../real/...` escape when the root sits behind a symlink — the exact raw-root vs
-            // canonicalised mismatch internal work item 751/internal work item 806 burned this file on. Canonicalise both sides (the same
-            // primitive confine() uses, which tolerates a not-yet-existing target). Fall back to the
-            // file name if the write somehow lands outside the root, so no absolute prefix leaks.
+            // symlink-resolved path, so relativising it against a merely-normalised root produces a leaky
+            // `../real/...` escape when the root sits behind a symlink — the raw-root vs canonicalised
+            // mismatch internal work item 751/internal work item 806 burned this file on.
+            // Canonicalise both sides (the same primitive confine() uses, which tolerates a
+            // not-yet-existing target). Fall back to the file name if the write somehow lands outside
+            // the root, so no absolute prefix leaks.
             final Path canonicalRoot = canonicalise(root);
             final Path canonicalWritten = canonicalise(normalized);
             if (canonicalWritten.startsWith(canonicalRoot)) {

@@ -4,13 +4,13 @@
 
 The client modules' integration tests and the stack test run against **disposable Docker containers**.
 This part lists the commands that exist, the ports they publish, and the six umbrella scripts, which
-now resolve correctly (see "Fixed: path resolution" below). It is a maintainer and test aid. **It is not a
+now resolve correctly (see "Fixed: internal work item 2547" below). It is a maintainer and test aid. **It is not a
 deployment** and it is outside the guide's acceptance environment
 ([index](README.md#acceptance-environment-and-boundary)).
 
 You need Docker and bash. The Vitess local scripts also refuse to run as root.
 
-## Fixed: path resolution — the umbrella scripts now resolve client-owned paths
+## Fixed: internal work item 2547 — the umbrella scripts now resolve client-owned paths
 
 Six scripts are meant to start/stop the whole stack:
 
@@ -19,7 +19,7 @@ Six scripts are meant to start/stop the whole stack:
 
 **Previously, five of the six** set a base directory `APPBASE_INFRA_BASEDIR` to a shared
 `…/appbase-client/infra/docker/` path that never existed — the Docker files live per client module,
-under `appbase-java/appbase-client/appbase-client-<name>/infra/docker/`. A later fix updated all six to resolve
+under `appbase-java/appbase-client/appbase-client-<name>/infra/docker/`. internal work item 2562 fixed all six to resolve
 each service through its owning client module instead (`appbase-client-jdbc` for `postgresql`,
 `appbase-client-zookeeper`, `appbase-client-aerospike`, `appbase-client-druid`,
 `appbase-client-elasticsearch`, `appbase-client-firebase`), and fixed the matching problem in
@@ -29,20 +29,76 @@ schema from two other nonexistent paths — both now resolve into
 
 **MinIO was removed from the three stacktest scripts, not fixed**: the old scripts named a `minio`
 directory under the nonexistent shared base, and **no MinIO Docker infra exists anywhere in this
-tree** — it was never built, under either the old or new layout. The path fix deliberately did not create
+tree** — it was never built, under either the old or new layout. internal work item 2562 deliberately did not create
 one (that is a separate undertaking, not a side effect of a path-fix), so these scripts simply no
 longer try to start/stop a MinIO container. Standing gap, not yet its own tracked issue.
 
 **Verified**: `scripts/test/infra_client_paths_test.sh` (a Bash 3.2 harness that mocks the child
 shell and asserts the exact `cwd`/script pair each of the six orchestrators resolves to for every
-service) passes. That fix also included one full live smoke cycle (Redis: run → stop → start → stop) through
+service) passes. internal work item 2562 also ran one full live smoke cycle (Redis: run → stop → start → stop) through
 the equivalent per-client path pattern. A fresh attempt at a live multi-service smoke check here hit
 three environment issues unrelated to path resolution — a deprecated `bitnami/*:*-debian-10` image
 tag (zookeeper, and likely postgresql, same family), an unrelated package-install failure building
 firebase's own custom image, and a container-name collision with another concurrent session's
 already-running `elasticsearch.local` — each occurring *after* the script had already `cd`'d into the
-correct directory, so none of them are a regression from that fix. Not fixed here; flagging in case they
+correct directory, so none of them are a internal work item 2547 regression. Not fixed here; flagging in case they
 affect a real local run.
+
+## StackTest's Vitess lifecycle now defaults to the Docker vttestserver backend (internal work item 2655)
+
+`appbase-stacktest/infra/{start,run,stop}-infra.sh` used to drive Vitess exclusively through
+`appbase-stacktest/infra/vitess/local-vitess-{start,stop,purge}.sh`, which assume `vttablet`,
+`vtgate`, `vtctld`, `mysqlctl`, `vtorc` and `vtctl` are installed locally on the machine running the
+script, plus a hard-coded data root (`VTDATAROOT`, defaulting to a specific maintainer's own
+`~/Temporary/Data/Vitess`). That is true on a maintainer's own workstation and nowhere else — it is
+not installed on a hosted GitHub Actions runner, so the generated public `stacktest` CI job failed
+outright (`vttablet: command not found`).
+
+All three scripts now select a backend via **`APPBASE_STACKTEST_VITESS_BACKEND`**, read at the top of
+each orchestrator's Vitess step:
+
+| Value | Behavior |
+|---|---|
+| unset, or `docker` (**default**) | Routes through the same Docker `vttestserver` lifecycle the Vitess directory in the table above already uses for its own gRPC/JDBC integration tests: `remove-vitess.sh` + `run-vitess.sh` (from `run-infra.sh`), `start-vitess.sh` (from `start-infra.sh`), `stop-vitess.sh` (from `stop-infra.sh`), all under `appbase-java/appbase-client/appbase-client-vitess/infra/docker/vitess/`. |
+| `local` | Keeps the original local-binary lifecycle (`appbase-stacktest/infra/vitess/local-vitess-{start,stop,purge}.sh`) for a maintainer whose machine genuinely has Vitess installed. |
+
+The Docker path's **keyspace/schema/connectivity contract** is a verified drop-in for what StackTest
+needs, not merely "also runs Vitess": `run-vitess.sh` already stages and provisions all **three**
+keyspaces vtgate serves — `appbase-vitess-test-keyspace` (the existing gRPC IT fixture),
+`appbase-stacktest-unsharded-keyspace` and `appbase-stacktest-sharded-keyspace` — copying the exact
+same `appbase-stacktest/infra/vitess/001-{unsharded,sharded}.{sql,json}` fixtures the local scripts
+used, plus the `appbase-service` sharded schema. It waits for a routed query against
+`stacktest_customer` before declaring readiness (not just an open socket), and publishes vtgate's
+MySQL wire port at **15306** — the exact port `appbase-stacktest-vitess-jdbc.yaml` and its container
+twin already hard-code.
+
+⚠️ **What is NOT newly verified here**: this Vitess Docker lifecycle has its own documented hang and
+outage-restoration-reliability history (epic internal work item 1137's internal work item 2749/internal work item 2788) that this routing change does not
+resolve — a prior reviewer's "the full-live StackTest readiness hang remains NOT DETERMINED" caveat
+still stands, now under the backend this routing makes the hosted-CI default. The two mitigations this
+change adds are a step-level `timeout-minutes` on the public `stacktest` job's "Live product gate"
+step strictly below the job's own 90-minute timeout (so a hang fails the STEP, not just gets silently
+killed with the runner), and an `if: failure()` "Capture infrastructure diagnostics on failure" step
+(`docker ps -a` plus the last 200 log lines per backend container). Neither mitigation proves the
+hang cannot recur; they only ensure a recurrence leaves diagnosable evidence instead of a silent
+90-minute timeout.
+
+Before using the `docker` default for the first time (including in CI), the Vitess image must be
+built once, the same way Aerospike/Druid/Firebase already are:
+
+```sh
+bash appbase-java/appbase-client/appbase-client-vitess/infra/docker/vitess/build-vitess.sh
+```
+
+The exported public `stacktest` CI job does this as part of its "Build local StackTest
+infrastructure images" step, immediately before `run-infra.sh`.
+
+**Verified**: `scripts/test/infra_client_paths_test.sh` now also asserts the `docker` default and the
+`local` opt-in each resolve to the correct lifecycle scripts for all three orchestrators, and that an
+unrecognized `APPBASE_STACKTEST_VITESS_BACKEND` value fails closed in each of the three independently
+(mutation-verified: each orchestrator's guard was broken one at a time and confirmed to turn the
+corresponding assertion red before being restored). The public `stacktest` job's live-gate step
+timeout remains strictly below the job timeout, and its diagnostics-capture step uses `if: failure()`.
 
 ## The commands that exist
 
@@ -112,7 +168,7 @@ cd appbase-java/appbase-client/appbase-client-core/infra/docker
 ```
 
 These resolve each directory from the `appbase-client` root (`common-all.sh`), so they never had the
-path bug described above. Two cautions from reading the scripts. They deliberately **skip Kafka and Spark**
+internal work item 2547 bug. Two cautions from reading the scripts. They deliberately **skip Kafka and Spark**
 (`docker-start-all.sh` prints "NOT starting …"). And `common-all.sh` sets `MINIO_DIR` to
 `appbase-java/appbase-client/appbase-client-aws/infra/docker/minio`, which does not exist, so the MinIO step will not find its
 script. How the rest of the run behaves after that failure is **not verified here**.
@@ -158,5 +214,5 @@ mechanism**. Your own service decides which YAML it loads.
 | Covered | Not covered |
 |---|---|
 | the per-client script set and the ports their `run` scripts publish | that every image still builds or pulls on your machine today (two unrelated environment issues are flagged above) |
-| the umbrella-script path fix and its own verification (harness test + live smoke) | a MinIO Docker infra (never built, standing gap) |
+| the umbrella-script path fix (internal work item 2547/internal work item 2562) and its own verification (harness test + live smoke) | a MinIO Docker infra (never built, standing gap) |
 | the twin-file mechanism | any real or credentialed infrastructure |

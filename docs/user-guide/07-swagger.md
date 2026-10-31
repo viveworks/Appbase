@@ -31,7 +31,7 @@ reachable depends on the modules assembled by the application and its authorizat
 It does not generate an OpenAPI document or prove that any endpoint works. Tomcat and Undertow do not
 offer the same convenience method.
 
-A gap remains: a stock core service does not currently provide a ready-to-capture Swagger UI;
+Gap internal work item 2548 remains: a stock core service does not currently provide a ready-to-capture Swagger UI;
 the authorized evidence path uses the test-only core-resource harness described below.
 
 ## Screenshot evidence — NOT MEASURED

@@ -1,8 +1,8 @@
 # Appbase Module and Service Catalog — Release 1
 
 The authoritative list of what Appbase Release 1 ships, one entry per artifact the build produces.
-It is **checked mechanically** against the generated shipped-artifact inventory
-([`docs/api-inventory/`](api-inventory/README.md)):
+It is **checked mechanically** against the generated shipped-artifact inventory (internal work item 1399,
+[`docs/api-inventory/`](api-inventory/README.md)):
 
 ```sh
 python3 scripts/catalogue-check.py                    # exits non-zero on any catalogue- or inventory-side problem
@@ -32,7 +32,7 @@ rejects any entry the inventory does not contain. Modules planned for later rele
 face, P-038, or multi-cloud clients, P-018) do not appear at all.
 
 ⚠️ **Release-1 status.** `1.0.0` has not been released; every coordinate is `1.0.0-SNAPSHOT`, and
-Javadoc is not yet published.
+Javadoc is not yet published (internal work item 1400–internal work item 1406).
 
 ## Supported-public artifacts at a glance
 
@@ -95,7 +95,7 @@ Javadoc is not yet published.
 - **Public entry points:** `<dependency><groupId>com.viveworks.appbase</groupId><artifactId>appbase-bom</artifactId><type>pom</type><scope>import</scope></dependency>`
 - **Configuration / backend:** Maven `dependencyManagement` import; no runtime configuration
 - **Examples / API docs:** usage comment in `appbase-bom/pom.xml`
-- **Limitations:** On this epic base the BOM still disagrees with the lean Release 1.0 baseline: it exports the seven *Deferred* artifacts and `appbase-stacktest`, and omits seven supported ones (the four OAuth providers, both token caches, `appbase-client-r2dbc`). A pending fix corrects it. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** On this epic base the BOM still disagrees with the lean Release 1.0 baseline: it exports the seven *Deferred* artifacts and `appbase-stacktest`, and omits seven supported ones (the four OAuth providers, both token caches, `appbase-client-r2dbc`). PR internal work item 2504 corrects it. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ## Core
 
@@ -108,8 +108,8 @@ Javadoc is not yet published.
 - **Capabilities:** Configuration store and accessors (filesystem, JPA, system/environment); exception store; log appenders and filters (Disruptor, Lucene); metrics (JMX, MicroProfile/Micrometer); tracing; mediator event bus; validation; Reactor scheduler support; Guice DI utilities
 - **Public entry points:** `AppbaseCore`, `AppbaseCoreBootstrap`, `AppbaseCoreBootstrapConfiguration`, `AppbaseConfiguration`, `AppbaseFactory`, `AppbaseHandler`/`AppbaseHandlerChain`
 - **Configuration / backend:** YAML core configuration (`AppbaseCoreBootstrapConfiguration`); no external backend required — the JPA and Lucene stores are optional
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-core.yaml`; Javadoc is not published yet
-- **Limitations:** The largest public surface (about 560 public types); the published-vs-internal package split is still undecided. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-core.yaml`; Javadoc is not published yet (internal work item 1402)
+- **Limitations:** The largest public surface (about 560 public types); the published-vs-internal package split is still undecided (internal work item 1399 work list). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ## Bootstrap and web servers
 
@@ -122,7 +122,7 @@ Javadoc is not yet published.
 - **Capabilities:** Builder/factory containers for core, client and application services; YAML-driven stack assembly; `AppbaseWebServer` abstraction implemented by the servlet containers
 - **Public entry points:** `AppbaseCoreServiceFactory`, `AppbaseClientCoreFactory`, `AppbaseClientServiceFactory`, `AppbaseServiceFactory`, `AppbaseWebServer`, `AppbaseCoreServicesConfiguration`
 - **Configuration / backend:** YAML bootstrap configuration; the backends are whatever clients the configuration enables
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)
 - **Limitations:** Pulls in several client modules transitively (Aerospike, AWS, Cassandra, and others). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-bootstrap-servlet`
@@ -134,7 +134,7 @@ Javadoc is not yet published.
 - **Capabilities:** Servlet/filter registration against Jakarta Servlet
 - **Public entry points:** `AppbaseServletDeployment`
 - **Configuration / backend:** None of its own; used through a container module
-- **Examples / API docs:** Javadoc is not published yet
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1400)
 - **Limitations:** Not used alone — pick one of the container modules. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-bootstrap-servlet-jetty`
@@ -146,7 +146,7 @@ Javadoc is not yet published.
 - **Capabilities:** Serves the bootstrapped stack's servlet and JAX-RS (Jersey) endpoints from an embedded Jetty 11; Guice wiring
 - **Public entry points:** the `com.viveworks.appbase.bootstrap.jetty.server` web server and its `…guice` module, selected through `appbase-bootstrap-core`
 - **Configuration / backend:** bootstrap YAML web-server section; embedded Jetty 11 (jetty-server/jetty-servlet), no external server needed
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)
 - **Limitations:** Choose exactly one container per service. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-bootstrap-servlet-tomcat`
@@ -158,7 +158,7 @@ Javadoc is not yet published.
 - **Capabilities:** Serves the bootstrapped stack's servlet and JAX-RS (Jersey) endpoints from an embedded Tomcat; Guice wiring
 - **Public entry points:** the `com.viveworks.appbase.bootstrap.tomcat.server` web server and its `…guice` module, selected through `appbase-bootstrap-core`
 - **Configuration / backend:** bootstrap YAML web-server section; embedded Tomcat (tomcat-embed-core), no external server needed
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)
 - **Limitations:** Choose exactly one container per service. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-bootstrap-servlet-undertow`
@@ -170,7 +170,7 @@ Javadoc is not yet published.
 - **Capabilities:** Serves the bootstrapped stack's servlet and JAX-RS (Jersey) endpoints from an embedded Undertow; Guice wiring
 - **Public entry points:** the `com.viveworks.appbase.bootstrap.undertow.server` web server and its `…guice` module, selected through `appbase-bootstrap-core`
 - **Configuration / backend:** bootstrap YAML web-server section; embedded Undertow (undertow-servlet), no external server needed
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)
 - **Limitations:** Choose exactly one container per service. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-bootstrap-reactor-netty`
@@ -182,8 +182,8 @@ Javadoc is not yet published.
 - **Capabilities:** Reactive HTTP face over reactor-netty-http
 - **Public entry points:** `ReactorNettyAppbaseWebServer`, `ReactorNettyAppbaseWebServerConfiguration`, `ReactorNettyAppbaseServerModule` (Guice), `AppbaseRouteRegistry`
 - **Configuration / backend:** bootstrap YAML; embedded Reactor Netty
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet; `appbase-stacktest/README.md` reactive showcase
-- **Limitations:** Supported in Release 1 by the owner's ruling; `appbase-bom` exports it once that fix lands. Its admin endpoints are a read-only subset of the ten core ones; the mutating operations stay servlet-only (parity is P-039, 2.0.0). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400); `appbase-stacktest/README.md` reactive showcase
+- **Limitations:** Supported in Release 1 by the owner ruling on internal work item 1141 Q1 (internal work item 1141 comment 5855318230); `appbase-bom` exports it once PR internal work item 2504 lands. Its admin endpoints are a read-only subset of the ten core ones; the mutating operations stay servlet-only (parity is P-039, 2.0.0). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ## Data and integration clients
 
@@ -196,7 +196,7 @@ Javadoc is not yet published.
 - **Capabilities:** `AppbaseClientPool` / pool manager; client keys; shared resources; integration-service contract implemented by each client module; Project Reactor support
 - **Public entry points:** `AppbaseClientCore`, `AppbaseClientCoreConfiguration`, `AppbaseClientIntegrationService`, `AppbaseClientPool`, `AppbaseClientPoolManager`, `AppbaseClientKey`
 - **Configuration / backend:** YAML client-core configuration; no backend of its own
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-client-core.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-client-core.yaml`; Javadoc is not published yet (internal work item 1401)
 - **Limitations:** Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-aerospike`
@@ -208,7 +208,7 @@ Javadoc is not yet published.
 - **Capabilities:** Configuration-driven client creation; shared client pooling via `appbase-client-core`; blocking and (where the library supports it) reactive access; integration-service lifecycle
 - **Public entry points:** `AerospikeClientService`, `AerospikeClientServiceConfiguration`, `AerospikeClientIntegrationService`
 - **Configuration / backend:** YAML/`AerospikeClientServiceConfiguration`; needs a reachable Aerospike cluster. Built on aerospike-client + aerospike-reactor-client (Micrometer metrics).
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aerospike.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aerospike.yaml`; Javadoc is not published yet (internal work item 1401)
 - **Limitations:** Requires external Aerospike cluster infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-cassandra`
@@ -220,7 +220,7 @@ Javadoc is not yet published.
 - **Capabilities:** Configuration-driven client creation; shared client pooling via `appbase-client-core`; blocking and (where the library supports it) reactive access; integration-service lifecycle
 - **Public entry points:** `CassandraClientService`, `CassandraClientServiceConfiguration`, `CassandraClientIntegrationService`
 - **Configuration / backend:** YAML/`CassandraClientServiceConfiguration`; needs a reachable Cassandra cluster (local datacenter configured). Built on DataStax java-driver 4 (core, query builder, mapper, Micrometer metrics).
-- **Examples / API docs:** Javadoc is not published yet; no stack-test example configuration
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
 - **Limitations:** Requires external Cassandra cluster (local datacenter configured) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-druid`
@@ -232,7 +232,7 @@ Javadoc is not yet published.
 - **Capabilities:** SQL queries against Druid over Avatica, dispatched through mediator events; result-set handling
 - **Public entry points:** `DruidSqlClientService`, `DruidSqlClientServiceConfiguration`, `DruidSqlClientIntegrationService`
 - **Configuration / backend:** YAML/`DruidSqlClientServiceConfiguration`; needs a reachable Apache Druid broker. Built on Apache Calcite Avatica.
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-druid-sql.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-druid-sql-shared-resources.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-druid-sql.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-druid-sql-shared-resources.yaml`; Javadoc is not published yet (internal work item 1401)
 - **Limitations:** Requires external Apache Druid broker infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-elasticsearch`
@@ -244,7 +244,7 @@ Javadoc is not yet published.
 - **Capabilities:** Low-level REST client; typed document, index, search (query/sort/multi-search/scroll/point-in-time) and task APIs; reactive variants; `SearchIndexAccessor`
 - **Public entry points:** `ElasticsearchLowLevelRestClientService`, `ElasticsearchLowLevelRestClientServiceConfiguration`, `ElasticsearchLowLevelRestClientIntegrationService`
 - **Configuration / backend:** YAML/`ElasticsearchLowLevelRestClientServiceConfiguration`; needs a reachable Elasticsearch cluster. Built on the Elasticsearch low-level REST client + Jackson.
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-elasticsearch-low-level.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-elasticsearch-low-level.yaml`; Javadoc is not published yet (internal work item 1401)
 - **Limitations:** Requires external Elasticsearch cluster infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-firebase`
@@ -256,7 +256,7 @@ Javadoc is not yet published.
 - **Capabilities:** Firebase app initialisation; Firebase Auth commands, blocking and reactive
 - **Public entry points:** `FirebaseAppClientService`, `FirebaseAuthClientService`, their `…Configuration` types, `FirebaseAuthCommand`
 - **Configuration / backend:** YAML Firebase app/auth configuration; needs a Firebase project and service-account credentials (firebase-admin)
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-app.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-auth.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-app.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-auth.yaml`; Javadoc is not published yet (internal work item 1401)
 - **Limitations:** Requires a real Firebase project or the Firebase emulators; a real project may incur cost. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-jdbc`
@@ -268,7 +268,7 @@ Javadoc is not yet published.
 - **Capabilities:** Configuration-driven client creation; shared client pooling via `appbase-client-core`; blocking and (where the library supports it) reactive access; integration-service lifecycle
 - **Public entry points:** `JdbcClientService`, `JdbcClientServiceConfiguration`, `JdbcClientIntegrationService`
 - **Configuration / backend:** YAML/`JdbcClientServiceConfiguration`; needs a reachable MariaDB/MySQL or PostgreSQL database. Built on HikariCP with the MariaDB and PostgreSQL drivers.
-- **Examples / API docs:** Javadoc is not published yet; no stack-test example configuration
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
 - **Limitations:** Requires external MariaDB/MySQL or PostgreSQL database infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-jdbi`
@@ -280,7 +280,7 @@ Javadoc is not yet published.
 - **Capabilities:** Configuration-driven client creation; shared client pooling via `appbase-client-core`; blocking and (where the library supports it) reactive access; integration-service lifecycle
 - **Public entry points:** `JdbiClientService`, `JdbiClientServiceConfiguration`, `JdbiClientIntegrationService`
 - **Configuration / backend:** YAML/`JdbiClientServiceConfiguration`; needs a reachable JDBC database (via `appbase-client-jdbc`). Built on Jdbi 3 (core, SQL objects, postgres) over `appbase-client-jdbc`.
-- **Examples / API docs:** Javadoc is not published yet; no stack-test example configuration
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
 - **Limitations:** Requires external JDBC database (via `appbase-client-jdbc`) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-jpa`
@@ -292,7 +292,7 @@ Javadoc is not yet published.
 - **Capabilities:** Configuration-driven client creation; shared client pooling via `appbase-client-core`; blocking and (where the library supports it) reactive access; integration-service lifecycle
 - **Public entry points:** `JpaClientService`, `JpaClientServiceConfiguration`, `JpaClientIntegrationService`
 - **Configuration / backend:** YAML/`JpaClientServiceConfiguration`; needs a reachable JDBC database (via `appbase-client-jdbc`). Built on Hibernate ORM over `appbase-client-jdbc`.
-- **Examples / API docs:** Javadoc is not published yet; no stack-test example configuration
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
 - **Limitations:** Requires external JDBC database (via `appbase-client-jdbc`) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-kafka`
@@ -304,7 +304,7 @@ Javadoc is not yet published.
 - **Capabilities:** Producer and consumer clients, blocking and reactive; configuration-driven lifecycle
 - **Public entry points:** `KafkaProducerClientService`, `KafkaConsumerClientService` and their `…Configuration`/`…IntegrationService` types
 - **Configuration / backend:** YAML/`KafkaProducerClientServiceConfiguration`; needs a reachable Kafka cluster. Built on kafka-clients + reactor-kafka (Micrometer metrics).
-- **Examples / API docs:** Javadoc is not published yet; no stack-test example configuration
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
 - **Limitations:** Requires external Kafka cluster infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-r2dbc`
@@ -316,8 +316,8 @@ Javadoc is not yet published.
 - **Capabilities:** R2DBC connection pooling (r2dbc-pool) with the MariaDB and PostgreSQL drivers; `ReactiveSqlSession`; `ReactiveR2dbcAccessor`
 - **Public entry points:** `R2dbcClientService`, `R2dbcClientServiceConfiguration`, `R2dbcClientIntegrationService`, `ReactiveSqlSession`, `ReactiveR2dbcAccessor`
 - **Configuration / backend:** YAML R2DBC connection and pool configuration; needs a MariaDB or PostgreSQL server
-- **Examples / API docs:** Javadoc is not published yet
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — a pending fix adds it, and the inventory check reports the disagreement until then. Reactive only — no blocking face. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1401)
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Reactive only — no blocking face. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-redis`
 
@@ -328,7 +328,7 @@ Javadoc is not yet published.
 - **Capabilities:** Configuration-driven client creation; shared client pooling via `appbase-client-core`; blocking and (where the library supports it) reactive access; integration-service lifecycle
 - **Public entry points:** `RedisClientService`, `RedisClientServiceConfiguration`, `RedisClientIntegrationService`
 - **Configuration / backend:** YAML/`RedisClientServiceConfiguration`; needs a reachable Redis server. Built on Lettuce.
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-redis.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-redis.yaml`; Javadoc is not published yet (internal work item 1401)
 - **Limitations:** Requires external Redis server infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-vitess`
@@ -340,7 +340,7 @@ Javadoc is not yet published.
 - **Capabilities:** gRPC client with blocking/async commands; JDBC access; channel/interceptor customisation
 - **Public entry points:** `VitessGrpcClientService`, `VitessGrpcClientServiceConfiguration`, `VitessGrpcClientIntegrationService`
 - **Configuration / backend:** YAML/`VitessGrpcClientServiceConfiguration`; needs a reachable Vitess cluster (vtgate). Built on vitess-grpc-client + vitess-jdbc.
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-grpc.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-jdbc.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-jdbi.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-grpc.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-jdbc.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-jdbi.yaml`; Javadoc is not published yet (internal work item 1401)
 - **Limitations:** Requires external Vitess cluster (vtgate) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-zookeeper`
@@ -352,7 +352,7 @@ Javadoc is not yet published.
 - **Capabilities:** Curator-based client, retry policies, commands, distributed-counter accessor
 - **Public entry points:** `ZooKeeperClientService`, `ZooKeeperClientServiceConfiguration`, `ZooKeeperClientIntegrationService`
 - **Configuration / backend:** YAML/`ZooKeeperClientServiceConfiguration`; needs a reachable ZooKeeper ensemble. Built on Apache Curator (framework, recipes, async) (Micrometer metrics).
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-zookeeper.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-zookeeper.yaml`; Javadoc is not published yet (internal work item 1401)
 - **Limitations:** Requires external ZooKeeper ensemble infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ## Cloud clients (AWS)
@@ -366,7 +366,7 @@ Javadoc is not yet published.
 - **Capabilities:** Factories for credentials providers, profile files, retry and backoff policies, client override and async configuration, execution interceptors, TLS key managers
 - **Public entry points:** `AwsSdkCredentialsProviderFactory`, `AwsSdkClientOverrideConfigurationFactory`, `AwsSdkRetryPolicyFactory`, `AwsSdkBackoffStrategyConfiguration` and related factories
 - **Configuration / backend:** YAML AWS SDK settings; AWS credentials/profile files
-- **Examples / API docs:** example profiles `appbase-stacktest/src/main/resources/aws-config.profile` and `aws-credentials.profile`; Javadoc is not published yet
+- **Examples / API docs:** example profiles `appbase-stacktest/src/main/resources/aws-config.profile` and `aws-credentials.profile`; Javadoc is not published yet (internal work item 1404)
 - **Limitations:** AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-cloud-aws-httpclient`
@@ -378,7 +378,7 @@ Javadoc is not yet published.
 - **Capabilities:** Sync and async SDK HTTP client lifecycle and configuration; event-loop-group and TLS customisation
 - **Public entry points:** `AwsSdkHttpClientService`, `AwsSdkAsyncHttpClientService` and their `…Configuration`/`…IntegrationService` types
 - **Configuration / backend:** YAML HTTP-client configuration; AWS SDK apache-client/netty-nio-client
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-http-client.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-async-http-client.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-http-client.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-async-http-client.yaml`; Javadoc is not published yet (internal work item 1404)
 - **Limitations:** AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-cloud-aws-s3`
@@ -390,7 +390,7 @@ Javadoc is not yet published.
 - **Capabilities:** Sync/async S3 clients; `ObjectStoreAccessor` (blocking and reactive)
 - **Public entry points:** `S3ClientsService`, `S3ClientsServiceConfiguration`, `S3Clients`, `ObjectStoreAccessor`
 - **Configuration / backend:** YAML S3 configuration; needs an S3 endpoint (AWS, or an S3-compatible local store) and credentials
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-s3.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-s3.yaml`; Javadoc is not published yet (internal work item 1404)
 - **Limitations:** Real AWS usage incurs cost; integration tests need an S3-compatible endpoint. AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ## Application services
@@ -404,7 +404,7 @@ Javadoc is not yet published.
 - **Capabilities:** `AppbaseServiceExchange` filter/handler chain; `AuthorizationService` and context authorizers; `ClusterService`; `HealthCheckService`/`HealthChecker`; `IdService`; `PasswordService` (Bouncy Castle)
 - **Public entry points:** `AppbaseServiceExchange`, `AppbaseServiceFilter`, `AppbaseServiceHandler`, `AuthorizationService`, `ClusterService`, `HealthCheckService`, `IdService`, `PasswordService`
 - **Configuration / backend:** YAML service configuration; pulls in the Firebase, S3, ZooKeeper and Jdbi clients, whose backends are needed only for the features you enable
-- **Examples / API docs:** `docs/configuration/authorization-and-path-matching.md`; Javadoc is not published yet
+- **Examples / API docs:** `docs/configuration/authorization-and-path-matching.md`; Javadoc is not published yet (internal work item 1403)
 - **Limitations:** Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web`
@@ -416,7 +416,7 @@ Javadoc is not yet published.
 - **Capabilities:** Servlet, JAX-RS and reactive web filters; core/configuration admin endpoints; health endpoints; CORS; metric and trace filters
 - **Public entry points:** `AuthorizationFilter`, `CorsFilter`, the `…endpoint.servlet`/`…endpoint.jaxrs` resources and the `Abstract…Filter` base classes
 - **Configuration / backend:** YAML web/service configuration; runs inside a bootstrap container
-- **Examples / API docs:** `docs/configuration/authorization-and-path-matching.md`; Javadoc is not published yet
+- **Examples / API docs:** `docs/configuration/authorization-and-path-matching.md`; Javadoc is not published yet (internal work item 1403)
 - **Limitations:** Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth`
@@ -428,8 +428,8 @@ Javadoc is not yet published.
 - **Capabilities:** `OAuthFilter`; Nimbus JOSE+JWT validation; token caching (Caffeine) with hashed cache keys (SHA-256 / HMAC-SHA256)
 - **Public entry points:** `OAuthFilter`, `OAuthConfiguration`, `TokenValidator`, `TokenCache`, `TokenKeyHasher`
 - **Configuration / backend:** YAML OAuth configuration (issuer, audience, JWKS); needs the identity provider's endpoints
-- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet
-- **Limitations:** Release 1 providers are Google, Okta, Microsoft Entra, Apple and GitHub (baseline §4.1); Meta, X and Cognito are Release 2. The reactive face is `appbase-service-web-oauth-reactive`, supported in Release 1 by the owner's ruling. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
+- **Limitations:** Release 1 providers are Google, Okta, Microsoft Entra, Apple and GitHub (baseline §4.1); Meta, X and Cognito are Release 2. The reactive face is `appbase-service-web-oauth-reactive`, supported in Release 1 by the owner ruling on internal work item 1141 Q1. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-github`
 
@@ -440,7 +440,7 @@ Javadoc is not yet published.
 - **Capabilities:** `GitHubTokenValidator` via the GitHub user API; profile and org/team bindings
 - **Public entry points:** `GitHubOAuthConfiguration`, `GitHubTokenValidator`, `GitHubUserApi`
 - **Configuration / backend:** YAML GitHub OAuth configuration; needs network access to the GitHub API
-- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet
+- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
 - **Limitations:** GitHub is not OIDC — tokens are validated by calling the GitHub API rather than locally. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-google`
@@ -452,8 +452,8 @@ Javadoc is not yet published.
 - **Capabilities:** Google OIDC discovery defaults (fixed issuer and JWKS); profile and group bindings
 - **Public entry points:** `GoogleOAuthDefaults`, `GoogleProfileBinding`, `GoogleUserProfile`, `GoogleGroupBinding`
 - **Configuration / backend:** YAML OAuth configuration (issuer, audience, JWKS) with the provider's defaults; needs network access to the provider's endpoints
-- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — a pending fix adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-okta`
 
@@ -464,8 +464,8 @@ Javadoc is not yet published.
 - **Capabilities:** Okta org discovery defaults; profile and group bindings
 - **Public entry points:** `OktaOAuthDefaults`, `OktaProfileBinding`, `OktaUserProfile`, `OktaGroupBinding`
 - **Configuration / backend:** YAML OAuth configuration (issuer, audience, JWKS) with the provider's defaults; needs network access to the provider's endpoints
-- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — a pending fix adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-microsoft`
 
@@ -476,8 +476,8 @@ Javadoc is not yet published.
 - **Capabilities:** Entra ID discovery defaults; profile and group bindings
 - **Public entry points:** `EntraOAuthDefaults`, `EntraProfileBinding`, `EntraUserProfile`, `EntraGroupBinding`
 - **Configuration / backend:** YAML OAuth configuration (issuer, audience, JWKS) with the provider's defaults; needs network access to the provider's endpoints
-- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — a pending fix adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-apple`
 
@@ -488,8 +488,8 @@ Javadoc is not yet published.
 - **Capabilities:** Apple discovery defaults; profile binding; client-secret (JWT) generation
 - **Public entry points:** `AppleOAuthDefaults`, `AppleProfileBinding`, `AppleUserProfile`, `AppleClientSecretGenerator`
 - **Configuration / backend:** YAML OAuth configuration (issuer, audience, JWKS) with the provider's defaults; needs network access to the provider's endpoints
-- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — a pending fix adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-reactive`
 
@@ -501,7 +501,7 @@ Javadoc is not yet published.
 - **Public entry points:** `ReactiveOAuthFilter`, `ReactiveWebFilterChain`
 - **Configuration / backend:** as `appbase-service-web-oauth`
 - **Examples / API docs:** `docs/OAuth-Primer.md`
-- **Limitations:** Supported in Release 1 by the owner's ruling; `appbase-bom` exports it once that fix lands. Reactive (Reactor Netty) face only; the servlet face is `appbase-service-web-oauth`. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** Supported in Release 1 by the owner ruling on internal work item 1141 Q1 (internal work item 1141 comment 5855318230); `appbase-bom` exports it once PR internal work item 2504 lands. Reactive (Reactor Netty) face only; the servlet face is `appbase-service-web-oauth`. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-tokencache-redis`
 
@@ -512,8 +512,8 @@ Javadoc is not yet published.
 - **Capabilities:** Shared validated-token cache with hashed keys
 - **Public entry points:** `RedisTokenCache`, `RedisTokenCacheGuiceModule`
 - **Configuration / backend:** YAML OAuth cache configuration plus `appbase-client-redis` (a reachable Redis)
-- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — a pending fix adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-tokencache-aerospike`
 
@@ -524,8 +524,8 @@ Javadoc is not yet published.
 - **Capabilities:** Shared validated-token cache with hashed keys
 - **Public entry points:** `AerospikeTokenCache`, `AerospikeTokenCacheGuiceModule`
 - **Configuration / backend:** YAML OAuth cache configuration plus `appbase-client-aerospike` (a reachable Aerospike)
-- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — a pending fix adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-user`
 
@@ -536,7 +536,7 @@ Javadoc is not yet published.
 - **Capabilities:** `UserAccountService`; account and session stores (blocking and reactive contracts); IdP token verification; session and IdP-token filters for servlet, JAX-RS and reactive
 - **Public entry points:** `UserAccountService`, `UserAccountStore`, `UserSessionStore`, `ReactiveUserAccountStore`, `ReactiveUserSessionStore`, `IdpTokenVerifier`, `UserSessionFilter`
 - **Configuration / backend:** YAML service configuration; the stores come from a backend module (Jdbi, Firebase Auth or Aerospike sessions)
-- **Examples / API docs:** Javadoc is not published yet
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1403)
 - **Limitations:** Store implementations live in the backend modules; this module alone has no persistence. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-user-account-firebaseauth`
@@ -548,7 +548,7 @@ Javadoc is not yet published.
 - **Capabilities:** Create users and check user tokens against Firebase Auth
 - **Public entry points:** `FirebaseAuthService`, `DefaultFirebaseAuthServiceConfiguration`
 - **Configuration / backend:** YAML configuration plus `appbase-client-firebase` (a Firebase project and credentials)
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-auth.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-auth.yaml`; Javadoc is not published yet (internal work item 1403)
 - **Limitations:** Requires a Firebase project or the emulators. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-user-account-jdbi`
@@ -560,7 +560,7 @@ Javadoc is not yet published.
 - **Capabilities:** `JdbiUserAccountStore` with a health checker
 - **Public entry points:** `JdbiUserAccountStore`, `JdbiUserAccountStoreConfiguration`
 - **Configuration / backend:** YAML store configuration plus `appbase-client-jdbi` (a JDBC database)
-- **Examples / API docs:** Javadoc is not published yet; no dedicated example
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1403); no dedicated example
 - **Limitations:** Requires a relational database and the account schema. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-user-session-aerospike`
@@ -572,7 +572,7 @@ Javadoc is not yet published.
 - **Capabilities:** Blocking and reactive session stores with a health checker
 - **Public entry points:** `DefaultUserSessionStore`, `DefaultReactiveUserSessionStore`, `DefaultUserSessionStoreConfiguration`
 - **Configuration / backend:** YAML store configuration plus `appbase-client-aerospike` (an Aerospike cluster)
-- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aerospike.yaml`; Javadoc is not published yet
+- **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aerospike.yaml`; Javadoc is not published yet (internal work item 1403)
 - **Limitations:** Requires Aerospike. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-supportmessage`
@@ -584,7 +584,7 @@ Javadoc is not yet published.
 - **Capabilities:** `SupportMessageService`, pluggable `SupportMessageStore` and listeners, HTTP endpoints
 - **Public entry points:** `SupportMessageService`, `SupportMessageStore`, `SupportMessageListener`
 - **Configuration / backend:** YAML service configuration (`DefaultSupportMessageServiceConfiguration`); JDBI store `JdbiSupportMessageStore` (`JdbiSupportMessageStoreConfiguration`) over `appbase-client-jdbi`
-- **Examples / API docs:** Javadoc is not published yet
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1403)
 - **Limitations:** Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ## Tools
@@ -598,7 +598,7 @@ Javadoc is not yet published.
 - **Capabilities:** Console mode (picocli/JLine) and web mode (Jersey on Jetty, OpenAPI/Swagger UI, Flutter web frontend); discovers configuration classes on the classpath and writes validated YAML
 - **Public entry points:** `bin/start-console.sh`, `bin/start-web.sh [port]` / `bin/stop-web.sh` — a runnable tool, not a library API
 - **Configuration / backend:** Local only; no backend
-- **Examples / API docs:** `appbase-config-wizard/README.md`; the User Guide config-wizard chapter
+- **Examples / API docs:** `appbase-config-wizard/README.md`; the User Guide config-wizard chapter (internal work item 1416)
 - **Limitations:** Its Java classes are implementation detail, not an API. The web frontend is built only by `--wizard-frontend` or the staging/release modes. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `pub:appbase_config_wizard`
@@ -610,7 +610,7 @@ Javadoc is not yet published.
 - **Capabilities:** Browser UI for the wizard's web mode
 - **Public entry points:** None for consumers — it is served by the wizard (`publish_to: none`)
 - **Configuration / backend:** Built into the wizard jar; Flutter toolchain needed only to build it
-- **Examples / API docs:** `appbase-config-wizard/README.md`; dartdoc
+- **Examples / API docs:** `appbase-config-wizard/README.md`; dartdoc (internal work item 1406)
 - **Limitations:** Not published to pub.dev and not usable on its own.
 
 ## Internal build and test modules — not consumer dependencies
@@ -709,7 +709,7 @@ Javadoc is not yet published.
 - **Public entry points:** None — it is an application and a test harness, not a library
 - **Configuration / backend:** Docker-based test infrastructure (`appbase-stacktest/infra`)
 - **Examples / API docs:** `appbase-stacktest/README.md`
-- **Limitations:** Not a consumer dependency, although `appbase-bom` still lists it. The headed showcase is Release 2; it is renamed `appbase-examples` in 2.0.0.
+- **Limitations:** Not a consumer dependency, although `appbase-bom` still lists it. The headed showcase is Release 2 (internal work item 1332); it is renamed `appbase-examples` in 2.0.0.
 
 ## Deferred — built, but NOT part of Release 1
 
@@ -722,8 +722,8 @@ Javadoc is not yet published.
 - **Capabilities:** Virus-scan requests and pings against clamd through mediator events; configuration-driven client lifecycle
 - **Public entry points:** `ClamAVClientService`, `ClamAVClient`, `ClamAVClientServiceConfiguration`, `ClamAVRequestEvent`, `ClamAVPingEvent`
 - **Configuration / backend:** YAML/`ClamAVClientServiceConfiguration`; needs a reachable clamd (ClamAV daemon). Built on a built-in clamd protocol client.
-- **Examples / API docs:** Javadoc is not published yet; no stack-test example configuration
-- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers ClamAV (Release 2). It is still exported by `appbase-bom` on this epic base; a pending fix removes it, and the inventory check reports it until then. Requires external clamd (ClamAV daemon) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
+- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers ClamAV (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; PR internal work item 2504 removes it, and the inventory check reports it until then. Requires external clamd (ClamAV daemon) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-jasync`
 
@@ -734,8 +734,8 @@ Javadoc is not yet published.
 - **Capabilities:** Configuration-driven client creation; shared client pooling via `appbase-client-core`; blocking and (where the library supports it) reactive access; integration-service lifecycle
 - **Public entry points:** `JasyncClientService`, `JasyncClientServiceConfiguration`, `JasyncClientIntegrationService`
 - **Configuration / backend:** YAML/`JasyncClientServiceConfiguration`; needs a reachable MySQL/MariaDB or PostgreSQL server. Built on jasync-mysql + jasync-postgresql (Micrometer metrics).
-- **Examples / API docs:** Javadoc is not published yet; no stack-test example configuration
-- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers Jasync support certification (Release 2). It is still exported by `appbase-bom` on this epic base; a pending fix removes it, and the inventory check reports it until then. Requires external MySQL/MariaDB or PostgreSQL server infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
+- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers Jasync support certification (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; PR internal work item 2504 removes it, and the inventory check reports it until then. Requires external MySQL/MariaDB or PostgreSQL server infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-smtp`
 
@@ -746,8 +746,8 @@ Javadoc is not yet published.
 - **Capabilities:** Configuration-driven client creation; shared client pooling via `appbase-client-core`; blocking and (where the library supports it) reactive access; integration-service lifecycle
 - **Public entry points:** `SmtpClientService`, `SmtpClientServiceConfiguration`, `SmtpClientIntegrationService`
 - **Configuration / backend:** YAML/`SmtpClientServiceConfiguration`; needs a reachable SMTP server. Built on HubSpot NioSmtpClient.
-- **Examples / API docs:** Javadoc is not published yet; no stack-test example configuration
-- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers SMTP (Release 2). It is still exported by `appbase-bom` on this epic base; a pending fix removes it, and the inventory check reports it until then. Requires external SMTP server infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
+- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers SMTP (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; PR internal work item 2504 removes it, and the inventory check reports it until then. Requires external SMTP server infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-spark`
 
@@ -758,8 +758,8 @@ Javadoc is not yet published.
 - **Capabilities:** Configuration-driven client creation; shared client pooling via `appbase-client-core`; blocking and (where the library supports it) reactive access; integration-service lifecycle
 - **Public entry points:** `SparkClientService`, `SparkClientServiceConfiguration`, `SparkClientIntegrationService`
 - **Configuration / backend:** YAML/`SparkClientServiceConfiguration`; needs a reachable Spark master/cluster. Built on Spark 3 (Scala 2.12) core, SQL, streaming and Kafka connectors.
-- **Examples / API docs:** Javadoc is not published yet; no stack-test example configuration
-- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers Spark support certification (Release 2). It is still exported by `appbase-bom` on this epic base; a pending fix removes it, and the inventory check reports it until then. Requires external Spark master/cluster infrastructure; integration tests need it running. Heavy transitive dependency set (Spark + Scala 2.12). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
+- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers Spark support certification (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; PR internal work item 2504 removes it, and the inventory check reports it until then. Requires external Spark master/cluster infrastructure; integration tests need it running. Heavy transitive dependency set (Spark + Scala 2.12). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-user-account-r2dbc`
 
@@ -770,5 +770,5 @@ Javadoc is not yet published.
 - **Capabilities:** Reactive account store
 - **Public entry points:** `R2dbcReactiveUserAccountStore`, `R2dbcReactiveUserAccountStoreConfiguration`
 - **Configuration / backend:** `appbase-client-r2dbc` database
-- **Examples / API docs:** Javadoc is not published yet
-- **Limitations:** **Deferred — not part of Release 1** (Release 2), by the owner's ruling. Not exported by `appbase-bom`. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Examples / API docs:** Javadoc is not published yet (internal work item 1403)
+- **Limitations:** **Deferred — not part of Release 1** (Release 2), by the owner ruling on internal work item 1141 Q1 (internal work item 1141 comment 5855318230). Not exported by `appbase-bom`. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
