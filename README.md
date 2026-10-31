@@ -5,7 +5,7 @@
 
 # Appbase
 
-**A modular Java 25 framework for building backend services: core runtime services, backend
+**A modular Java 25+ framework for building backend services: core runtime services, backend
 adapters, application services, and a choice of embedded server, assembled from one YAML
 configuration.**
 
