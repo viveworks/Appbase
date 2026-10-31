@@ -5,7 +5,7 @@
 
 # Appbase
 
-**A modular Java 25 framework for building backend services: core runtime services, backend
+**A modular Java 25+ framework for building backend services: core runtime services, backend
 adapters, application services, and a choice of embedded server, assembled from one YAML
 configuration.**
 
@@ -56,7 +56,9 @@ repository yet, so build from source:
 
 ```sh
 git clone https://github.com/viveworks/Appbase.git && cd Appbase
+
 ./build.sh --mode compile            # whole-repo compile, no tests; refuses on a JDK older than 25
+
 mvn test -pl appbase-stacktest -am \
   -Dappbase-stacktest.skipTests=false \
   -Dtest=ReactiveShowcaseStackTest \
@@ -156,11 +158,7 @@ claim to bind evidence to each pushed ref. CI is the exact-commit authority: its
 
 ## What comes next
 
-Release 2 work is tracked in the Release 2 Plan of Record
-internal work item 1957, and deferred adapter breadth in
-internal work item 1925. Release publication adds the public
-release notes that preserve the durable next-release decisions; no release-notes file is present in
-the public tree before then. This README does not copy that future publication output.
+There are a lot of exciting modules being planned — stay tuned.
 
 ## License
 
