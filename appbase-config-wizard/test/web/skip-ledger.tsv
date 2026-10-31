@@ -1,0 +1,58 @@
+# Reviewed reason for every test.skip() / describe.skip() / it.skip() site in tests/*.ts (internal work item 1304 / N14).
+# Columns: spec, line (as in the file at review), class, reason. The guard requires the lines to match exactly.
+# Lower or remove a row when the N14 triage turns the skip into an assertion. Never add one without review.
+spec	line	class	reason
+all-configs.spec.ts	125	precondition-data	No config buttons are rendered on the list page, so the test has nothing to open.
+all-configs.spec.ts	214	absent-element	No nested-field config is found in the list; the Set Values path cannot be reached.
+all-configs.spec.ts	219	absent-element	The Set Values control is not found on the nested config.
+all-configs.spec.ts	234	covered-elsewhere	The nested field tile is absent; the nested-field path is asserted by W-API-DETAIL in api-coverage.
+all-configs.spec.ts	245	absent-element	No nested-field config is found (sub-form test).
+all-configs.spec.ts	249	absent-element	The Set Values control is not found (sub-form test).
+all-configs.spec.ts	256	absent-element	The nested field tile is absent (sub-form test).
+all-configs.spec.ts	298	absent-element	No nested-field config is found (close-and-back test).
+all-configs.spec.ts	302	absent-element	The Set Values control is not found (close-and-back test).
+all-configs.spec.ts	312	absent-element	The nested field tile is absent (close-and-back test).
+all-configs.spec.ts	322	absent-element	The Apply button is not visible in the sub-form, so the Apply assertion is not made.
+all-configs.spec.ts	397	absent-element	The Build Config control is absent on the first config; the YAML assertion is not made.
+all-configs.spec.ts	404	absent-element	The Build Config control is absent after the form loads.
+all-configs.spec.ts	444	absent-element	No nested-field config is found (Apply and Build test).
+all-configs.spec.ts	449	absent-element	The Set Values control is not found (Apply and Build test).
+all-configs.spec.ts	459	absent-element	The nested field tile is absent (Apply and Build test).
+all-configs.spec.ts	467	absent-element	The Apply control is absent (Apply and Build test).
+all-configs.spec.ts	485	absent-element	The Build Config control is absent after Apply.
+api-coverage.spec.ts	267	precondition-data	No config in the environment has an enum field with a value to submit (target, field or value is empty).
+api-coverage.spec.ts	330	precondition-data	No config returned a validation error for an empty body (all configs may have defaults).
+filter-coverage.spec.ts	66	absent-element	Bare skip: the search input is not found, so the module filter assertion is not made.
+filter-coverage.spec.ts	85	absent-element	The search input is not found; the nonexistent-term assertion is not made.
+filter-coverage.spec.ts	99	absent-element	The search input is not found; the clear-filter assertion is not made.
+filter-coverage.spec.ts	141	precondition-data	No config with defaults is in the list (target is empty).
+filter-coverage.spec.ts	154	absent-element	The list item is not found after navigation.
+filter-coverage.spec.ts	196	precondition-data	No config with a boolean field is in the list (target is empty).
+filter-coverage.spec.ts	209	absent-element	The list item is not found after navigation.
+filter-coverage.spec.ts	254	absent-element	The Build Config control is absent; the colon assertion is not made.
+filter-coverage.spec.ts	262	body-not-generated-yaml	Bare skip: the body does not show generated yaml after Build, so the output assertion is not made.
+filter-coverage.spec.ts	282	absent-element	The Build Config control is absent on the YAML screen test.
+filter-coverage.spec.ts	288	body-not-generated-yaml	The body does not show generated yaml, so the Write to File assertion is not made.
+filter-coverage.spec.ts	299	covered-elsewhere	The Write to File button is not found; write is asserted by W-API-WRITE in api-coverage.
+form.spec.ts	106	absent-element	No Build Config button is found on the form; the error assertion is not made.
+form.spec.ts	128	absent-element	No Build Config button is found; the response assertion is not made.
+form.spec.ts	206	absent-element	The YAML output screen is not shown after Build Config.
+form.spec.ts	217	absent-element	The YAML output screen is not shown; the Write to File button is not checked.
+form.spec.ts	234	covered-elsewhere	The Write to File button is absent (YAML may be empty); write is asserted by W-API-WRITE.
+form.spec.ts	243	absent-element	The YAML output screen is not shown; the write confirmation is not checked.
+form.spec.ts	252	absent-element	The Write to File button is not found; the confirmation is not checked.
+form.spec.ts	270	absent-element	The YAML output screen is not shown; the back navigation is not checked.
+import.spec.ts	37	absent-element	The Import button is not in the DOM (Flutter may render it on canvas); no assertion is made.
+import.spec.ts	67	absent-element	No Import button is found; the Import screen text is not checked.
+import.spec.ts	76	absent-element	No Import button is found; the scan element is not checked.
+import.spec.ts	86	absent-element	No Import button is found; the directory input is not checked.
+import.spec.ts	107	absent-element	No Import button is found; the back navigation is not checked.
+navigation.spec.ts	70	absent-element	Bare skip: the search input is not found, so the Redis filter assertion is not made.
+navigation.spec.ts	85	absent-element	The search input is not found; the nonexistent-module assertion is not made.
+navigation.spec.ts	99	absent-element	The search input is not found; the clear-filter assertion is not made.
+nested-and-build.spec.ts	64	api-not-ok	The configuration API response is not ok; the nestedTypeFqcn assertion is not made.
+nested-and-build.spec.ts	70	absent-field	The jaegerSamplerConfiguration field is absent from the response; the nestedTypeFqcn assertion is not made.
+nested-and-build.spec.ts	85	api-not-ok	The configuration API response is not ok; the nestedTypeFqcn assertion is not made.
+nested-and-build.spec.ts	91	absent-field	The hikariDataSourceConfiguration field is absent from the response; the assertion is not made.
+nested-and-build.spec.ts	169	api-not-ok	The default configuration API response is not ok; the YAML build is not checked.
+nested-and-build.spec.ts	199	api-not-ok	The default configuration API response is not ok; the YAML build is not checked.

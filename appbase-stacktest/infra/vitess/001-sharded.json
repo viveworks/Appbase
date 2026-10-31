@@ -1,0 +1,91 @@
+{
+  "sharded": true,
+  "vindexes": {
+    "hash": {
+      "type": "hash"
+    },
+    "unicode_loose_md5": {
+      "type": "unicode_loose_md5"
+    },
+    "appbase_UserAccount_appbaseUserId_keyspaceId_lookup_idx": {
+      "type": "consistent_lookup_unique",
+      "params": {
+        "table": "appbase_UserAccount_appbaseUserId_keyspaceId_lookup",
+        "from": "appbaseUserId",
+        "to": "keyspaceId"
+      },
+      "owner": "appbase_UserAccount"
+    },
+    "appbase_UserAccount_email_keyspaceId_lookup_idx": {
+      "type": "consistent_lookup_unique",
+      "params": {
+        "table": "appbase_UserAccount_email_keyspaceId_lookup",
+        "from": "email",
+        "to": "keyspaceId"
+      },
+      "owner": "appbase_UserAccount"
+    }
+  },
+  "tables": {
+    "stacktest_customer": {
+      "column_vindexes": [
+        {
+          "column": "customer_id",
+          "name": "hash"
+        }
+      ],
+      "auto_increment": {
+        "column": "customer_id",
+        "sequence": "stacktest_customer_seq"
+      }
+    },
+    "stacktest_order": {
+      "column_vindexes": [
+        {
+          "column": "customer_id",
+          "name": "hash"
+        }
+      ],
+      "auto_increment": {
+        "column": "order_id",
+        "sequence": "stacktest_order_seq"
+      }
+    },
+    "appbase_UserAccount_appbaseUserId_keyspaceId_lookup": {
+      "column_vindexes": [{
+        "column": "appbaseUserId",
+        "name": "unicode_loose_md5"
+      }]
+    },
+    "appbase_UserAccount_email_keyspaceId_lookup": {
+      "column_vindexes": [{
+        "column": "email",
+        "name": "unicode_loose_md5"
+      }]
+    },
+    "appbase_UserAccount": {
+      "column_vindexes": [
+        {
+          "column": "idpUserId",
+          "name": "unicode_loose_md5"
+        },
+        {
+          "column": "appbaseUserId",
+          "name": "appbase_UserAccount_appbaseUserId_keyspaceId_lookup_idx"
+        },
+        {
+          "column": "email",
+          "name": "appbase_UserAccount_email_keyspaceId_lookup_idx"
+        }
+      ]
+    },
+    "appbase_SupportMessage": {
+      "column_vindexes": [
+        {
+          "column": "messageId",
+          "name": "unicode_loose_md5"
+        }
+      ]
+    }
+  }
+}

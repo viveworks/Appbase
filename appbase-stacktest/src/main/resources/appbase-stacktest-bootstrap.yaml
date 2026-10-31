@@ -1,0 +1,277 @@
+# Copyright 2019 The original author or authors of Appbase
+#
+# This project includes software developed by the author or authors of
+# Appbase (https://github.com/viveworks/Appbase).
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+appbaseCoreServicesConfiguration:
+
+  logServiceConfiguration:
+    logbackXml: null
+    defaultLogAccessorConfiguration:
+      enabled: true
+      logStoreConfigurations:
+        - type: "com.viveworks.appbase.core.service.log.store.lucene.LuceneLogStoreConfiguration"
+          enabled: true
+          logStoreType: "com.viveworks.appbase.core.service.log.store.lucene.LuceneLogStore"
+    metricsTurboFilterHandlerConfiguration:
+      enabled: true
+      measureLogLevels: true
+      measureLoggerNames: true
+      allowedLoggerNames: []
+      blockedLoggerNames: []
+      measureFormattedMessages: false
+      allowedFormattedMessages: []
+      blockedFormattedMessages: []
+      measureThrowableTypeNames: true
+      allowedThrowableTypeNames: []
+      blockedThrowableTypeNames: []
+    burstTurboLogEventFilterHandlerConfiguration:
+      enabled: true
+      burstRateThreshold: 1000.0
+      defaultLogDeduplicatorConfiguration:
+        duplicateLogHandlerSchedulableConfiguration:
+          enabled: true
+          initialDelay: 0
+          interval: 60
+          timeUnit: "SECONDS"
+      defaultLogRateCalculatorConfiguration:
+        ewmaRate: "ONE_MINUTE"
+      defaultDuplicateLogHandlerConfiguration:
+        markerName: "DefaultDuplicateLogHandler"
+        formattedMessageLogLevel: "INFO"
+        throwableLogLevel: "ERROR"
+        countTextPrefix: " (count="
+        countTextSuffix: ")"
+        throwableTypeNameAndMessageSeparator: " - "
+        logParamsAndThrowable: true
+    disruptorMediatorEventDelegatingAppenderConfiguration:
+      enabled: true
+    luceneLogIndexConfiguration:
+      type: "com.viveworks.appbase.core.service.log.common.lucene.DefaultLuceneLogIndexConfiguration"
+      enabled: true
+      luceneServiceConfiguration:
+        type: "com.viveworks.appbase.core.util.lucene.DefaultLuceneServiceConfiguration"
+        enabled: true
+        indexBaseDirectory: "target/appbase-stacktest/lucene/bootstrap-log"
+        directoryType: "NIO"
+        mmapDirectoryConfiguration:
+          maxChunkSize: 1073741824
+          useUnmap: true
+          preload: true
+        deleteIndexPathUponShutdown: true
+        checkPendingFlushUpdate: true
+        commitOnClose: true
+        maxBufferedDocs: 1024
+        openMode: "CREATE_OR_APPEND"
+        ramBufferSizeMB: 512.0
+        ramPerThreadHardLimitMB: 128
+        readerPooling: true
+        useCompoundFile: true
+        lruQueryCacheConfiguration:
+          enabled: true
+          maxQueries: 1000
+          maxRamBytesUsed: 52428800
+        standardAnalyzerStopWords: []
+        standardAnalyzerMaxTokenLength: 255
+        stopWordsIgnoreCase: true
+        timestampBasedIndexCleanerConfiguration:
+          enabled: true
+          removeBeforeTimePeriod: 1
+          removeBeforeTimePeriodUnit: "DAYS"
+          creationTimestampFieldName: "creationTimestampLongPoint"
+          schedulableConfiguration:
+            enabled: true
+            initialDelay: 0
+            interval: 10
+            timeUnit: "MINUTES"
+        indexSynchronizerSchedulableConfiguration:
+          enabled: true
+          initialDelay: 0
+          interval: 30
+          timeUnit: "SECONDS"
+      timestampStoredFieldName: "creationTimestamp"
+      timestampLongPointName: "creationTimestampLongPoint"
+      threadNameFieldName: "threadName"
+      loggerNameFieldName: "loggerName"
+      logLevelFieldName: "logLevel"
+      formattedMessageFieldName: "formattedMessage"
+      messageFieldName: "message"
+      throwableTypeNameFieldName: "throwable.typeName"
+      throwableMessageFieldName: "throwable.message"
+      throwableStackTraceIndexEnabled: true
+      throwableStackTraceFieldName: "throwable.stackTrace"
+      mdcIndexEnabled: true
+      mdcFieldNamePrefix: "mdc."
+      mdcFieldNameSuffix: ""
+      markerIndexEnabled: true
+      markerFieldName: "marker"
+      throwableCauseTypeNameFieldName: "throwable.cause.typeName"
+      throwableCauseMessageFieldName: "throwable.cause.message"
+      throwableCauseStackTraceIndexEnabled: true
+      throwableCauseStackTraceFieldName: "throwable.cause.stackTrace"
+      callerStackIndexEnabled: false
+      callerStackFieldName: "callerStack"
+    luceneAppenderConfiguration:
+      enabled: true
+    disruptorLogAndTurboLogEventFilterDelegatorConfiguration:
+      enabled: true
+      acceptLogAfterTurboLogEventListeners: true
+      acceptLogAfterLogEventListeners: true
+    duplicateLogTurboFilterHandlerConfiguration:
+      enabled: false
+      defaultLogDeduplicatorConfiguration:
+        duplicateLogHandlerSchedulableConfiguration:
+          enabled: true
+          initialDelay: 0
+          interval: 60
+          timeUnit: "SECONDS"
+      defaultDuplicateLogHandlerConfiguration:
+        markerName: "DefaultDuplicateLogHandler"
+        formattedMessageLogLevel: "INFO"
+        throwableLogLevel: "ERROR"
+        countTextPrefix: " (count="
+        countTextSuffix: ")"
+        throwableTypeNameAndMessageSeparator: " - "
+        logParamsAndThrowable: true
+    luceneLogAndTurboLogEventFilterListenerConfiguration:
+      enabled: false
+      indexTurboLog: false
+      indexLogEvent: false
+
+  metricServiceConfiguration:
+    enableJvmAndSystemMetrics: true
+
+  validationServiceConfiguration: {}
+
+  mediatorServiceConfiguration:
+    ignoredMessageTypeSet: []
+    objectPoolCapacity: 256
+    removedMessageQueueCapacity: 128
+    appbaseRuntimeExceptionQueueCapacity: 128
+    defaultMessageQueuesConfiguration:
+      messageQueueType: "BOUND"
+      boundMessageQueueCapacity: 256
+      removeExpiredMessages: true
+      expiredMessageThresholdMillis: 300000
+      messageQueuesCleanerInitialDelayMillis: 5000
+      messageQueuesCleanerIntervalMillis: 10000
+    sharedExecutorServiceConfiguration:
+      executorServiceType: "SINGLE_THREADED"
+      fixedThreadPoolSize: 8
+      threadNameFormat: "appbase-mediator-executor-%d"
+      daemonThread: false
+    sharedScheduledExecutorServiceConfiguration:
+      scheduledExecutorServiceType: "SINGLE_THREADED"
+      threadPoolSize: 8
+      threadNameFormat: "appbase-mediator-scheduled-executor-%d"
+      daemonThread: false
+
+  configurationServiceConfiguration:
+    enableSchedulableConfigurationAccessor: true
+    configurationAccessorSchedulableConfiguration:
+      enabled: true
+      initialDelay: 0
+      interval: 1000
+      timeUnit: "MILLISECONDS"
+
+  serviceRegistryConfiguration:
+    appName: "AppbaseStackTest"
+    enablePolling: true
+    registerAsConfigurationListener: true
+    pollingSchedulableConfiguration:
+      enabled: true
+      initialDelay: 0
+      interval: 1000
+      timeUnit: "MILLISECONDS"
+
+  exceptionServiceConfiguration:
+    defaultExceptionAccessorConfiguration:
+      exceptionStoreConfigurations:
+        - type: "com.viveworks.appbase.core.service.exception.store.inmemory.InMemoryExceptionStoreConfiguration"
+          enabled: true
+          discriminator: "discriminator"
+          stackTraceSerializationMaxLength: 1024
+          exceptionStoreType: "com.viveworks.appbase.core.service.exception.store.inmemory.InMemoryExceptionStore"
+    defaultOldMessagesCleanerConfiguration:
+      enabled: false
+
+  tracerServiceConfiguration:
+    serviceName: "AppbaseStackTest"
+    tags: {}
+    use128BitTraceId: true
+    expandExceptionLogs: true
+    jaegerPropagationConfiguration:
+      jaegerPropagationTypes:
+        - "W3C_TRACE_CONTEXT"
+      baggagePrefix: "baggage-"
+    jaegerSamplerConfiguration:
+      type: "com.viveworks.appbase.core.service.tracer.configuration.sampler.ConstSamplerConfiguration"
+      decision: true
+    jaegerReporterConfigurations:
+      - type: "com.viveworks.appbase.core.service.tracer.configuration.reporter.LoggingReporterConfiguration"
+        enabled: true
+
+  jmxServiceConfiguration:
+    enabled: true
+    excludedMxBeanRegistrations: []
+
+  reactorServiceConfiguration:
+    enabled: true
+    schedulerConfigurations:
+      - type: "com.viveworks.appbase.core.service.reactive.reactor.scheduler.configuration.MediatorExecutorServiceSchedulerConfiguration"
+        id: "Appbase-Reactor-MediatorExecutorServiceScheduler"
+        defaultScheduler: true
+        executorName: "appbase-reactor-scheduler-mediator-executor"
+
+  luceneServiceConfiguration:
+    type: "com.viveworks.appbase.core.util.lucene.DefaultLuceneServiceConfiguration"
+    enabled: true
+    indexBaseDirectory: "target/appbase-stacktest/lucene/bootstrap-core"
+    directoryType: "NIO"
+    mmapDirectoryConfiguration:
+      maxChunkSize: 1073741824
+      useUnmap: true
+      preload: true
+    deleteIndexPathUponShutdown: true
+    checkPendingFlushUpdate: true
+    commitOnClose: true
+    maxBufferedDocs: 1024
+    openMode: "CREATE_OR_APPEND"
+    ramBufferSizeMB: 512.0
+    ramPerThreadHardLimitMB: 128
+    readerPooling: true
+    useCompoundFile: true
+    lruQueryCacheConfiguration:
+      enabled: true
+      maxQueries: 1000
+      maxRamBytesUsed: 52428800
+    standardAnalyzerStopWords: []
+    standardAnalyzerMaxTokenLength: 255
+    stopWordsIgnoreCase: true
+    timestampBasedIndexCleanerConfiguration:
+      enabled: true
+      removeBeforeTimePeriod: 1
+      removeBeforeTimePeriodUnit: "DAYS"
+      creationTimestampFieldName: "creationTimestampLongPoint"
+      schedulableConfiguration:
+        enabled: true
+        initialDelay: 0
+        interval: 10
+        timeUnit: "MINUTES"
+    indexSynchronizerSchedulableConfiguration:
+      enabled: true
+      initialDelay: 0
+      interval: 30
+      timeUnit: "SECONDS"

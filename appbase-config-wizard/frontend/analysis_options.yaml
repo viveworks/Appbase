@@ -1,0 +1,21 @@
+# This file configures the static analysis results for your project (errors,
+# warnings, and lints).
+#
+include: package:lints/recommended.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - web/**
+  language:
+    strict-casts: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    # Release 1 publishes generated Dartdoc for this frontend. Keep newly added
+    # public declarations from silently escaping the documented surface.
+    public_member_api_docs: true
+
+# For additional information about configuring this file, see
+# https://dart.dev/guides/language/analysis-options

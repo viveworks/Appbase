@@ -1,0 +1,63 @@
+# Public contributor CI (internal work item 1431, AC12, N05 of internal work item 1009's public-repository export gate).
+#
+# A plain `pull_request` build+unit+coverage check that any fork contributor's PR gets for free,
+# with no internal label gymnastics and nothing for a fork to leak.
+#
+# ⚠️ THIS IS NOT ci-verify.yml. That workflow is an internal REVIEW GATE, opt-in per PR via a label
+# (ci:verify / ci:every-push) because a full run costs real Actions minutes and this repo's own
+# agents already know the convention. An outside contributor does not know that convention and
+# should not have to -- this workflow runs unconditionally on every pull_request so a fork PR gets
+# a real, visible, no-setup build result. The two workflows are deliberately independent: a change
+# to one's trigger/label logic must not silently change the other's.
+#
+# `pull_request`, NEVER `pull_request_target`. A `pull_request_target` run checks out the BASE
+# branch's workflow definition but can be made to execute the FORK's code with the base branch's
+# secrets and a repo-write token -- the textbook fork-PR privilege-escalation hole. `pull_request`
+# gives a fork PR a read-only token and (per GitHub's own default for a fork-originated run) no
+# repository/organisation secrets; this workflow also references none itself, so there is nothing
+# to leak even if that default ever changed. Verified by focused static regression coverage; proof
+# against a REAL fork PR is owner-pending because this
+# repository is still private (no outside account can fork it yet) -- same reason dco.yml's
+# pull_request trigger is currently suspended. Unlike DCO, a build/test gate has value on every PR
+# today, so this one stays live rather than suspended; re-confirm against a real external fork once
+# the repository goes public.
+#
+# `--mode develop` is PINNED, not left to build.sh's "quick" default: it is the one mode that runs
+# unit tests AND the coverage gate (jacoco.coveredRatio, pom.xml), which is what AC12 asks a
+# contributor's PR to prove. build.sh itself already fails loudly (named "unknown mode" error, exit
+# 1) on anything it does not recognise -- focused mutation coverage proves that and also proves
+# this pin still matches one of build.sh's real modes, so a rename on
+# build.sh's side cannot drift silently out of step with this workflow.
+name: Public contributor CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-unit-coverage:
+    name: build + unit tests + coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out the PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: Install ripgrep for build.sh bounded manifest scan
+        run: sudo apt-get update && sudo apt-get install -y ripgrep && rg --version
+
+      - name: build.sh --mode develop (unit tests + coverage gate)
+        run: ./build.sh --mode develop

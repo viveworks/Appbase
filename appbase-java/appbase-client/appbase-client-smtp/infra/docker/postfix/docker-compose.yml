@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  mailserver:
+    image: docker.io/mailserver/docker-mailserver:10.2.0
+    container_name: postfix.local
+    hostname: postfix.local
+    domainname: local
+    env_file: mailserver.env
+    ports:
+      - "25:25"    # SMTP  (explicit TLS => STARTTLS)
+      - "143:143"  # IMAP4 (explicit TLS => STARTTLS)
+      - "465:465"  # ESMTP (implicit TLS)
+      - "587:587"  # ESMTP (explicit TLS => STARTTLS)
+      - "993:993"  # IMAP4 (implicit TLS)
+    volumes:
+      - "${HOME}/Temporary/Data/Postfix/Mail/:/var/mail/"
+      - "${HOME}/Temporary/Data/Postfix/State/:/var/mail-state/"
+      - "${HOME}/Temporary/Data/Postfix/Log/:/var/log/mail/"
+      - "${HOME}/Temporary/Data/Postfix/Config/:/tmp/docker-mailserver/"
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
+    stop_grace_period: 1m
+    cap_add:
+      - NET_ADMIN
+      - SYS_PTRACE
+

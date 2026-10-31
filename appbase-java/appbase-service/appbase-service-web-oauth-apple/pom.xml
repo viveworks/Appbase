@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase-service</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>appbase-service-web-oauth-apple</artifactId>
+    <packaging>jar</packaging>
+    <name>Appbase Service Web OAuth Apple</name>
+    <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+    <scm>
+        <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+    </scm>
+    <distributionManagement>
+        <site>
+            <id>${project.artifactId}</id>
+            <url>https://github.com/viveworks/Appbase/tree/develop/Java/${project.artifactId}</url>
+        </site>
+    </distributionManagement>
+
+    <dependencies>
+        <!-- The validation core and SPIs (TokenValidator, OAuthConfiguration, ValidatedToken). Apple's
+             id_token is a standard OIDC token, so validation is the core Nimbus engine, unchanged; this
+             module pre-fills Apple's discovery defaults and binds the id-token profile claims. -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web-oauth</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Nimbus JOSE: unlike the other provider modules, Apple requires the relying party to mint an
+             ES256-signed client-secret JWT, so this module signs JOSE directly (managed by the root bom;
+             no version here). -->
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+        </dependency>
+        <!-- Jackson binds the id-token profile claims to the bounded profile model (managed by the root
+             jackson-bom; no version here). -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <!-- The core module's test fixtures (JwksTestServer + the loopback JWKS/TLS keystore and RS256
+             signing helpers): the defaults-validate-a-provider-token test reuses the identical offline
+             fixture rather than duplicating it. -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web-oauth</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>ban-spring-security-keycloak</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <searchTransitive>true</searchTransitive>
+                                    <excludes>
+                                        <exclude>org.springframework.security:*</exclude>
+                                        <exclude>org.keycloak:*</exclude>
+                                    </excludes>
+                                    <message>appbase-service-web-oauth-apple is a provider module over the Nimbus core: it validates tokens locally, so it too takes no hard dependency on Spring Security or Keycloak (P-020).</message>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <packageName>com.viveworks.appbase.service.web.oauth.apple</packageName>
+                        </manifest>
+                    </archive>
+                    <instructions>
+                        <Export-Package>com.viveworks.appbase.service.web.oauth.apple.*</Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
