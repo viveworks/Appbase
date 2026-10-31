@@ -9,6 +9,12 @@ permissions:
 
 jobs:
   dependency-review:
+    # GitHub's dependency-review-action requires the Dependency graph, which on a PRIVATE repo
+    # needs GitHub Advanced Security (a licensed org feature) -- it is free/automatic only once
+    # the repo is actually public. Owner ruling: skip this job while private (the owner's own
+    # dependency analysis stands in for now) rather than leave it red forever or need a manual
+    # re-enable later; this flips back on by itself the moment visibility changes, no edit needed.
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
