@@ -6,7 +6,7 @@ An Appbase **service** is application-level behaviour built on the core and clie
 health, user accounts, sessions, OAuth token validation, support messages. The tree has **17 service
 modules** under `appbase-java/appbase-service/`, including **5 OAuth providers** (Apple, GitHub, Google,
 Microsoft, Okta). All five OAuth provider modules are in `appbase-bom/pom.xml`. Three former
-source-empty shells have since been removed from the reactor.
+source-empty shells were removed from the reactor under internal work item 1135 L-13.
 
 Everything below was read from the tree. Nothing here was run against live infrastructure. The
 concepts behind OAuth are in the [OAuth primer](../OAuth-Primer.md), which this part does not repeat.
@@ -34,7 +34,7 @@ concepts behind OAuth are in the [OAuth primer](../OAuth-Primer.md), which this 
 | 17 | `appbase-service-supportmessage` | 30 | support-message service, REST resource, JDBI store |
 
 Counts are `*.java` files under `src/main`. The Maven artifactId is the module name. The groupId is a
-placeholder, **pending rename** ([part 1](01-install-and-first-service.md)). The Release-1 service
+placeholder, **pending internal work item 2546** ([part 1](01-install-and-first-service.md)). The Release-1 service
 modules are managed by `appbase-bom/pom.xml`; the deferred R2DBC user-account module is not.
 
 ## Registering services

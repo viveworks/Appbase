@@ -2,10 +2,12 @@
 
 > **This is a placeholder.** It gives Release-1 documentation and the public repository one
 > clean, consistent look. It is **not** a final brand. It makes **no trademark, ownership or
-> marketing claim**. The name, the mark and publication approval are decided at an owner
-> checkpoint, together with the name threads `appbase.io` and the
-> `com.viveworks` fallback. Everything below is built so a decision there costs one edit and one
+> marketing claim**. The name, the mark and publication approval are decided at the owner
+> checkpoint **internal work item 1940**, together with the name threads internal work item 1139 (`appbase.io`) and internal work item 1143 (the
+> `com.viveworks` fallback). Everything below is built so a decision there costs one edit and one
 > re-export, never a redesign.
+
+Issue: internal work item 1415 (plan task N02 of epic internal work item 1142).
 
 ## What is here
 
@@ -36,8 +38,8 @@ a plain description of what the project is, not a claim.
 | `rule-light` / `rule-dark` | `#DDD6C4` / `#38352F` | Viveworks 1 px rules / borders |
 | `brand-accent` / `accent-text-dark` | `#0F5C56` / `#38BAA0` | Viveworks accent; the brighter value is dark small-text/focus treatment |
 
-The theme values above are the pinned Viveworks visual-system baseline from Thrivables
-and the live `viveworks.com/assets/css/main.css`. The live stylesheet uses
+The theme values above are the pinned Viveworks visual-system baseline from Thrivables internal work item 1737 §A.4
+(planned in internal work item 1738) and the live `viveworks.com/assets/css/main.css`. The live stylesheet uses
 `#FAF8F3` for the light background; `#F2EDE0` is its dark primary ink, not its light background.
 The icon geometry is unchanged and remains name-independent, but its fills now use the Viveworks
 system. The suggested bright teal `#38BAA0` measures only 3.24:1 against the `#0F5C56` tile, below the
@@ -96,18 +98,18 @@ sans stack (`system-ui`, `-apple-system`, `Segoe UI`, `Roboto`, `sans-serif`) at
 letter shapes can therefore vary by platform. That is the price of a text-swappable wordmark.
 Outlining the text to paths is a final-brand step, deferred with the rest of it (see *Scope*).
 
-## Where it goes — placements
+## Where it goes — placements, handed to the tasks that own those files
 
-This file edits only `docs/branding/`. The placements below are applied elsewhere in the tree. They
+This task edits only `docs/branding/`. The placements below are **for the owning tasks to apply**. They
 are listed here so every surface uses the same asset the same way.
 
-| Surface | Asset | How |
-|---|---|---|
-| Root `README.md`, first element | `lockup-light.svg` / `lockup-dark.svg` | wired with the `<picture>` block above, width 520, `alt="Appbase"`; no other logo on the page |
-| User Guide, title | `exports/icon-64.png` | inline before the guide title, `alt=""` (decorative next to the written title), height 64; on a dark surface use the required light backing and proportional padding above |
-| Existing Javadoc overview | `lockup-light.svg` / `lockup-dark.svg` | wired in `appbase-java/javadoc-overview.html` with the same theme-aware `<picture>` block; a future generator-owned header/favicon integration may replace this |
-| Public repository (social preview, organisation avatar) | `exports/icon-512.png` | uploaded in the GitHub console. If the surrounding surface is dark, compose it on the required light backing first. Record the applied console settings with the release evidence. |
-| Maven Site landing page | `icon.svg` | deferred with the site itself (Release 2) |
+| Surface | Owner | Asset | How |
+|---|---|---|---|
+| Root `README.md`, first element | internal work item 1415 | `lockup-light.svg` / `lockup-dark.svg` | wired by this task with the `<picture>` block above, width 520, `alt="Appbase"`; no other logo on the page |
+| User Guide, title | internal work item 1416 | `exports/icon-64.png` | inline before the guide title, `alt=""` (decorative next to the written title), height 64; on a dark surface use the required light backing and proportional padding above |
+| Existing Javadoc overview | internal work item 1415 | `lockup-light.svg` / `lockup-dark.svg` | wired in `appbase-java/javadoc-overview.html` with the same theme-aware `<picture>` block; future generator-owned header/favicon integration remains a internal work item 1141 replacement point |
+| Public repository (social preview, organisation avatar) | internal work item 1009 (public export) | `exports/icon-512.png` | uploaded in the GitHub console. If the surrounding surface is dark, compose it on the required light backing first. Record the applied console settings with the release evidence. |
+| Maven Site landing page | internal work item 1418 (Release 2) | `icon.svg` | deferred with the site itself |
 
 ## Replacing the placeholder — the swap points
 
@@ -128,7 +130,7 @@ validate.
 pip install resvg-py==0.5.0                # the pinned renderer; the version is also checked at run time
 python3 docs/branding/export.py            # writes exports/icon-{32,64,128,256,512}.png from icon.svg
 python3 docs/branding/validate.py          # exit 0 = pass, 1 = a check failed, 3 = renderer missing (NOT_MEASURED)
-bash scripts/test/branding_test.sh         # the branding acceptance arms, plus mutation arms proving the validator fails closed
+bash scripts/test/branding_test.sh         # the internal work item 1415 acceptance arms, plus mutation arms proving the validator fails closed
 ```
 
 The export route is route **(a)** of the plan: a checked-in command. Each PNG is rendered from the vector
@@ -140,11 +142,11 @@ versions. A different version is reported as `NOT_MEASURED`, never passed.
 ## Sign-off
 
 - **Placeholder direction:** owner accepted on 2026-10-01 with the direction to use the documented
-  Viveworks light/dark visual system from Thrivables, while keeping the name-independent
+  Viveworks light/dark visual system from Thrivables internal work item 1737/internal work item 1738, while keeping the name-independent
   three-block icon unchanged. **Status: accepted for this bounded placeholder surface.**
-- **Cross-surface placement:** the owner accepted the bounded handoff to the surfaces listed
-  above; those surfaces retain their listed placement work rather than widening this leaf.
-- **Name, trademark and publication approval:** still pending. Nothing in this directory anticipates that
+- **Cross-surface placement:** the owner accepted the bounded handoff to internal work item 2419, internal work item 1416, internal work item 1141 and
+  internal work item 1009; those tasks retain their listed placement work rather than widening this leaf.
+- **Name, trademark and publication approval:** internal work item 1940. Nothing in this directory anticipates that
   decision.
 
 ## Scope — the bounded placeholder surface
@@ -158,7 +160,7 @@ Deferred to **Release 2** or business follow-up, and not started here:
 - comprehensive usage rules (clear space, minimum sizes below 32 px, misuse examples);
 - outlined or custom wordmark lettering;
 - marketing assets (social cards, slide templates, merchandise);
-- publishing the SVG to the Maven Site.
+- publishing the SVG to the Maven Site (internal work item 1418).
 
 `validate.py --only surface` fails if a file outside the set above appears in this directory. A growing
 brand system has to be a decision, not a drift.

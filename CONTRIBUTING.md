@@ -23,8 +23,8 @@ tests that start external backends. Flutter is optional for ordinary Java builds
 configuration wizard's web frontend is an opt-in build target. See `./build.sh --help`.
 
 Fork Appbase on GitHub, then clone your fork and branch from upstream `develop`. Use a short,
-descriptive lowercase kebab-case branch name; the example below uses a placeholder issue number,
-but name yours after whatever best describes the change:
+descriptive lowercase kebab-case branch name. The example below names standalone issue internal work item 1234;
+outside contributors do not need the private maintainer lineage convention:
 
 ```sh
 git clone https://github.com/<your-account>/Appbase.git

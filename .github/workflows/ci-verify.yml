@@ -139,11 +139,28 @@ jobs:
         if: env.MODULES == 'ALL'
         run: ./build.sh --mode compile
 
-      - name: Changed modules — clean test-compile -pl <changed> -am -amd
+      - name: Changed modules — clean test-compile -pl <directed closure> -am
         if: env.MODULES != 'ALL'
         # build.sh refuses --modules for compile, so the Maven part is mirrored directly. The coverage
         # self-check is not needed here: adding/removing a pom.xml or pubspec.yaml forces ALL.
-        run: mvn -q clean test-compile -pl "$MODULES" -am -amd -Dsurefire.failIfNoSpecifiedTests=false
+        #
+        # Maven's own -am/-amd each expand $MODULES exactly once, in one direction: -amd adds modules
+        # that depend on $MODULES, -am adds modules $MODULES depends on. Neither flag re-expands for a
+        # module the OTHER flag adds, so a module pulled in by -amd can have its own, unrelated -am-style
+        # dependency silently missing from the reactor (internal work item 2655 PR#3: changed appbase-core pulled in
+        # appbase-service-web-oauth-reactive via -amd, through appbase-service-core, but not that
+        # module's separate, parallel dependency appbase-service-web-oauth, which has no relationship to
+        # appbase-core at all -- the build then failed resolving it as a never-published internal
+        # SNAPSHOT jar). reactor-closure.sh therefore runs two directed phases: first the transitive
+        # downstream consumers of the ORIGINAL seeds, then the transitive prerequisites of that set.
+        # It deliberately does not feed phase-two prerequisites back through the consumer phase: doing
+        # so would add every unrelated sibling consumer of a shared prerequisite. For the same reason,
+        # never pass -amd on $FULL_MODULES. -am follows only the safe prerequisite direction; it should
+        # be idempotent after phase two and remains as Maven's native backstop if the shell parser ever
+        # misses a prerequisite edge.
+        run: |
+          FULL_MODULES="$(.github/scripts/reactor-closure.sh "$MODULES")"
+          mvn -q clean test-compile -pl "$FULL_MODULES" -am -Dsurefire.failIfNoSpecifiedTests=false
 
       - name: Generate and verify MCP API surface against compiled classes
         if: env.MODULES == 'ALL'
@@ -229,7 +246,12 @@ jobs:
           if [[ "$MODULES" == ALL ]]; then
             mvn -B -fae test -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
           else
-            mvn -B -fae test -pl "$MODULES" -am -amd -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
+            # Same combined -am/-amd single-pass gap as maven-compile's narrow build; see that job's
+            # comment and internal work item 2655 PR#3. The helper computes downstream-from-original-seeds first, then
+            # prerequisites. Retain Maven's safe prerequisite-only -am backstop; never reapply -amd to
+            # phase-two prerequisites, because that would add their unrelated sibling consumers.
+            FULL_MODULES="$(.github/scripts/reactor-closure.sh "$MODULES")"
+            mvn -B -fae test -pl "$FULL_MODULES" -am -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
           fi
       - name: Print bounded Surefire fork diagnostics
         if: failure()
@@ -303,6 +325,20 @@ jobs:
           ref: ${{ env.VERIFY_REF }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Install xmllint (checkstyle_baseline_ratchet_test.sh requires it, line 163)
+        # ubuntu-24.04 runners do not ship libxml2-utils by default; the suite's own tool-availability
+        # check (line 20) fails closed without it. Scoped to this job only -- no other job needs it.
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+      - name: Set up Temurin JDK 25
+        # checkstyle_baseline_ratchet_test.sh's direct `mvn checkstyle:check` needs Checkstyle
+        # 13.8.0's own class files (version 65 = Java 21+); this job otherwise fell through to the
+        # runner's default Java 17 (class file version 61), which the other six suites never
+        # noticed since none of them invoke Checkstyle. Matches maven-compile/maven-unit-tests/
+        # config-wizard-console's own setup exactly.
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
       - name: Public offline product contracts
         run: |
           set -euo pipefail
@@ -397,7 +433,7 @@ jobs:
     needs: changed-modules
     if: needs.changed-modules.outputs.run_stacktest == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 170
     steps:
       - name: Check out the exact head
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -406,23 +442,50 @@ jobs:
           ref: ${{ env.VERIFY_REF }}
           fetch-depth: 0
           persist-credentials: false
+        timeout-minutes: 5
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        timeout-minutes: 5
         with:
           distribution: temurin
           java-version: '25'
       - name: Build local StackTest infrastructure images
+        timeout-minutes: 20
         run: |
           bash appbase-java/appbase-client/appbase-client-aerospike/infra/docker/aerospike/build-aerospike.sh
           bash appbase-java/appbase-client/appbase-client-druid/infra/docker/druid/build-druid.sh
           bash appbase-java/appbase-client/appbase-client-firebase/infra/docker/firebase/build-firebase.sh
+          bash appbase-java/appbase-client/appbase-client-vitess/infra/docker/vitess/build-vitess.sh
       - name: Start public product infrastructure
+        timeout-minutes: 15
         run: bash appbase-stacktest/infra/run-infra.sh
       - name: Build StackTestMain
+        # install_stacktest() in stacktest-live-runner.sh already self-bounds its mvn invocation with
+        # its own `timeout --signal=TERM --kill-after=30s 30m`; this step-level timeout is a backstop
+        # in case that internal bound itself ever fails to fire, and it is also what the cumulative
+        # budget check below sums over.
+        timeout-minutes: 35
         run: .github/scripts/stacktest-live-runner.sh install
       - name: Live product gate
+        # Vitess's readiness/outage-restoration path has a documented hang history (internal work item 2749/internal work item 2788).
+        # Bounding this step below the job's own timeout is necessary but not sufficient on its own --
+        # see the job-level comment above for why every OTHER step's own budget also has to be summed.
+        timeout-minutes: 70
         run: .github/scripts/stacktest-live-runner.sh green public-pr
+      - name: Capture infrastructure diagnostics on failure
+        if: failure()
+        timeout-minutes: 5
+        run: |
+          echo "::group::docker ps -a"
+          docker ps -a || true
+          echo "::endgroup::"
+          for name in vitess.local aerospike.local druid.local firebase.local; do
+            echo "::group::docker logs --tail 200 $name"
+            docker logs --tail 200 "$name" 2>&1 || true
+            echo "::endgroup::"
+          done
       - name: Stop public product infrastructure
         if: always()
+        timeout-minutes: 10
         run: bash appbase-stacktest/infra/stop-infra.sh
   live-l04-kafka-zookeeper:
     # internal work item 2536 L-04 / epic row (internal work item 1297): live Kafka (KRaft) + standalone ZooKeeper Failsafe ITs,

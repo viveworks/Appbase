@@ -66,7 +66,7 @@ import org.junit.jupiter.api.Timeout;
 import reactor.core.publisher.Mono;
 
 /**
- * Stack arm for the reactive OAuth twin (T1330, internal work item 1330; the {@code GAP-R1} row 46 of the internal work item 1328
+ * Stack arm for the reactive OAuth twin (internal work item 1330; the {@code GAP-R1} row 46 of the internal work item 1328
  * representative coverage matrix).
  *
  * <p><b>The behaviour this proves.</b> {@code OAuthFilter} and {@link ReactiveOAuthFilter} both document

@@ -37,6 +37,7 @@
 - `scripts/test/build_bounded_manifest_scan_test.sh`
 - `scripts/test/catalogue_test.sh`
 - `scripts/test/checkstyle_baseline_ratchet_test.sh`
+- `scripts/test/ci_release_rehearsal_contract.py`
 - `scripts/test/ci_release_rehearsal_test.sh`
 - `scripts/test/ci_verify_compile_prereqs_test.sh`
 - `scripts/test/clean_machine_prerequisites_test.sh`
