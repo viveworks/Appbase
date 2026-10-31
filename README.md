@@ -81,7 +81,7 @@ Screenshots of the Swagger UI that a running Appbase service publishes belong he
 yet, so none is shown. How to run the stacktest is in
 [Examples](docs/Examples.md#7-run-the-full-stacktest).
 
-Swagger UI is **opt-in and meant for development**. A Jetty service serves it only if it calls
+Swagger UI is **opt-in** — available whenever you need it. A Jetty service serves it only if it calls
 `withSwaggerUI(...)` on its container builder, as the stacktest's development server does. It is a
 separate static-file handler that sits outside the servlet context, so the Appbase service filters,
 authentication included, do not cover it. Do not turn it on for a service that is reachable from
