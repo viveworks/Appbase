@@ -471,6 +471,8 @@ jobs:
         # Bounding this step below the job's own timeout is necessary but not sufficient on its own --
         # see the job-level comment above for why every OTHER step's own budget also has to be summed.
         timeout-minutes: 70
+        env:
+          FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099"
         run: .github/scripts/stacktest-live-runner.sh green public-pr
       - name: Capture infrastructure diagnostics on failure
         if: failure()
