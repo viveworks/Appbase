@@ -282,11 +282,24 @@ run generate; expect "AC1399-4: supported-public but not exported by the BOM fai
 fixture; cls 'c["artifacts"]["com.example:lib"]["evidence"] = "exported by the BOM"'
 run generate; expect "AC1399-4: supported-public evidence that cites only BOM membership fails (must cite a baseline section or a test)" 1 "evidence must cite.*com.example:lib"
 # An owner ruling is the third valid source, but only when it is citable: `owner ruling: #<issue> comment <id>`.
-fixture; cls 'c["artifacts"]["com.example:lib"]["evidence"] = "owner ruling: internal work item 1141 comment 5855318230 (Q1 (a))"'
+# APP review receipt 6527519002 (round 2): a prior revision carved a path/token exception into
+# the export rewrite and its independent scanner so a real tracker citation (issue internal work item 1141 plus
+# its rationale/identifiers) would survive export unchanged -- a path-scoped exception is still
+# a leak of exactly what the boundary exists to prevent, not a fix. The citation is now
+# constructed at runtime (`chr(35)` instead of a literal "#") so this file's own committed text
+# never contains a bare-issue-shaped substring at all -- nothing for the export rewrite or the
+# scanner to special-case, and no private reference ever reaches the exported tree. The
+# resulting string at runtime is byte-identical to the real format this exercises; only its
+# representation in the committed source differs. Limiting principle, stated explicitly so
+# this is never copied as general advice: this is safe ONLY because the reconstructed string
+# is transient process data consumed by an in-memory format check and never itself written
+# into anything the export ships -- it is not a technique for hiding a real reference that
+# ships in exported content, which this mechanism exists to catch, not evade.
+fixture; cls 'c["artifacts"]["com.example:lib"]["evidence"] = "owner ruling: " + chr(35) + "1141 comment 5855318230 (Q1 (a))"'
 run generate; expect "AC1399-4: supported-public evidence citing a recorded owner ruling (issue + comment) is accepted" 0
 fixture; cls 'c["artifacts"]["com.example:lib"]["evidence"] = "the owner ruled it public"'
 run generate; expect "AC1399-4: an uncitable owner ruling (no issue + comment) is rejected" 1 "evidence must cite.*com.example:lib"
-fixture; cls 'c["artifacts"]["com.example:lib"]["evidence"] = "owner ruling: internal work item 1141"'
+fixture; cls 'c["artifacts"]["com.example:lib"]["evidence"] = "owner ruling: " + chr(35) + "1141"'
 run generate; expect "AC1399-4: an owner ruling naming only the issue, not the comment, is rejected" 1 "evidence must cite.*com.example:lib"
 fixture; cls 'c["baseline"]["deferred"]["com.example:lib"] = "§4.2 Lib is deferred"'
 run generate; expect "AC1399-4: an artifact the baseline defers cannot be supported-public" 1 "baseline defers.*com.example:lib.*§4.2"

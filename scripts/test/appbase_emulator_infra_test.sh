@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 #
 # appbase_emulator_infra_test.sh — the two EMULATOR-backed integration surfaces of epic P04·E01
-# (internal work item 1135): S3 on LocalStack and Firebase Auth on the Firebase Auth Emulator (internal work item 1299 / N09).
+# (internal work item 1135): S3 on owner-selected MinIO and Firebase Auth on the Firebase Auth Emulator (internal work item 1299 / N09).
 #
 # 🔴 WHY THIS SUITE EXISTS IN THIS SHAPE. N09's acceptance ("both ITs run green against emulators")
 # needs a live Docker daemon, which the authoring lane does not have. That is precisely the situation
 # in which a gate quietly becomes decorative — so the durable regression signal is the part that is
 # checkable WITHOUT a daemon, and it is deliberately NOT a set of string comparisons:
 #
-#   TIER S — the LocalStack S3 lifecycle is honest: the pin is the evidence-backed upstream-official
-#   LocalStack tag on LocalStack's own data path, the run script goes through the shared lifecycle
+#   TIER S — the MinIO S3 lifecycle is honest: the pin is the evidence-backed immutable Chainguard
+#   digest on MinIO's own data path, the run script goes through the shared lifecycle
 #   contract (require-image → verify-running → wait-ready) rather than a bare detached run, and the
 #   teardown surfaces failure instead of masking it behind a trailing `rm -rf`.
 #
@@ -37,7 +37,7 @@
 # the guard REJECTS it. Without them every green arm below could be the vacuous green a never-run suite
 # hides best — the same reasoning as appbase_infra_lifecycle_test.sh, whose shape this follows.
 #
-# The live bring-up (LocalStack edge up → bucket round trip → Auth emulator up → user round trip) is
+# The live bring-up (MinIO up → bucket round trip → Auth emulator up → user round trip) is
 # the Docker proof this lane cannot run and does not fake. It remains EPIC-VERIFICATION-PENDING,
 # not asserted here.
 #
@@ -47,13 +47,14 @@
 #     appbase_infra_lifecycle_test.sh TIER B, which drives them against an enforcing fake `docker`.
 #     This suite deliberately does not duplicate it, and therefore does not cover it.
 #   · Anything needing a daemon: image pull, container start, silent death, readiness, teardown.
-#   · Whether LocalStack ACCEPTS every client operation. TIER C statically proves endpoint/region
+#   · Whether MinIO ACCEPTS every client operation. TIER C statically proves endpoint/region
 #     agreement; the hosted live gate supplies the service-level create-bucket evidence.
 #   · The Java ITs themselves. Neither was compiled or run: the lane has no JDK 25 (build.sh refuses).
 #
 # It needs `python3` to read firebase.json; absent, TIER A's arms fail loudly rather than pass.
 #
 # @author Navaneeth Mysore G
+# @author Claude
 #
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"; ROOT="$(cd "$HERE/../.." && pwd)"
@@ -73,17 +74,17 @@ FIREBASE_ENTRYPOINT="$FIREBASE_DOCKER/firebase-entrypoint.sh"
 ROOT_POM="$ROOT/pom.xml"
 COMMON_ALL="$CORE_DOCKER/common-all.sh"
 
-# The EXACT, evidence-backed LocalStack pin. Asserting the exact string is what makes a
+# The EXACT, evidence-backed MinIO pin. Asserting the exact string is what makes a
 # swap to a nonexistent/typo tag, or a drift back to a stale one, turn an arm red — a guard that only
 # rejected "not minio" would let any other string through.
-EXPECTED_S3_IMAGE="localstack/localstack:2026.08.3"
-# LocalStack's single edge port: every AWS service is served from it.
-EXPECTED_EDGE_PORT="4566"
-# LocalStack's own data path inside the container (NOT MinIO's /data).
-EXPECTED_S3_MOUNT="/var/lib/localstack"
+EXPECTED_S3_IMAGE="cgr.dev/chainguard/minio@sha256:2136d593beacf4461187035eca949fe49abd589d5079735025c711ca58fee0c8"
+EXPECTED_S3_PORT="9000"
+EXPECTED_S3_ENDPOINT="http://localhost:${EXPECTED_S3_PORT}"
+EXPECTED_S3_MOUNT="/data"
+EXPECTED_S3_CONTAINER="minio-s3.local"
 EXPECTED_S3_REGION="us-east-1"
-# The deleted MinIO backend this task replaces (module deleted in 81c9f2389).
-DELETED_MINIO_PORT="9000"
+# The superseded LocalStack edge port must not return through a stale fixture.
+SUPERSEDED_LOCALSTACK_PORT="4566"
 
 PASSED=0; FAILED=0
 ok()  { PASSED=$((PASSED+1)); echo "  ok   $1"; }
@@ -114,7 +115,7 @@ common_var() {
 # published_port FILE CONTAINER_PORT -> prints the host port published onto CONTAINER_PORT, if any.
 # Accepts both `--publish H:C` and `--publish ADDR:H:C`.
 # 🔴 COMMENTS ARE STRIPPED FIRST, AND THAT IS LOAD-BEARING. run-s3.sh's rationale block QUOTES the wide
-# `--publish 4566:4566` form it rejects, so a reader that did not strip comments found the port in the
+# `--publish 9000:9000` form it rejects, so a reader that did not strip comments found the port in the
 # PROSE and reported the container as publishing it — a FALSE GREEN that survived a real change to the
 # publish line. Measured on this suite before the PR: S4 and C1 stayed green after the binding moved to
 # 127.0.0.1, because both were reading the comment.
@@ -155,6 +156,28 @@ yaml_endpoint() {
 # uri_port URI -> prints the port of a scheme://host:port URI ("" when absent).
 uri_port() { printf '%s' "$1" | sed -E 's#^[a-zA-Z][a-zA-Z0-9+.-]*://##' | sed -E 's#/.*$##' | awk -F: 'NF>1{print $NF}'; }
 
+s3_endpoint_ok() { [ "$1" = "$EXPECTED_S3_ENDPOINT" ]; }
+
+# Read only a direct child of the root Maven <properties>. XML comments and profile-local properties
+# are deliberately outside that model and therefore cannot win by appearing first in the file.
+maven_root_property() {
+  python3 - "$1" "$2" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+root = ET.parse(sys.argv[1]).getroot()
+namespace = root.tag.split('}', 1)[0] + '}' if root.tag.startswith('{') else ''
+properties = root.find(f'{namespace}properties')
+if properties is None:
+    raise SystemExit(1)
+values = [child.text.strip() for child in properties
+          if child.tag == f'{namespace}{sys.argv[2]}' and child.text and child.text.strip()]
+if len(values) != 1:
+    raise SystemExit(1)
+print(values[0], end='')
+PY
+}
+
 sandbox_prepare() {
   SANDBOX_ROOT="$TMP/sandbox path with space"; local client="$SANDBOX_ROOT/appbase-client"
   SANDBOX_S3="$client/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3"
@@ -170,7 +193,35 @@ STUB
 #!/bin/bash
 cmd="${1:-}"; [ "$#" -gt 0 ] && shift
 case "$cmd" in
- run) : > "$S3_DOCKER_LOG"; printf '%s\n' "$@" >> "$S3_DOCKER_LOG";;
+ run)
+   : > "$S3_DOCKER_LOG"; printf '%s\n' "$@" >> "$S3_DOCKER_LOG"
+   cleanup_mount=""; cleanup=false; previous=""
+   for arg in "$@"; do
+     [ "$previous" = "--volume" ] && cleanup_mount="${arg%%:*}"
+     [ "$previous" = "--entrypoint" ] && [ "$arg" = "/bin/sh" ] && cleanup=true
+     previous="$arg"
+   done
+   if $cleanup && [ -n "$cleanup_mount" ]; then
+     canonical_mount="$(python3 - "$cleanup_mount" "$S3_SANDBOX_ROOT" <<'PY'
+import pathlib
+import sys
+
+mount = pathlib.Path(sys.argv[1])
+root = pathlib.Path(sys.argv[2]).resolve(strict=True)
+if mount.is_symlink():
+    raise SystemExit(1)
+resolved = mount.resolve(strict=True)
+try:
+    relative = resolved.relative_to(root)
+except ValueError:
+    raise SystemExit(1)
+if not relative.parts:
+    raise SystemExit(1)
+print(resolved)
+PY
+)" || exit 98
+     rm -rf -- "$canonical_mount"/* "$canonical_mount"/.[!.]* "$canonical_mount"/..?*
+   fi;;
  image) [ "${1:-}" = inspect ] || exit 97;;
  inspect) [ "$S3_SANDBOX_MODE" = stopped ] && echo false || echo true;;
  start) :;;
@@ -178,8 +229,13 @@ case "$cmd" in
  *) exit 97;;
 esac
 DOCKER
-  chmod +x "$SANDBOX_BIN/docker"
-  export S3_DOCKER_LOG="$SANDBOX_LOG" S3_PROBE_LOG="$SANDBOX_PROBE"
+  cat > "$SANDBOX_BIN/curl" <<'CURL'
+#!/bin/bash
+[ "$S3_SANDBOX_MODE" = ready ]
+CURL
+  chmod +x "$SANDBOX_BIN/docker" "$SANDBOX_BIN/curl"
+  export S3_DOCKER_LOG="$SANDBOX_LOG" S3_PROBE_LOG="$SANDBOX_PROBE" \
+    S3_SANDBOX_ROOT="$SANDBOX_ROOT"
 }
 sandbox_reset() {
   S3_SANDBOX_MODE="$1"; export S3_SANDBOX_MODE
@@ -193,12 +249,12 @@ sandbox_run() {
 }
 sandbox_prepare || { echo 'sandbox setup failed' >&2; exit 2; }
 
-echo "appbase_emulator_infra_test: N09 (internal work item 1299) — LocalStack S3 + Firebase Auth Emulator surfaces"
+echo "appbase_emulator_infra_test: N09 (internal work item 1299) — MinIO S3 + Firebase Auth Emulator surfaces"
 
 # ═════════════════════════════════════════════════════════════════════════════════════════════════
-# TIER S — the LocalStack S3 lifecycle is honest
+# TIER S — the MinIO S3 lifecycle is honest
 # ═════════════════════════════════════════════════════════════════════════════════════════════════
-echo "TIER S — LocalStack S3 lifecycle manifest"
+echo "TIER S — MinIO S3 lifecycle manifest"
 
 # s3_env_ok FILE — the Tier-S guard, factored out so S0 can feed it a known-bad fixture.
 s3_env_ok() {
@@ -208,58 +264,54 @@ s3_env_ok() {
   name="$(env_var "$f" CONTAINER_NAME)" || return 1
   [ "$img" = "$EXPECTED_S3_IMAGE" ] || return 1
   [ "$mount" = "$EXPECTED_S3_MOUNT" ] || return 1
-  printf '%s' "$img" | grep -qiE 'minio' && return 1
-  printf '%s' "$name" | grep -qiE 'minio' && return 1
+  [ "$name" = "$EXPECTED_S3_CONTAINER" ] || return 1
   return 0
 }
 
-# ── S0 — CHECK THE CHECK: the guard must REJECT a resurrected MinIO env file ──────────────────────
+# ── S0 — CHECK THE CHECK: the guard must REJECT the superseded LocalStack contract ────────────────
 cat > "$TMP/env-bad.sh" <<'BAD'
 #!/bin/bash
-export DOCKER_IMAGE="quay.io/minio/minio:RELEASE.2021-11-09T03-21-45Z"
-export CONTAINER_NAME="minio.local"
-export VOLUME_MOUNT="/data"
+export DOCKER_IMAGE="localstack/localstack:2026.08.3"
+export CONTAINER_NAME="localstack.local"
+export VOLUME_MOUNT="/var/lib/localstack"
 BAD
-if s3_env_ok "$TMP/env-bad.sh"; then bad "S0 the Tier-S guard ACCEPTED a resurrected MinIO env file (guard is vacuous)"
-else ok "S0 check-the-check: the Tier-S guard rejects a resurrected MinIO env file"; fi
+if s3_env_ok "$TMP/env-bad.sh"; then bad "S0 the Tier-S guard ACCEPTED the superseded LocalStack env file (guard is vacuous)"
+else ok "S0 check-the-check: the Tier-S guard rejects the superseded LocalStack env file"; fi
 
-# ── S1 — the S3 backend is pinned to the exact evidence-backed LocalStack tag ─────────────────────
+# ── S1 — the S3 backend is pinned to the exact owner-selected MinIO digest ────────────────────────
 if [ -r "$S3_ENV" ]; then
   s1_img="$(env_var "$S3_ENV" DOCKER_IMAGE)"
   if [ "$s1_img" = "$EXPECTED_S3_IMAGE" ]; then ok "S1 env-s3.sh pins $EXPECTED_S3_IMAGE (manifest digest recorded in the decisions log)"
   else bad "S1 env-s3.sh pins '$s1_img' (expected $EXPECTED_S3_IMAGE)"; fi
 else bad "S1 $S3_ENV is absent — there is no S3 lifecycle"; fi
 
-# ── S2 — nothing the S3 lifecycle EXECUTES resurrects the deleted MinIO backend ───────────────────
-# Comments are stripped before the check, deliberately: env-s3.sh and the README explain WHY the
-# backend is LocalStack and not MinIO, and that prose is the reason the next reader does not
-# "restore" the old pin. The arm must reject an executable MinIO reference and tolerate the
-# explanation of its removal — a guard that forbade naming the thing would delete its own rationale.
+# ── S2 — nothing the S3 lifecycle EXECUTES resurrects the superseded LocalStack backend ───────────
+# Comments are stripped so historical rationale can name LocalStack without becoming runtime state.
 if [ -d "$S3_DOCKER" ]; then
   s2_hits=""
   for f in "$S3_DOCKER"/*.sh; do
     [ -f "$f" ] || continue
-    sed -E 's/(^|[[:space:]])#.*$//' "$f" | grep -iq 'minio' && s2_hits="$s2_hits $(basename "$f")"
+    sed -E 's/(^|[[:space:]])#.*$//' "$f" | grep -iq 'localstack' && s2_hits="$s2_hits $(basename "$f")"
   done
-  # …and the EFFECTIVE values must not name it either, whatever the source lines look like.
+  # The effective values must not name the superseded backend either.
   for v in DOCKER_IMAGE CONTAINER_NAME VOLUME_MOUNT HOSTNAME; do
-    printf '%s' "$(env_var "$S3_ENV" "$v" 2>/dev/null)" | grep -iq 'minio' && s2_hits="$s2_hits \$$v"
+    printf '%s' "$(env_var "$S3_ENV" "$v" 2>/dev/null)" | grep -iq 'localstack' && s2_hits="$s2_hits \$$v"
   done
-  [ -z "$s2_hits" ] && ok "S2 nothing the S3 lifecycle executes references MinIO (only the rationale names it)" \
-    || bad "S2 executable MinIO references remain in the S3 lifecycle:$s2_hits"
+  [ -z "$s2_hits" ] && ok "S2 nothing the S3 lifecycle executes references LocalStack" \
+    || bad "S2 executable LocalStack references remain in the S3 lifecycle:$s2_hits"
 else bad "S2 $S3_DOCKER is absent"; fi
 
-# ── S3 — the bind-mount lands on LocalStack's data path, not MinIO's /data ────────────────────────
+# ── S3 — the bind-mount lands on MinIO's data path ────────────────────────────────────────────────
 s3_mount="$(env_var "$S3_ENV" VOLUME_MOUNT 2>/dev/null)"
-if [ "$s3_mount" = "$EXPECTED_S3_MOUNT" ]; then ok "S3 VOLUME_MOUNT=$EXPECTED_S3_MOUNT (LocalStack's data path, not MinIO's /data)"
+if [ "$s3_mount" = "$EXPECTED_S3_MOUNT" ]; then ok "S3 VOLUME_MOUNT=$EXPECTED_S3_MOUNT (MinIO data path)"
 else bad "S3 VOLUME_MOUNT='$s3_mount' (expected $EXPECTED_S3_MOUNT)"; fi
 
-# ── S4 — run-s3.sh publishes LocalStack's edge port and scopes the container to S3 ────────────────
-s4_port="$(published_port "$S3_RUN" "$EXPECTED_EDGE_PORT" 2>/dev/null)"
+# ── S4 — run-s3.sh publishes MinIO's API port and carries no LocalStack service selector ──────────
+s4_port="$(published_port "$S3_RUN" "$EXPECTED_S3_PORT" 2>/dev/null)"
 s4_services="$(env_var "$S3_ENV" LOCALSTACK_SERVICES 2>/dev/null)"
-if [ "$s4_port" = "$EXPECTED_EDGE_PORT" ] && [ "$s4_services" = "s3" ]; then
-  ok "S4 run-s3.sh publishes ${EXPECTED_EDGE_PORT}:${EXPECTED_EDGE_PORT} and the container is scoped to SERVICES=s3"
-else bad "S4 published edge port='$s4_port' (expected $EXPECTED_EDGE_PORT), LOCALSTACK_SERVICES='$s4_services' (expected s3)"; fi
+if [ "$s4_port" = "$EXPECTED_S3_PORT" ] && [ -z "$s4_services" ]; then
+  ok "S4 run-s3.sh publishes ${EXPECTED_S3_PORT}:${EXPECTED_S3_PORT} and carries no stale LOCALSTACK_SERVICES"
+else bad "S4 published API port='$s4_port' (expected $EXPECTED_S3_PORT), stale LOCALSTACK_SERVICES='$s4_services'"; fi
 
 # ── S5 — run-s3.sh goes through the shared lifecycle contract, not a bare detached run ────────────
 # A `docker run --detach` exits 0 even when the container dies on the next tick (the S07/internal work item 522 lesson).
@@ -274,9 +326,9 @@ else bad "S5 run-s3.sh does not go through the shared lifecycle contract"; fi
 # ── S6 — the readiness probe targets the IPv4 loopback LITERALLY ──────────────────────────────────
 # `--publish` binds the IPv4 loopback; on a host where `localhost` resolves to ::1 first, a bash
 # /dev/tcp probe of `localhost` misses the published port (the postgres lesson, N01).
-if grep -qE 'appbase_tcp_probe[[:space:]]+127\.0\.0\.1[[:space:]]+'"$EXPECTED_EDGE_PORT" "$S3_RUN" 2>/dev/null; then
-  ok "S6 readiness probes 127.0.0.1:$EXPECTED_EDGE_PORT (not 'localhost', which may resolve to ::1)"
-else bad "S6 readiness does not probe 127.0.0.1:$EXPECTED_EDGE_PORT"; fi
+if grep -qE 'appbase_tcp_probe[[:space:]]+127\.0\.0\.1[[:space:]]+'"$EXPECTED_S3_PORT" "$S3_RUN" 2>/dev/null; then
+  ok "S6 readiness probes 127.0.0.1:$EXPECTED_S3_PORT (not 'localhost', which may resolve to ::1)"
+else bad "S6 readiness does not probe 127.0.0.1:$EXPECTED_S3_PORT"; fi
 
 # ── S7 — the readiness budget is env-tunable so a failure path is not a multi-minute sleep ────────
 if grep -qE '^:[[:space:]]*"\$\{S3_READY_RETRIES:=' "$S3_RUN" 2>/dev/null \
@@ -284,13 +336,13 @@ if grep -qE '^:[[:space:]]*"\$\{S3_READY_RETRIES:=' "$S3_RUN" 2>/dev/null \
   ok "S7 readiness budget is env-tunable (S3_READY_RETRIES / S3_READY_INTERVAL)"
 else bad "S7 readiness budget is hardcoded — a failing probe cannot be bounded by a caller"; fi
 
-# ── S8 — teardown preserves data on failure and deletes it after successful/absent removal ─────────
-sandbox_reset rm_fail; mkdir -p "$SANDBOX_HOME/Temporary/Data/LocalStack"; touch "$SANDBOX_HOME/Temporary/Data/LocalStack/sentinel"
-if sandbox_run remove-s3.sh || [ ! -f "$SANDBOX_HOME/Temporary/Data/LocalStack/sentinel" ]; then
-  bad "S8 failed Docker removal was masked or data was lost"
-else ok "S8 failed removal is non-zero and preserves DATA_DIR"; fi
-sandbox_reset ready; mkdir -p "$SANDBOX_HOME/Temporary/Data/LocalStack"; touch "$SANDBOX_HOME/Temporary/Data/LocalStack/sentinel"
-if sandbox_run remove-s3.sh && [ ! -e "$SANDBOX_HOME/Temporary/Data/LocalStack" ]; then
+# ── S8 — failed container removal preserves local data; successful removal cleans it ─────────────
+sandbox_reset rm_fail; mkdir -p "$SANDBOX_HOME/Temporary/Data/MinIO"; touch "$SANDBOX_HOME/Temporary/Data/MinIO/sentinel"
+if sandbox_run remove-s3.sh || [ ! -f "$SANDBOX_HOME/Temporary/Data/MinIO/sentinel" ]; then
+  bad "S8 failed Docker removal was masked or DATA_DIR was not preserved"
+else ok "S8 failed removal stays non-zero and preserves DATA_DIR"; fi
+sandbox_reset ready; mkdir -p "$SANDBOX_HOME/Temporary/Data/MinIO"; touch "$SANDBOX_HOME/Temporary/Data/MinIO/sentinel"
+if sandbox_run remove-s3.sh && [ ! -e "$SANDBOX_HOME/Temporary/Data/MinIO" ]; then
   ok "S8a successful/absent removal deletes DATA_DIR"
 else bad "S8a successful/absent removal did not clean DATA_DIR"; fi
 sandbox_reset ready; touch "$SANDBOX_HOME/sentinel"
@@ -298,6 +350,26 @@ if HOME='' PATH="$SANDBOX_BIN:$PATH" bash "$SANDBOX_S3/remove-s3.sh" >"$TMP/sand
    || [ ! -f "$SANDBOX_HOME/sentinel" ] || ! grep -q 'refusing unsafe DATA_DIR' "$TMP/sandbox.err"; then
   bad "S8b empty HOME was accepted, omitted its diagnostic, or removed a sentinel"
 else ok "S8b empty HOME is rejected without deletion"; fi
+
+# A lifecycle script under test is untrusted input to this fake. A malicious volume must not let the
+# harness delete outside its own canonical sandbox root.
+mkdir -p "$TMP/outside-sentinel"; touch "$TMP/outside-sentinel/keep"
+ln -s "$TMP/outside-sentinel" "$SANDBOX_ROOT/escape-link"
+s8c_bad=0
+for unsafe_mount in \
+    "$TMP/outside-sentinel" \
+    "$SANDBOX_ROOT/../outside-sentinel" \
+    "$SANDBOX_ROOT" \
+    "$SANDBOX_ROOT/escape-link"; do
+  if S3_SANDBOX_MODE=ready S3_DOCKER_LOG="$SANDBOX_LOG" S3_PROBE_LOG="$SANDBOX_PROBE" \
+      "$SANDBOX_BIN/docker" run --volume "$unsafe_mount:/appbase-cleanup" \
+        --entrypoint /bin/sh "$EXPECTED_S3_IMAGE" -c true >/dev/null 2>&1; then
+    s8c_bad=1
+  fi
+done
+if [ "$s8c_bad" -eq 0 ] && [ -f "$TMP/outside-sentinel/keep" ]; then
+  ok "S8c fake Docker refuses cleanup outside the canonical sandbox root"
+else bad "S8c fake Docker deleted or accepted cleanup outside the canonical sandbox root"; fi
 
 # ── S9 — the lifecycle set is complete and executable ─────────────────────────────────────────────
 s9_missing=""
@@ -316,16 +388,15 @@ done
 [ -z "$s10_bad" ] && ok "S10 every S3 script sources env-s3.sh (one home for the pin and the container name)" \
   || bad "S10 these S3 scripts do not source env-s3.sh:$s10_bad"
 
-# ── S11 — the edge port is published to the LOOPBACK ONLY ─────────────────────────────────────────
-# LocalStack authenticates NOTHING: it accepts any credentials and enforces no IAM. A default
-# `--publish 4566:4566` binds 0.0.0.0, putting a read/write S3 API on every interface of the machine.
-# Unlike postgres/mariadb there is no password to fall back on, so THE BINDING IS THE ACCESS CONTROL.
+# ── S11 — the MinIO API port is published to the LOOPBACK ONLY ────────────────────────────────────
+# These are static emulator credentials and do not prove IAM. A default `--publish 9000:9000` would
+# put a read/write S3-compatible API on every interface, so THE BINDING IS THE ACCESS CONTROL.
 # Comments are stripped for the same reason published_port strips them: the rationale quotes the wide
 # form it rejects, and a guard that read the quotation would reject the very fix it checks for.
 s11_publishes="$(recorded_publishes "$S3_RUN")"
 if [ "$s11_publishes" = "DOCKER_RUN
-127.0.0.1:${EXPECTED_EDGE_PORT}:${EXPECTED_EDGE_PORT}" ]; then
-  ok "S11 exactly one publish maps the edge port to 127.0.0.1 only"
+127.0.0.1:${EXPECTED_S3_PORT}:${EXPECTED_S3_PORT}" ]; then
+  ok "S11 exactly one publish maps the MinIO API port to 127.0.0.1 only"
 else bad "S11 unsafe or additional Docker publish option(s): $(printf '%s' "$s11_publishes" | tr '\n' ' ')"; fi
 
 # ── S12/S13 — real behavior of start/run lifecycle and spaced argv ────────────────────────────────
@@ -338,11 +409,11 @@ if sandbox_run start-s3.sh || ! grep -q 'readiness timed out' "$TMP/sandbox.err"
   bad "S12a start did not surface readiness timeout"
 else ok "S12a start surfaces bounded readiness timeout"; fi
 sandbox_reset ready
-if sandbox_run start-s3.sh && grep -qx '127.0.0.1:4566' "$SANDBOX_PROBE"; then
+if sandbox_run start-s3.sh && grep -qx "127.0.0.1:$EXPECTED_S3_PORT" "$SANDBOX_PROBE"; then
   ok "S12b start verifies running and reaches readiness"
 else bad "S12b start ready path failed"; fi
 sandbox_reset ready
-if sandbox_run run-s3.sh && grep -qx "$SANDBOX_HOME/Temporary/Data/LocalStack:/var/lib/localstack" "$SANDBOX_LOG"; then
+if sandbox_run run-s3.sh && grep -qx "$SANDBOX_HOME/Temporary/Data/MinIO:$EXPECTED_S3_MOUNT" "$SANDBOX_LOG"; then
   ok "S13 spaced HOME produces one exact volume argv element"
 else bad "S13 spaced HOME split or changed Docker argv"; fi
 
@@ -416,41 +487,46 @@ else bad "W8 docker-run-all.sh does not accumulate the S3 child's exit status"; 
 # ═════════════════════════════════════════════════════════════════════════════════════════════════
 echo "TIER C — S3 client config agrees with the lifecycle"
 
-# ── C0 — CHECK THE CHECK: the agreement guard must REJECT the dead MinIO endpoint ─────────────────
-c0_dead="http://localhost:${DELETED_MINIO_PORT}"
-if [ "$(uri_port "$c0_dead")" = "$EXPECTED_EDGE_PORT" ]; then
-  bad "C0 the agreement guard ACCEPTED the deleted MinIO endpoint (guard is vacuous)"
-else ok "C0 check-the-check: the agreement guard rejects the deleted MinIO endpoint ($c0_dead)"; fi
+# ── C0 — CHECK THE CHECK: the agreement guard must REJECT the superseded LocalStack endpoint ──────
+c0_dead="http://localhost:${SUPERSEDED_LOCALSTACK_PORT}"
+if [ "$(uri_port "$c0_dead")" = "$EXPECTED_S3_PORT" ]; then
+  bad "C0 the agreement guard ACCEPTED the superseded LocalStack endpoint (guard is vacuous)"
+else ok "C0 check-the-check: the agreement guard rejects the superseded LocalStack endpoint ($c0_dead)"; fi
+
+c0_off_loopback="http://attacker.example:${EXPECTED_S3_PORT}"
+if s3_endpoint_ok "$c0_off_loopback"; then
+  bad "C0a the agreement guard ACCEPTED an off-loopback endpoint ($c0_off_loopback)"
+else ok "C0a the agreement guard rejects an off-loopback endpoint"; fi
 
 # ── C1 — the IT's endpoint port EQUALS the port run-s3.sh publishes (cross-file agreement) ────────
 c1_ep="$(yaml_endpoint "$S3_YAML" 2>/dev/null)"; c1_port="$(uri_port "$c1_ep")"
-c1_pub="$(published_port "$S3_RUN" "$EXPECTED_EDGE_PORT" 2>/dev/null)"
-if [ -n "$c1_port" ] && [ "$c1_port" = "$c1_pub" ]; then
-  ok "C1 appbase-client-aws-s3.yaml endpoint port ($c1_port) == the port run-s3.sh publishes ($c1_pub)"
-else bad "C1 endpoint='$c1_ep' (port '$c1_port') disagrees with the published port '$c1_pub'"; fi
+c1_pub="$(published_port "$S3_RUN" "$EXPECTED_S3_PORT" 2>/dev/null)"
+if [ "$c1_pub" = "$EXPECTED_S3_PORT" ] && s3_endpoint_ok "$c1_ep"; then
+  ok "C1 appbase-client-aws-s3.yaml uses the owner-approved endpoint $EXPECTED_S3_ENDPOINT"
+else bad "C1 endpoint='$c1_ep' must equal '$EXPECTED_S3_ENDPOINT' and published port is '$c1_pub'"; fi
 
-# ── C2 — the IT's endpoint is not the port of the backend that was deleted ────────────────────────
-if [ "$c1_port" != "$DELETED_MINIO_PORT" ]; then
-  ok "C2 the IT endpoint is not MinIO's :$DELETED_MINIO_PORT (that container was deleted in 81c9f2389)"
-else bad "C2 the IT endpoint still points at the deleted MinIO port :$DELETED_MINIO_PORT"; fi
+# ── C2 — the IT's endpoint is not the superseded LocalStack edge port ─────────────────────────────
+if [ "$c1_port" != "$SUPERSEDED_LOCALSTACK_PORT" ]; then
+  ok "C2 the IT endpoint is not the superseded LocalStack port :$SUPERSEDED_LOCALSTACK_PORT"
+else bad "C2 the IT endpoint still points at superseded LocalStack :$SUPERSEDED_LOCALSTACK_PORT"; fi
 
-# ── C3 — path-style addressing stays on (LocalStack serves buckets by path, not vhost DNS) ────────
+# ── C3 — path-style addressing stays on for the loopback MinIO endpoint ───────────────────────────
 if grep -qE '^[[:space:]]*pathStyleAccessEnabled:[[:space:]]*true' "$S3_YAML" 2>/dev/null; then
   ok "C3 pathStyleAccessEnabled: true — buckets addressed by path, which is what the emulator serves"
 else bad "C3 pathStyleAccessEnabled is not true — vhost-style addressing needs per-bucket DNS the emulator has none of"; fi
 
 # ── C4 — the stacktest S3 config agrees with the same endpoint (no second, stale truth) ───────────
 c4_ep="$(yaml_endpoint "$STACKTEST_YAML" 2>/dev/null)"; c4_port="$(uri_port "$c4_ep")"
-if [ -n "$c4_port" ] && [ "$c4_port" = "$c1_pub" ]; then
-  ok "C4 appbase-stacktest-aws-s3.yaml agrees with the same published endpoint port ($c4_port)"
-else bad "C4 stacktest endpoint='$c4_ep' (port '$c4_port') disagrees with the published port '$c1_pub'"; fi
+if s3_endpoint_ok "$c4_ep" && [ "$c4_ep" = "$c1_ep" ]; then
+  ok "C4 appbase-stacktest-aws-s3.yaml agrees on exact endpoint $EXPECTED_S3_ENDPOINT"
+else bad "C4 stacktest endpoint='$c4_ep' disagrees with owner-approved endpoint '$EXPECTED_S3_ENDPOINT'"; fi
 
 # ── C5 — both clients use S3's constraint-free default region ────────────────────────────────────
 # The SDK maps any other region into CreateBucketConfiguration.LocationConstraint. The historical
-# `dev-region` value is not an AWS region, so LocalStack rejects it with InvalidLocationConstraint.
+# `dev-region` is not an AWS region and can produce InvalidLocationConstraint on S3-compatible servers.
 if grep -qE "^[[:space:]]*id:[[:space:]]*\"$EXPECTED_S3_REGION\"" "$S3_YAML" \
     && grep -qE "^[[:space:]]*id:[[:space:]]*\"$EXPECTED_S3_REGION\"" "$STACKTEST_YAML"; then
-  ok "C5 isolated and stacktest S3 clients use LocalStack-valid region $EXPECTED_S3_REGION"
+  ok "C5 isolated and stacktest S3 clients use S3-valid region $EXPECTED_S3_REGION"
 else bad "C5 S3 client region can produce an invalid create-bucket location constraint"; fi
 
 # ═════════════════════════════════════════════════════════════════════════════════════════════════
@@ -485,6 +561,21 @@ emulator_host_ok() {
 A_AUTH_PORT="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['emulators']['auth']['port'])" "$FIREBASE_JSON" 2>/dev/null)"
 A_UI_PORT="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['emulators']['ui']['port'])" "$FIREBASE_JSON" 2>/dev/null)"
 A_UI_ENABLED="$(python3 -c "import json,sys; print(str(json.load(open(sys.argv[1]))['emulators']['ui']['enabled']).lower())" "$FIREBASE_JSON" 2>/dev/null)"
+A_AUTH_HOST="$(maven_root_property "$ROOT_POM" firebase.auth.emulator.host 2>/dev/null)"
+
+cat > "$TMP/root-property-decoy.xml" <<'XML'
+<project>
+  <!-- <firebase.auth.emulator.host>attacker.example:9099</firebase.auth.emulator.host> -->
+  <profiles><profile><properties>
+    <firebase.auth.emulator.host>inactive.example:9099</firebase.auth.emulator.host>
+  </properties></profile></profiles>
+  <properties><firebase.auth.emulator.host>localhost:9099</firebase.auth.emulator.host></properties>
+</project>
+XML
+a3_decoy="$(maven_root_property "$TMP/root-property-decoy.xml" firebase.auth.emulator.host 2>/dev/null)"
+if [ "$a3_decoy" = "localhost:9099" ]; then
+  ok "A9 root-property reader ignores comments and inactive profiles"
+else bad "A9 root-property reader selected decoy '$a3_decoy'"; fi
 
 # ── A0 — CHECK THE CHECK: the guard must REJECT the value that shipped ────────────────────────────
 # "http://localhost:4000/" composes to
@@ -516,7 +607,9 @@ else bad "A8 firebase.json enables the optional Emulator UI and its runtime down
 a3_bad=""; a3_n=0
 while IFS= read -r value; do
   a3_n=$((a3_n+1))
-  emulator_host_ok "$value" "$A_AUTH_PORT" || a3_bad="$a3_bad [$value]"
+  resolved="$value"
+  [ "$value" = '${firebase.auth.emulator.host}' ] && resolved="$A_AUTH_HOST"
+  emulator_host_ok "$resolved" "$A_AUTH_PORT" || a3_bad="$a3_bad [$value -> $resolved]"
 done < <(grep -oE '<FIREBASE_AUTH_EMULATOR_HOST>[^<]*</FIREBASE_AUTH_EMULATOR_HOST>' "$ROOT_POM" \
          | sed -E 's#</?FIREBASE_AUTH_EMULATOR_HOST>##g')
 if [ "$a3_n" -eq 4 ] && [ -z "$a3_bad" ]; then
@@ -546,8 +639,8 @@ else bad "A6 the container entrypoint does not start the auth emulator"; fi
 echo "appbase_emulator_infra: $PASSED passed, $FAILED failed"
 [ "$FAILED" -eq 0 ] || exit 1
 # anti-vacuity: a run that exercised nothing must not read as success. EVERY arm in this suite is
-# daemon-free and unconditional, so the floor is the exact arm count:
-#   TIER S 18 + TIER W 9 (W0–W8) + TIER C 5 (C0–C4) + TIER A 8 = 40.
+# daemon-free and unconditional, so the result must equal the exact arm count:
+#   TIER S 19 + TIER W 9 (W0–W8) + TIER C 7 (C0–C5 plus C0a) + TIER A 10 = 45.
 # ⚠️ ADD AN ARM → RAISE THIS NUMBER AND THE ARITHMETIC ABOVE IT. A floor left at the old number lets
 # exactly as many arms vanish silently as were added.
-[ "$PASSED" -ge 40 ] || { echo "REFUSING TO REPORT SUCCESS — only $PASSED arms ran"; exit 3; }
+[ "$PASSED" -eq 45 ] || { echo "REFUSING TO REPORT SUCCESS — expected 45 arms, saw $PASSED"; exit 3; }

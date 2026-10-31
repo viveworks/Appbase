@@ -410,6 +410,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
+      - name: Build local StackTest infrastructure images
+        run: |
+          bash appbase-java/appbase-client/appbase-client-aerospike/infra/docker/aerospike/build-aerospike.sh
+          bash appbase-java/appbase-client/appbase-client-druid/infra/docker/druid/build-druid.sh
+          bash appbase-java/appbase-client/appbase-client-firebase/infra/docker/firebase/build-firebase.sh
       - name: Start public product infrastructure
         run: bash appbase-stacktest/infra/run-infra.sh
       - name: Build StackTestMain

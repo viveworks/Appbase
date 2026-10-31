@@ -25,8 +25,13 @@ has_offline_full_history() {
     inside && /^  [a-zA-Z0-9_-]+:$/ { exit }
     inside { print }
   ' "$1")"
+  # Match the common private/public prefix, not the full private-only string: the public CI
+  # projection tool (private-side, not shipped in this tree) emits this same step without the
+  # "(§5.2)" spec-section suffix, since that suffix is itself a private-process cross-reference.
+  # An exact match here only ever passed in the private repo and silently broke this check the
+  # first time this test ran against the real public export.
   checkout_step="$(awk '
-    $0 == "      - name: Check out the exact head (§5.2)" { capture = 1 }
+    $0 ~ /^      - name: Check out the exact head( \(§5\.2\))?$/ { capture = 1 }
     capture && seen && /^      - name:/ { exit }
     capture { print; seen = 1 }
   ' <<< "$section")"

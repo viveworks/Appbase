@@ -106,7 +106,7 @@ class JmxLogServiceTest {
                                 .indexLogEvent(true)
                                 .indexTurboLog(true)
                                 .build())
-                // R3 (internal work item 1073): enabling a Lucene component opts the index in explicitly (§10 defaults it off).
+                // R3 (internal work item 1073): enabling a Lucene component opts it in explicitly (§10 defaults off).
                 .luceneLogIndexConfiguration(
                         DefaultLuceneLogIndexConfiguration.builder().enabled(true).build())
                 .build();
