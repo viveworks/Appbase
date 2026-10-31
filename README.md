@@ -56,7 +56,9 @@ repository yet, so build from source:
 
 ```sh
 git clone https://github.com/viveworks/Appbase.git && cd Appbase
+
 ./build.sh --mode compile            # whole-repo compile, no tests; refuses on a JDK older than 25
+
 mvn test -pl appbase-stacktest -am \
   -Dappbase-stacktest.skipTests=false \
   -Dtest=ReactiveShowcaseStackTest \
