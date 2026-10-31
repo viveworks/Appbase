@@ -156,11 +156,7 @@ claim to bind evidence to each pushed ref. CI is the exact-commit authority: its
 
 ## What comes next
 
-Release 2 work is tracked in the Release 2 Plan of Record
-internal work item 1957, and deferred adapter breadth in
-internal work item 1925. Release publication adds the public
-release notes that preserve the durable next-release decisions; no release-notes file is present in
-the public tree before then. This README does not copy that future publication output.
+There are a lot of exciting modules being planned — stay tuned.
 
 ## License
 
