@@ -4,13 +4,13 @@
 
 The client modules' integration tests and the stack test run against **disposable Docker containers**.
 This part lists the commands that exist, the ports they publish, and the six umbrella scripts, which
-now resolve correctly (see "Fixed: internal work item 2547" below). It is a maintainer and test aid. **It is not a
+now resolve correctly (see "Fixed: path resolution" below). It is a maintainer and test aid. **It is not a
 deployment** and it is outside the guide's acceptance environment
 ([index](README.md#acceptance-environment-and-boundary)).
 
 You need Docker and bash. The Vitess local scripts also refuse to run as root.
 
-## Fixed: internal work item 2547 — the umbrella scripts now resolve client-owned paths
+## Fixed: path resolution — the umbrella scripts now resolve client-owned paths
 
 Six scripts are meant to start/stop the whole stack:
 
@@ -19,7 +19,7 @@ Six scripts are meant to start/stop the whole stack:
 
 **Previously, five of the six** set a base directory `APPBASE_INFRA_BASEDIR` to a shared
 `…/appbase-client/infra/docker/` path that never existed — the Docker files live per client module,
-under `appbase-java/appbase-client/appbase-client-<name>/infra/docker/`. internal work item 2562 fixed all six to resolve
+under `appbase-java/appbase-client/appbase-client-<name>/infra/docker/`. A later fix updated all six to resolve
 each service through its owning client module instead (`appbase-client-jdbc` for `postgresql`,
 `appbase-client-zookeeper`, `appbase-client-aerospike`, `appbase-client-druid`,
 `appbase-client-elasticsearch`, `appbase-client-firebase`), and fixed the matching problem in
@@ -29,19 +29,19 @@ schema from two other nonexistent paths — both now resolve into
 
 **MinIO was removed from the three stacktest scripts, not fixed**: the old scripts named a `minio`
 directory under the nonexistent shared base, and **no MinIO Docker infra exists anywhere in this
-tree** — it was never built, under either the old or new layout. internal work item 2562 deliberately did not create
+tree** — it was never built, under either the old or new layout. The path fix deliberately did not create
 one (that is a separate undertaking, not a side effect of a path-fix), so these scripts simply no
 longer try to start/stop a MinIO container. Standing gap, not yet its own tracked issue.
 
 **Verified**: `scripts/test/infra_client_paths_test.sh` (a Bash 3.2 harness that mocks the child
 shell and asserts the exact `cwd`/script pair each of the six orchestrators resolves to for every
-service) passes. internal work item 2562 also ran one full live smoke cycle (Redis: run → stop → start → stop) through
+service) passes. That fix also included one full live smoke cycle (Redis: run → stop → start → stop) through
 the equivalent per-client path pattern. A fresh attempt at a live multi-service smoke check here hit
 three environment issues unrelated to path resolution — a deprecated `bitnami/*:*-debian-10` image
 tag (zookeeper, and likely postgresql, same family), an unrelated package-install failure building
 firebase's own custom image, and a container-name collision with another concurrent session's
 already-running `elasticsearch.local` — each occurring *after* the script had already `cd`'d into the
-correct directory, so none of them are a internal work item 2547 regression. Not fixed here; flagging in case they
+correct directory, so none of them are a regression from that fix. Not fixed here; flagging in case they
 affect a real local run.
 
 ## The commands that exist
@@ -112,7 +112,7 @@ cd appbase-java/appbase-client/appbase-client-core/infra/docker
 ```
 
 These resolve each directory from the `appbase-client` root (`common-all.sh`), so they never had the
-internal work item 2547 bug. Two cautions from reading the scripts. They deliberately **skip Kafka and Spark**
+path bug described above. Two cautions from reading the scripts. They deliberately **skip Kafka and Spark**
 (`docker-start-all.sh` prints "NOT starting …"). And `common-all.sh` sets `MINIO_DIR` to
 `appbase-java/appbase-client/appbase-client-aws/infra/docker/minio`, which does not exist, so the MinIO step will not find its
 script. How the rest of the run behaves after that failure is **not verified here**.
@@ -158,5 +158,5 @@ mechanism**. Your own service decides which YAML it loads.
 | Covered | Not covered |
 |---|---|
 | the per-client script set and the ports their `run` scripts publish | that every image still builds or pulls on your machine today (two unrelated environment issues are flagged above) |
-| the umbrella-script path fix (internal work item 2547/internal work item 2562) and its own verification (harness test + live smoke) | a MinIO Docker infra (never built, standing gap) |
+| the umbrella-script path fix and its own verification (harness test + live smoke) | a MinIO Docker infra (never built, standing gap) |
 | the twin-file mechanism | any real or credentialed infrastructure |

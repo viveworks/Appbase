@@ -56,11 +56,11 @@ Import the bill of materials, then add the modules you need. The bill of materia
 </dependencyManagement>
 ```
 
-> **groupId: pending internal work item 2546.** `GROUP_ID_PENDING_2546` is a placeholder, not a real coordinate. The
-> Central namespace has been chosen and the rename is tracked in internal work item 2546. Until it lands, copy
+> **groupId: pending rename.** `GROUP_ID_PENDING_2546` is a placeholder, not a real coordinate. The
+> Central namespace has been chosen and the rename is in progress. Until it lands, copy
 > the `<groupId>` of the `appbase-bom` artifact from `appbase-bom/pom.xml` in your checkout. Do not
 > hard-code it in a build you intend to keep. The Java package names in the snippets of this guide are
-> as they are in the tree today. Whether internal work item 2546 renames them too is not verified here.
+> as they are in the tree today; whether the rename reaches them too is not verified here.
 
 This resolves only after `mvn clean install -DskipTests -P quick-profile` has installed the artifacts
 locally.
@@ -68,7 +68,7 @@ locally.
 > **BOM coverage.** The BOM manages every module named below, including Reactor Netty, both R2DBC
 > modules, all five OAuth providers, the reactive OAuth module and both token-cache modules. When you
 > import `appbase-bom`, do not add explicit versions for those artifacts. The earlier Reactor Netty
-> coverage gap was closed by internal work item 2549.
+> coverage gap has since been closed.
 
 ---
 

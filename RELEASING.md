@@ -92,7 +92,7 @@ Stop unless every item below has a timestamped, redacted evidence record:
 
 - An owner-authored comment explicitly authorizes this specific attempt.
 - The heavy-work lease is released.
-- The Sonatype namespace and published signing key from internal work item 1143 are verified.
+- The Sonatype namespace and published signing key are verified.
 - The public export run ties `PRIVATE_SHA` and `MANIFEST_SHA256` to `RELEASE_SHA`.
 - `.github/workflows/release.yml` is present on the public repository default branch.
 - The public release branch tip is exactly `RELEASE_SHA`.
@@ -100,9 +100,9 @@ Stop unless every item below has a timestamped, redacted evidence record:
 - The effective staging configuration has `autoReleaseAfterClose=false`.
 - The protected `dispatch/*` tag ruleset is effective.
 
-The public workflow must have an unprivileged, secret-free preflight job. Its release job must depend on preflight, reference the protected `release` Environment, and request only the permissions needed to create and clean up the public release commit and tag. It must run both `release:prepare` and `release:perform` with `-P release-profile`. This repository does not author that workflow; internal work item 1432 owns it.
+The public workflow must have an unprivileged, secret-free preflight job. Its release job must depend on preflight, reference the protected `release` Environment, and request only the permissions needed to create and clean up the public release commit and tag. It must run both `release:prepare` and `release:perform` with `-P release-profile`. This repository does not author that workflow; it is owned and maintained separately.
 
-Before N03 may use that workflow, verify the full internal work item 1432 contract in `PUBLIC_REPO`:
+Before N03 may use that workflow, verify its full contract in `PUBLIC_REPO`:
 
 - the only trigger is `workflow_dispatch`;
 - required string inputs are `correlation_id`, `release_sha`, and `release_branch`, and the run name is exactly `correlation_id`;
@@ -115,7 +115,7 @@ Before N03 may use that workflow, verify the full internal work item 1432 contra
 - a separate smoke job still declares `environment: release`, so the approval mechanism itself is exercised; and
 - failure cleanup deletes only the generated public release tag and reverts only the generated public release commit or commits. It never resets, force-pushes, promotes, or targets `PRIVATE_REPO`.
 
-An absent or differently shaped property is `STOP / BLOCKED ON internal work item 1432`, not permission to patch a second workflow here.
+An absent or differently shaped property is `STOP / BLOCKED`, not permission to patch a second workflow here.
 
 Perform the public repository existence, default-branch workflow and release-branch identity reads
 before creating or accepting a dispatch tag:
@@ -185,7 +185,7 @@ authorization for the later credentialed release; Procedure B requires a fresh o
 
 ### Credential-disabled workflow smoke test
 
-This is a public-repository workflow dispatch, but it must be incapable of reading credentials or mutating either repository. It can run only after internal work item 1432 is merged on `PUBLIC_REPO`'s default branch and the protected lightweight dispatch tag has passed the exact and peeled reads below.
+This is a public-repository workflow dispatch, but it must be incapable of reading credentials or mutating either repository. It can run only after that workflow is merged on `PUBLIC_REPO`'s default branch and the protected lightweight dispatch tag has passed the exact and peeled reads below.
 
 ```sh
 SMOKE_CORRELATION="release-smoke-${RELEASE_SHA}-$(date -u +%Y%m%dT%H%M%SZ)"
@@ -228,7 +228,7 @@ test "$(gh run view "$SMOKE_RUN_ID" --repo "$PUBLIC_REPO" --json headSha --jq .h
 gh run view "$SMOKE_RUN_ID" --repo "$PUBLIC_REPO" --log >"${TMPDIR:-/tmp}/release-smoke-$SMOKE_RUN_ID.log" || exit 1
 ```
 
-Success requires one matching `workflow_dispatch` run, `headSha == RELEASE_SHA`, a recorded owner approval for the smoke job's protected `release` Environment, and successful preflight/smoke jobs. The internal work item 1432 test evidence must also prove that smoke mode skipped every secret-consuming step, `release:prepare`, release-tag creation and deploy. A green run without that negative-path evidence is not acceptance. Retain the run URL and approver; do not retain secret-bearing logs.
+Success requires one matching `workflow_dispatch` run, `headSha == RELEASE_SHA`, a recorded owner approval for the smoke job's protected `release` Environment, and successful preflight/smoke jobs. The test evidence must also prove that smoke mode skipped every secret-consuming step, `release:prepare`, release-tag creation and deploy. A green run without that negative-path evidence is not acceptance. Retain the run URL and approver; do not retain secret-bearing logs.
 
 ## Verify the public dispatch identity
 
@@ -321,7 +321,7 @@ case "$RUN_URL" in "https://github.com/$PUBLIC_REPO/actions/runs/$RUN_ID") ;; *)
 A queued, in-progress, cancelled, skipped or failed run is not release evidence. A successful run is
 also insufficient without the separately recorded staging validation and terminal-drop proof.
 
-Retain the run URL, approver, staging identifier and redacted validation/drop output on internal work item 1144. On workflow failure, clean up only the public repository's generated release tag and revert its generated release commit; leave no promoted artifact. Never aim cleanup at `PRIVATE_REPO`.
+Retain the run URL, approver, staging identifier and redacted validation/drop output. On workflow failure, clean up only the public repository's generated release tag and revert its generated release commit; leave no promoted artifact. Never aim cleanup at `PRIVATE_REPO`.
 
 ## Mark the released source
 
