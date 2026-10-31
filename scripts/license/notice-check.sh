@@ -35,7 +35,7 @@
 #
 set -uo pipefail
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT="$( cd "$HERE/.." && pwd )"
+ROOT="$(git -C "$HERE" rev-parse --show-toplevel 2>/dev/null)" || ROOT="$( cd "$HERE/.." && pwd )"
 CALLER_DIR="$PWD"
 ENTRY_MARKER='^  \* '
 die() { echo "notice-check: $2" >&2; exit "$1"; }
