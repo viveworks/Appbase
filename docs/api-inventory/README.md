@@ -1,8 +1,8 @@
 # Appbase shipped-artifact and supported-public API inventory
 
-Introduced by internal work item 1399 (P06·E01 N01). This is
-the **single record set** that the API documentation (internal work item 1400–internal work item 1406), the public catalogue (internal work item 2418), the
-root README (internal work item 2419) and the User Guide (internal work item 1416) consume. None of them keeps its own module list.
+This is
+the **single record set** that the API documentation, the public catalogue, the
+root README and the User Guide consume. None of them keeps its own module list.
 
 ## Files
 
@@ -10,7 +10,7 @@ root README (internal work item 2419) and the User Guide (internal work item 141
 |---|---|---|
 | `classification.json` | **a human** | The decisions: each artifact's support state and handoff fields, the package split, module group → documentation issue, excluded trees, and `baseline`, which holds the release baseline's deferred list (§4.2/§4.3) transcribed with its source |
 | `inventory.json` | `scripts/api-inventory.py generate` | **Generated. Never edit it by hand.** One record per artifact the build produces, joined with its classification |
-| [`../spec/1.0.0/P06/decisions/E01-published-api-gap-list.md`](../spec/1.0.0/P06/decisions/E01-published-api-gap-list.md) | same | **Generated.** The measured work list and estimate for internal work item 1400–internal work item 1406 with each group's PR-cap flag and split note, the raw public-surface count with the Plan N01 Step 1 command that reproduces it, the root pom's configured `maven-javadoc-plugin`/doclint settings (the effective javadoc run is NOT_MEASURED; it belongs to internal work item 1405), and the open inventory issues |
+| [`../spec/1.0.0/P06/decisions/E01-published-api-gap-list.md`](../spec/1.0.0/P06/decisions/E01-published-api-gap-list.md) | same | **Generated.** The measured work list and estimate for publishing the API documentation, with each group's PR-cap flag and split note, the raw public-surface count with the Plan N01 Step 1 command that reproduces it, the root pom's configured `maven-javadoc-plugin`/doclint settings (the effective javadoc run is NOT_MEASURED), and the open inventory issues |
 
 ```sh
 python3 scripts/api-inventory.py generate                  # rewrite both generated files; exit 1 if any issue
@@ -22,7 +22,7 @@ bash scripts/test/inventory_test.sh                        # fixture arms, one p
 The generator uses the Python 3 standard library only, and its output is byte-deterministic: it
 contains no timestamps or commit ids, and every collection is sorted.
 
-## Epic-exit groundwork (internal work item 2541)
+## Epic-exit groundwork
 
 The lightweight coordinator composes the fresh inventory check with the full
 catalogue comparison and validates the declared reader-path links:
@@ -35,10 +35,10 @@ python3 scripts/api-docs-acceptance.py \
 Exit `0` means every light static row passed. Exit `1` means a static gate or
 link failed. Exit `2` means the runnable rows passed but generated documentation
 or another declared destination remains **NOT MEASURED**. The checked-in link
-matrix intentionally leaves Javadoc navigation pending until internal work item 1405; this command
+matrix intentionally leaves Javadoc navigation pending; this command
 does not claim to generate Javadoc, Dartdoc, or an epic-close pass. It invokes
 full `catalogue-check.py` mode because `--catalogue-only` suppresses inventory-side
-problems and cannot satisfy internal work item 2541's classification-agreement row.
+problems and cannot satisfy the classification-agreement row.
 
 ## Where the artifact list comes from
 
@@ -68,7 +68,7 @@ Top level: `schema`, `generator`, `classification`, `summary` (count per support
 | `evidence` | Why the artifact has that support state, with a source you can check. For `supported-public` it must cite the release baseline (`§…`), a test (`test: …`) or a recorded owner ruling (`owner ruling: #<issue> comment <id>`) |
 | `owning_module` | The reactor module that owns the artifact (its own path for Maven, the enclosing module for Dart) |
 | `family`, `entry_points`, `backend`, `docs_destination`, `limitations` | Copied from `classification.json`, or `null` |
-| `module_group`, `doc_issue` | Matched from `module_groups` by the longest path prefix, which is how a record maps to internal work item 1400–internal work item 1406 |
+| `module_group`, `doc_issue` | Matched from `module_groups` by the longest path prefix, which is how a record maps to its documentation destination |
 | `packages[]` | Java artifacts only. One entry per package: `package`, `classification` (`supported-public` · `implementation-detail` · `unclassified`), `reason`, `basis` (`explicit` · `rule` · `artifact`), `public_type_count`, `undocumented_types`, `public_members`, `undocumented_members`, `public_types` (the entry-point type names, listed for `supported-public` packages only) and `implementation_detail_types` (the package rule's type exclusions, when there are any) |
 | `dart_surface` | Dart records only: `public_declarations` and `undocumented_declarations` |
 
@@ -118,7 +118,7 @@ An input the generator cannot use at all stops it with one `api-inventory: ERROR
 
 ## Consumer contract (AC6 / AC7)
 
-A consumer doc, such as the root README, the catalogue (internal work item 2418), the User Guide (internal work item 1416) or an API-docs
+A consumer doc, such as the root README, the catalogue, the User Guide or an API-docs
 index, lists the supported-public artifacts **inside a marked region**:
 
 ```markdown
@@ -146,8 +146,7 @@ inventory and the check would fail. Prose outside the region is free text and is
 **Current and future contract (owner Option A).** The operational caller currently runs
 `check-consumer` for the existing `README.md` consumer only. A4-I4 is closed in this PR **only for that
 operational caller and README consumer**. The catalogue consumer, API-index consumer, one operational
-multi-consumer call, and per-consumer drift mutations do not exist here; they are carried by
-internal work item 2507/internal work item 2418 in this same epic. Therefore the multi-consumer command below is a documented **FUTURE
+multi-consumer call, and per-consumer drift mutations do not exist here yet. Therefore the multi-consumer command below is a documented **FUTURE
 contract**, not a claim about the current caller:
 
 ```sh

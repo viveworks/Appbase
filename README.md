@@ -9,13 +9,12 @@
 adapters, application services, and a choice of embedded server, assembled from one YAML
 configuration.**
 
-The former platform overview, `README.adoc` (architecture, modules, the build), was removed by internal work item 1421.
+The former platform overview, `README.adoc` (architecture, modules, the build), has been retired.
 Current documentation lives under [`docs/`](docs/); the former document is not part of the public export.
 This file carries the short operator-facing command tables that people need before they need any of that.
 
 > *Placeholder brand.* The name, wordmark and tagline may still change. The brand set, including
-> the light and dark lockups, is planned in [`docs/branding/`](docs/branding/README.md) under
-> internal work item 1415.
+> the light and dark lockups, is planned in [`docs/branding/`](docs/branding/README.md).
 
 ## What is Appbase
 
@@ -77,12 +76,12 @@ backend or external infrastructure are NOT MEASURED.
 
 ## Swagger UI
 
-Screenshots of the Swagger UI that a running Appbase service publishes belong here (brainstorm P-010,
-internal work item 2419). **Status: NOT MEASURED.** They are captured from a local stacktest run in the internal work item 1142 epic
-campaign, and none has been taken yet, so none is shown. How to run the stacktest is in
+Screenshots of the Swagger UI that a running Appbase service publishes belong here.
+**Status: NOT MEASURED.** They are captured from a local stacktest run, and none has been taken
+yet, so none is shown. How to run the stacktest is in
 [Examples](docs/Examples.md#7-run-the-full-stacktest).
 
-Swagger UI is **opt-in and meant for development**. A Jetty service serves it only if it calls
+Swagger UI is **opt-in** — available whenever you need it. A Jetty service serves it only if it calls
 `withSwaggerUI(...)` on its container builder, as the stacktest's development server does. It is a
 separate static-file handler that sits outside the servlet context, so the Appbase service filters,
 authentication included, do not cover it. Do not turn it on for a service that is reachable from
@@ -93,12 +92,12 @@ outside.
 | Document | What it covers |
 |---|---|
 | [Module and Service Catalog](docs/Module-and-Service-Catalog.md) | Every shipped module and artifact: purpose, entry points, configuration, support state and limitations. This is the completeness authority |
-| [User Guide](docs/user-guide/README.md) *(planned, internal work item 1416)* | Installation, a first service, the configuration wizard and deployment, tested on a clean machine |
+| [User Guide](docs/user-guide/README.md) *(planned)* | Installation, a first service, the configuration wizard and deployment, tested on a clean machine |
 | [Developer MCP](docs/developer-mcp.md) | Give Claude Code, Codex CLI, Cursor, or GitHub Copilot source-derived Appbase API and convention lookup |
 | [Examples](docs/Examples.md) | Supported examples, each marked EXECUTED or NOT MEASURED |
 | [Configuration reference](docs/Configuration-Reference.md) | How a service finds and reads its YAML, the override keys, server choice and test switches |
 | [Known limitations](docs/Known-Limitations.md) | Interim Release 1 limitations; publication adds the generated release-specific view |
-| API documentation | Supported public Java and Dart APIs. Not published yet; owned by internal work item 1141 |
+| API documentation | Supported public Java and Dart APIs. Not published yet |
 | Release notes *(published with the release)* | What 1.0.0 contains and what is slated next; no release-notes file is present in the public tree before publication |
 
 ### API inventory gate

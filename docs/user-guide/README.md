@@ -13,12 +13,12 @@ says so wherever something you might expect is missing or broken.
 >   Maven Central. Build and `mvn install` it locally. Publication is planned
 >   for a later release.
 > - **The groupId is not final.** Every dependency snippet uses the placeholder `GROUP_ID_PENDING_2546`.
->   The namespace decision and rename are tracked in internal work item 2546 (**pending internal work item 2546**). Read the real value
+>   The namespace decision has been made and the rename is in progress. Read the real value
 >   from `appbase-bom/pom.xml` in your checkout.
 > - **No deploy flow ships yet.** The [Deploy section](#deploy--what-exists) below says exactly what
 >   exists and what does not.
 > - **Which modules are *supported* is not decided by this guide.** The shipped-artifact inventory
->   (internal work item 1399) and the [Module and Service Catalogue](../Module-and-Service-Catalog.md) are the
+>   and the [Module and Service Catalogue](../Module-and-Service-Catalog.md) are the
 >   authority. A module named here is in the build; consult the catalogue for its current support
 >   classification.
 
@@ -129,7 +129,7 @@ remote host, a Kubernetes cluster, or any credential.
 | Configuration wizard web-form screenshot | NOT CAPTURED: the web-form screenshot is NOT CAPTURED (the Flutter web UI was not built or run for a capture) ([part 5](05-config-wizard.md)) |
 | Wizard jar build | NOT MEASURED in this guide revision; the clean-machine walkthrough remains deferred |
 | External credentialed deploy | NOT MEASURED |
-| Clean-machine walkthrough | DEFERRED to the internal work item 1145 release checklist |
+| Clean-machine walkthrough | DEFERRED to the release checklist |
 
 **Walkthrough record: NOT MEASURED — host/CI walkthrough pending.** This guide was written against the
 repository tree. What `scripts/test/user_guide_test.sh` checks: that every repository path named in backticks exists (and that the paths named as missing are still missing),
@@ -159,7 +159,7 @@ reality differs.
    issue comment>`, or list each divergence you fixed.
 
 The clean-machine walkthrough is deferred to the
-internal work item 1145 release checklist, to be run by the maintainers
+release checklist, to be run by the maintainers
 before the 1.0.0 cut. Nothing in this guide establishes that walkthrough or an external deploy.
 
 Parts 2, 3, 4, 6, 7, 8 and 9 are reference material and are **not** part of this walkthrough.
@@ -168,7 +168,7 @@ Parts 2, 3, 4, 6, 7, 8 and 9 are reference material and are **not** part of this
 
 ## Where to go next
 
-The root [`README.md`](../../README.md) (being rewritten as the Release-1 storefront under internal work item 2419), the
-[Module and Service Catalogue](../Module-and-Service-Catalog.md), the release notes (internal work item 1420), and the
+The root [`README.md`](../../README.md) (being rewritten as the Release-1 storefront), the
+[Module and Service Catalogue](../Module-and-Service-Catalog.md), the release notes, and the
 configuration reference
 [authorization and path matching](../configuration/authorization-and-path-matching.md).
