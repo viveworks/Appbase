@@ -5,14 +5,14 @@
      Measured reports=55, tracked Java files=3051, findings=8687.
      Identity = repo-relative path + line + column + severity(error) + full source + exact message.
      Every regex is anchored; a same-count replacement finding remains unbaselined and fails.
-     2026-10-31 (commit 3317d4237, internal work item 2655 PR#2886): 74 rows for appbase-config-wizard's
+     2026-10-31 (commit 3317d4237, internal work item 2655 internal work item 2886): 74 rows for appbase-config-wizard's
      PathConfinement.java, PathConfinementTest.java and ConfigWizardWebServerTest.java were
      hand-corrected to their current line/column after an unrelated comment reword shifted them;
      checks/message are unchanged per row (no style violation was fixed), and the 74 new rows were
      verified byte-for-byte identical to what a fresh full-reactor run of this generator produces
      for exactly those 3 files. Measured counts above remain accurate (total rows unchanged: 8687)
      but no longer describe a fresh whole-file regeneration for those 3 files specifically.
-     2026-10-31 (commit f8829a12c, internal work item 2655 PR#2886): appbase-stacktest's CoreSwaggerCaptureStackTest.java's
+     2026-10-31 (commit f8829a12c, internal work item 2655 internal work item 2886): appbase-stacktest's CoreSwaggerCaptureStackTest.java's
      11 rows were replaced with the current 12-row set the hosted build.sh (mode develop) gate reported
      as new and unbaselined. Verified directly against a module-scoped checkstyle:check run: 10 of the
      12 rows are byte-for-byte what a fresh regeneration computes (4 unchanged, including line 212's

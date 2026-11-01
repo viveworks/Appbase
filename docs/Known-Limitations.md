@@ -58,7 +58,7 @@ support-message service. No separate account bundle for Vitess is claimed for Re
   [`appbase-bootstrap-core`](../appbase-java/appbase-bootstrap/appbase-bootstrap-core/pom.xml)
   depends on the five retained excluded artifacts, and it carries
   factories for the deferred ClamAV, SMTP, Jasync and Spark clients. Since the owner's ruling on
-  PR internal work item 2504 (2026-09-27), those dependencies are `<optional>true</optional>`. They are on
+  internal work item 2504 (2026-09-27), those dependencies are `<optional>true</optional>`. They are on
   bootstrap-core's own build classpath, so those factories still compile, but they no longer reach a
   consumer of `appbase-bootstrap-core` or `appbase-bootstrap-reactor-netty`. The factories are
   registered only by explicit caller code (`AppbaseClientServices.builder().with(…)`), so a consumer

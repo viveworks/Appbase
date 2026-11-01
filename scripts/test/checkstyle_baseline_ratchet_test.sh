@@ -76,7 +76,7 @@ assert all(row[0].startswith('^') and row[0].endswith('$') and
            row[1].startswith('^') and row[1].endswith('$') and
            row[2].startswith('^') and row[2].endswith('$') for row in rows)
 # internal work item 2700 originally reconciled two PackageNameCheck findings added by internal work item 2701 after its raw scan.
-# PR internal work item 2748 regenerated the committed baseline to 8,381 measured identities; PR internal work item 2789
+# internal work item 2748 regenerated the committed baseline to 8,381 measured identities; internal work item 2789
 # added three exact appbase-core identities; follow-ups add 38 exact appbase-service-web
 # identities, 181 exact appbase-service-user identities, and five exact reactor-netty
 # identities, followed by 75 exact appbase-stacktest identities and four exact Firebase test

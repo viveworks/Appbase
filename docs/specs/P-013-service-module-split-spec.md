@@ -1,6 +1,6 @@
 # P-013 — appbase-service Sub-Module Split
 
-**Prereq:** P-012 merged (PR internal work item 204).  
+**Prereq:** P-012 merged (internal work item 204).  
 **Goal:** Split `appbase-service-core` monolith (228 files) into 5 focused modules.  
 **Constraint:** Minimal source changes only — 4 targeted lines across 3 files.
 

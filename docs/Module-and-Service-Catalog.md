@@ -95,7 +95,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `<dependency><groupId>com.viveworks.appbase</groupId><artifactId>appbase-bom</artifactId><type>pom</type><scope>import</scope></dependency>`
 - **Configuration / backend:** Maven `dependencyManagement` import; no runtime configuration
 - **Examples / API docs:** usage comment in `appbase-bom/pom.xml`
-- **Limitations:** On this epic base the BOM still disagrees with the lean Release 1.0 baseline: it exports the seven *Deferred* artifacts and `appbase-stacktest`, and omits seven supported ones (the four OAuth providers, both token caches, `appbase-client-r2dbc`). PR internal work item 2504 corrects it. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** On this epic base the BOM still disagrees with the lean Release 1.0 baseline: it exports the seven *Deferred* artifacts and `appbase-stacktest`, and omits seven supported ones (the four OAuth providers, both token caches, `appbase-client-r2dbc`). internal work item 2504 corrects it. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ## Core
 
@@ -183,7 +183,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `ReactorNettyAppbaseWebServer`, `ReactorNettyAppbaseWebServerConfiguration`, `ReactorNettyAppbaseServerModule` (Guice), `AppbaseRouteRegistry`
 - **Configuration / backend:** bootstrap YAML; embedded Reactor Netty
 - **Examples / API docs:** stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400); `appbase-stacktest/README.md` reactive showcase
-- **Limitations:** Supported in Release 1 by the owner ruling on internal work item 1141 Q1 (internal work item 1141 comment 5855318230); `appbase-bom` exports it once PR internal work item 2504 lands. Its admin endpoints are a read-only subset of the ten core ones; the mutating operations stay servlet-only (parity is P-039, 2.0.0). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** Supported in Release 1 by the owner ruling on internal work item 1141 Q1 (internal work item 1141 comment 5855318230); `appbase-bom` exports it once internal work item 2504 lands. Its admin endpoints are a read-only subset of the ten core ones; the mutating operations stay servlet-only (parity is P-039, 2.0.0). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ## Data and integration clients
 
@@ -317,7 +317,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `R2dbcClientService`, `R2dbcClientServiceConfiguration`, `R2dbcClientIntegrationService`, `ReactiveSqlSession`, `ReactiveR2dbcAccessor`
 - **Configuration / backend:** YAML R2DBC connection and pool configuration; needs a MariaDB or PostgreSQL server
 - **Examples / API docs:** Javadoc is not published yet (internal work item 1401)
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Reactive only — no blocking face. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — internal work item 2504 adds it, and the inventory check reports the disagreement until then. Reactive only — no blocking face. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-redis`
 
@@ -453,7 +453,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `GoogleOAuthDefaults`, `GoogleProfileBinding`, `GoogleUserProfile`, `GoogleGroupBinding`
 - **Configuration / backend:** YAML OAuth configuration (issuer, audience, JWKS) with the provider's defaults; needs network access to the provider's endpoints
 - **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-okta`
 
@@ -465,7 +465,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `OktaOAuthDefaults`, `OktaProfileBinding`, `OktaUserProfile`, `OktaGroupBinding`
 - **Configuration / backend:** YAML OAuth configuration (issuer, audience, JWKS) with the provider's defaults; needs network access to the provider's endpoints
 - **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-microsoft`
 
@@ -477,7 +477,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `EntraOAuthDefaults`, `EntraProfileBinding`, `EntraUserProfile`, `EntraGroupBinding`
 - **Configuration / backend:** YAML OAuth configuration (issuer, audience, JWKS) with the provider's defaults; needs network access to the provider's endpoints
 - **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-apple`
 
@@ -489,7 +489,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `AppleOAuthDefaults`, `AppleProfileBinding`, `AppleUserProfile`, `AppleClientSecretGenerator`
 - **Configuration / backend:** YAML OAuth configuration (issuer, audience, JWKS) with the provider's defaults; needs network access to the provider's endpoints
 - **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-reactive`
 
@@ -501,7 +501,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `ReactiveOAuthFilter`, `ReactiveWebFilterChain`
 - **Configuration / backend:** as `appbase-service-web-oauth`
 - **Examples / API docs:** `docs/OAuth-Primer.md`
-- **Limitations:** Supported in Release 1 by the owner ruling on internal work item 1141 Q1 (internal work item 1141 comment 5855318230); `appbase-bom` exports it once PR internal work item 2504 lands. Reactive (Reactor Netty) face only; the servlet face is `appbase-service-web-oauth`. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** Supported in Release 1 by the owner ruling on internal work item 1141 Q1 (internal work item 1141 comment 5855318230); `appbase-bom` exports it once internal work item 2504 lands. Reactive (Reactor Netty) face only; the servlet face is `appbase-service-web-oauth`. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-tokencache-redis`
 
@@ -513,7 +513,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `RedisTokenCache`, `RedisTokenCacheGuiceModule`
 - **Configuration / backend:** YAML OAuth cache configuration plus `appbase-client-redis` (a reachable Redis)
 - **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-web-oauth-tokencache-aerospike`
 
@@ -525,7 +525,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `AerospikeTokenCache`, `AerospikeTokenCacheGuiceModule`
 - **Configuration / backend:** YAML OAuth cache configuration plus `appbase-client-aerospike` (a reachable Aerospike)
 - **Examples / API docs:** `docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)
-- **Limitations:** Not yet exported by `appbase-bom` on this epic base — PR internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** Not yet exported by `appbase-bom` on this epic base — internal work item 2504 adds it, and the inventory check reports the disagreement until then. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-user`
 
@@ -723,7 +723,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `ClamAVClientService`, `ClamAVClient`, `ClamAVClientServiceConfiguration`, `ClamAVRequestEvent`, `ClamAVPingEvent`
 - **Configuration / backend:** YAML/`ClamAVClientServiceConfiguration`; needs a reachable clamd (ClamAV daemon). Built on a built-in clamd protocol client.
 - **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
-- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers ClamAV (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; PR internal work item 2504 removes it, and the inventory check reports it until then. Requires external clamd (ClamAV daemon) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers ClamAV (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; internal work item 2504 removes it, and the inventory check reports it until then. Requires external clamd (ClamAV daemon) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-jasync`
 
@@ -735,7 +735,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `JasyncClientService`, `JasyncClientServiceConfiguration`, `JasyncClientIntegrationService`
 - **Configuration / backend:** YAML/`JasyncClientServiceConfiguration`; needs a reachable MySQL/MariaDB or PostgreSQL server. Built on jasync-mysql + jasync-postgresql (Micrometer metrics).
 - **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
-- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers Jasync support certification (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; PR internal work item 2504 removes it, and the inventory check reports it until then. Requires external MySQL/MariaDB or PostgreSQL server infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers Jasync support certification (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; internal work item 2504 removes it, and the inventory check reports it until then. Requires external MySQL/MariaDB or PostgreSQL server infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-smtp`
 
@@ -747,7 +747,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `SmtpClientService`, `SmtpClientServiceConfiguration`, `SmtpClientIntegrationService`
 - **Configuration / backend:** YAML/`SmtpClientServiceConfiguration`; needs a reachable SMTP server. Built on HubSpot NioSmtpClient.
 - **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
-- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers SMTP (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; PR internal work item 2504 removes it, and the inventory check reports it until then. Requires external SMTP server infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers SMTP (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; internal work item 2504 removes it, and the inventory check reports it until then. Requires external SMTP server infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-client-spark`
 
@@ -759,7 +759,7 @@ Javadoc is not yet published (internal work item 1400–internal work item 1406)
 - **Public entry points:** `SparkClientService`, `SparkClientServiceConfiguration`, `SparkClientIntegrationService`
 - **Configuration / backend:** YAML/`SparkClientServiceConfiguration`; needs a reachable Spark master/cluster. Built on Spark 3 (Scala 2.12) core, SQL, streaming and Kafka connectors.
 - **Examples / API docs:** Javadoc is not published yet (internal work item 1401); no stack-test example configuration
-- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers Spark support certification (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; PR internal work item 2504 removes it, and the inventory check reports it until then. Requires external Spark master/cluster infrastructure; integration tests need it running. Heavy transitive dependency set (Spark + Scala 2.12). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
+- **Limitations:** **Deferred — not part of Release 1.** The lean Release 1.0 baseline §4.2 defers Spark support certification (Release 2 registry internal work item 1925). It is still exported by `appbase-bom` on this epic base; internal work item 2504 removes it, and the inventory check reports it until then. Requires external Spark master/cluster infrastructure; integration tests need it running. Heavy transitive dependency set (Spark + Scala 2.12). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames).
 
 ### `com.viveworks.appbase:appbase-service-user-account-r2dbc`
 

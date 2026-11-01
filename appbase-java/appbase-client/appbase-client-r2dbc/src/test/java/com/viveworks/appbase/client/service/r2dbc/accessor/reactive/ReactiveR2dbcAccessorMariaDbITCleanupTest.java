@@ -29,7 +29,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 /**
- * Offline cleanup and cancellation regressions folded from PR internal work item 2485 into the current richer IT.
+ * Offline cleanup and cancellation regressions folded from internal work item 2485 into the current richer IT.
  *
  * @author Navaneeth Mysore G
  */

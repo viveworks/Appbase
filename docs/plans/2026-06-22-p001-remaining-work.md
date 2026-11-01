@@ -1,10 +1,10 @@
-# P-001 Remaining Work — Post PR internal work item 190
+# P-001 Remaining Work — Post internal work item 190
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Complete the stacktest simplification: rewrite `StackTestMain` to use bootstrap builders, delete `stacktest/AppbaseServices.java` and `StackTestServer.java`, migrate all 150+ references to bootstrap types.
 
-**Architecture:** After PR internal work item 190 merges, bootstrap has all necessary infrastructure. This plan wires stacktest to use it end-to-end.
+**Architecture:** After internal work item 190 merges, bootstrap has all necessary infrastructure. This plan wires stacktest to use it end-to-end.
 
 **Tech Stack:** Java 25, Maven multi-module, Jetty 11, Jersey 3.1, Mockito 3
 
@@ -19,7 +19,7 @@
 
 ---
 
-## Status: What PR internal work item 190 Delivers
+## Status: What internal work item 190 Delivers
 
 | Area | Status |
 |---|---|
@@ -43,7 +43,7 @@
 **Branch:** `XXX/Java/Bootstrap/Refactor/Factory-coverage-and-renames`
 
 **Context:**
-- Domain factories (`UserSessionStoreFactory`, `UserAccountStoreFactory`, etc.) belong in `appbase-bootstrap` — they depend on `appbase-service`, not stacktest. This was already the correct placement in PR internal work item 190.
+- Domain factories (`UserSessionStoreFactory`, `UserAccountStoreFactory`, etc.) belong in `appbase-bootstrap` — they depend on `appbase-service`, not stacktest. This was already the correct placement in internal work item 190.
 - Factory names must reflect the concrete implementation they instantiate so users can easily find the right factory for a given technology.
 - Every `AppbaseClientService` impl in `appbase-client` and every `AppbaseService` impl in `appbase-service` must have a corresponding factory in bootstrap.
 
@@ -97,7 +97,7 @@ Find any `appbase-client` services missing a factory in `appbase-bootstrap/clien
 
 ### Task 0.2: Audit all AppbaseService implementations in appbase-service
 
-Confirm the rename table above is complete — no new services added since PR internal work item 190.
+Confirm the rename table above is complete — no new services added since internal work item 190.
 
 - [ ] Run:
   ```bash
@@ -313,7 +313,7 @@ All `XxxApiTest.runTests(appbaseServices, ...)` callers. Replace `stacktest.Appb
   ```bash
   ./build.sh quick
   ```
-  (ignoring pre-existing appbase-core/appbase-service failures documented in PR internal work item 190)
+  (ignoring pre-existing appbase-core/appbase-service failures documented in internal work item 190)
 - [ ] **Commit**: `refactor(stacktest): delete AppbaseServices.java and StackTestServer.java — bootstrap replaces both`
 
 ---
