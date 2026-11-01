@@ -40,6 +40,10 @@ DRUID_DIR="$APPBASE_CLIENT_ROOT/appbase-client-druid/infra/docker/druid"
 cd "$DRUID_DIR"
 "$APPBASE_CHILD_BASH" "$DRUID_DIR/run-druid.sh"
 
+DRUID_DATASOURCE_DIR="$SCRIPT_DIR/druid"
+cd "$DRUID_DATASOURCE_DIR"
+"$APPBASE_CHILD_BASH" "$DRUID_DATASOURCE_DIR/create-druid-datasource.sh"
+
 
 ELASTICSEARCH_DIR="$APPBASE_CLIENT_ROOT/appbase-client-elasticsearch/infra/docker/elasticsearch"
 cd "$ELASTICSEARCH_DIR"
