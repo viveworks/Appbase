@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.viveworks.appbase</groupId>
         <artifactId>appbase-service</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
     <artifactId>appbase-service-user-session-aerospike</artifactId>
     <packaging>jar</packaging>

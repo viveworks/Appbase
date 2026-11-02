@@ -72,7 +72,7 @@
       ],
       "backend": "Maven `dependencyManagement` import; no runtime configuration",
       "docs_destination": "usage comment in `appbase-bom/pom.xml`",
-      "limitations": "It also lists `appbase-stacktest`, which is an open classification decision (see *Open decisions*). It does NOT list ten reactor jars (also under *Open decisions*). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "It also lists `appbase-stacktest`, which is an open classification decision (see *Open decisions*). It does NOT list ten reactor jars (also under *Open decisions*). Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-bootstrap": {
       "family": "build",
@@ -88,7 +88,7 @@
       ],
       "backend": "YAML bootstrap configuration; the backends are whatever clients the configuration enables",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)",
-      "limitations": "Pulls in several client modules transitively (Aerospike, AWS, Cassandra, and others). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Pulls in several client modules transitively (Aerospike, AWS, Cassandra, and others). Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-bootstrap-reactor-netty": {
       "family": "bootstrap",
@@ -99,7 +99,7 @@
       ],
       "backend": "bootstrap YAML web-server section; embedded Reactor Netty, no external server needed",
       "docs_destination": "`appbase-java/appbase-bootstrap/appbase-bootstrap-reactor-netty/README.md`; Javadoc is not published yet (internal work item 1400)",
-      "limitations": "Its admin endpoints are a read-only subset of the ten core ones; the mutating operations stay servlet-only (parity is P-039, 2.0.0). Choose exactly one web server per service. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Its admin endpoints are a read-only subset of the ten core ones; the mutating operations stay servlet-only (parity is P-039, 2.0.0). Choose exactly one web server per service. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-bootstrap-servlet": {
       "family": "bootstrap",
@@ -110,7 +110,7 @@
       ],
       "backend": "None of its own; used through a container module",
       "docs_destination": "Javadoc is not published yet (internal work item 1400)",
-      "limitations": "Not used alone — pick one of the container modules. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Not used alone — pick one of the container modules. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-bootstrap-servlet-jetty": {
       "family": "bootstrap",
@@ -121,7 +121,7 @@
       ],
       "backend": "bootstrap YAML web-server section; embedded Jetty 11 (jetty-server/jetty-servlet), no external server needed",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)",
-      "limitations": "Choose exactly one container per service. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Choose exactly one container per service. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-bootstrap-servlet-tomcat": {
       "family": "bootstrap",
@@ -132,7 +132,7 @@
       ],
       "backend": "bootstrap YAML web-server section; embedded Tomcat (tomcat-embed-core), no external server needed",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)",
-      "limitations": "Choose exactly one container per service. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Choose exactly one container per service. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-bootstrap-servlet-undertow": {
       "family": "bootstrap",
@@ -143,7 +143,7 @@
       ],
       "backend": "bootstrap YAML web-server section; embedded Undertow (undertow-servlet), no external server needed",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-bootstrap.yaml`; Javadoc is not published yet (internal work item 1400)",
-      "limitations": "Choose exactly one container per service. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Choose exactly one container per service. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client": {
       "family": "build",
@@ -159,7 +159,7 @@
       ],
       "backend": "YAML/`AerospikeClientServiceConfiguration`; needs a reachable Aerospike cluster. Built on aerospike-client + aerospike-reactor-client (Micrometer metrics).",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aerospike.yaml`; Javadoc is not published yet (internal work item 1401)",
-      "limitations": "Requires external Aerospike cluster infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires external Aerospike cluster infrastructure; integration tests need it running. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-cassandra": {
       "family": "client",
@@ -170,7 +170,7 @@
       ],
       "backend": "YAML/`CassandraClientServiceConfiguration`; needs a reachable Cassandra cluster (local datacenter configured). Built on DataStax java-driver 4 (core, query builder, mapper, Micrometer metrics).",
       "docs_destination": "Javadoc is not published yet (internal work item 1401); no stack-test example configuration",
-      "limitations": "Requires external Cassandra cluster (local datacenter configured) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires external Cassandra cluster (local datacenter configured) infrastructure; integration tests need it running. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-clamav": {
       "family": "client",
@@ -196,7 +196,7 @@
       ],
       "backend": "YAML AWS SDK settings; AWS credentials/profile files",
       "docs_destination": "example profiles `appbase-stacktest/src/main/resources/aws-config.profile` and `aws-credentials.profile`; Javadoc is not published yet (internal work item 1404)",
-      "limitations": "AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-cloud-aws-httpclient": {
       "family": "client",
@@ -207,7 +207,7 @@
       ],
       "backend": "YAML HTTP-client configuration; AWS SDK apache-client/netty-nio-client",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-http-client.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-async-http-client.yaml`; Javadoc is not published yet (internal work item 1404)",
-      "limitations": "AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-cloud-aws-s3": {
       "family": "client",
@@ -218,7 +218,7 @@
       ],
       "backend": "YAML S3 configuration; needs an S3 endpoint (AWS, or an S3-compatible local store) and credentials",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aws-s3.yaml`; Javadoc is not published yet (internal work item 1404)",
-      "limitations": "Real AWS usage incurs cost; integration tests need an S3-compatible endpoint. AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Real AWS usage incurs cost; integration tests need an S3-compatible endpoint. AWS only in Release 1 — multi-provider cloud is P-018 (2.0.0); these modules move to a top-level `appbase-cloud` tree under P01. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-core": {
       "family": "client",
@@ -229,7 +229,7 @@
       ],
       "backend": "YAML client-core configuration; no backend of its own",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-client-core.yaml`; Javadoc is not published yet (internal work item 1401)",
-      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-druid": {
       "family": "client",
@@ -240,7 +240,7 @@
       ],
       "backend": "YAML/`DruidSqlClientServiceConfiguration`; needs a reachable Apache Druid broker. Built on Apache Calcite Avatica.",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-druid-sql.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-druid-sql-shared-resources.yaml`; Javadoc is not published yet (internal work item 1401)",
-      "limitations": "Requires external Apache Druid broker infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires external Apache Druid broker infrastructure; integration tests need it running. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-elasticsearch": {
       "family": "client",
@@ -251,7 +251,7 @@
       ],
       "backend": "YAML/`ElasticsearchLowLevelRestClientServiceConfiguration`; needs a reachable Elasticsearch cluster. Built on the Elasticsearch low-level REST client + Jackson.",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-elasticsearch-low-level.yaml`; Javadoc is not published yet (internal work item 1401)",
-      "limitations": "Requires external Elasticsearch cluster infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires external Elasticsearch cluster infrastructure; integration tests need it running. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-firebase": {
       "family": "client",
@@ -262,7 +262,7 @@
       ],
       "backend": "YAML Firebase app/auth configuration; needs a Firebase project and service-account credentials (firebase-admin)",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-app.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-auth.yaml`; Javadoc is not published yet (internal work item 1401)",
-      "limitations": "Requires a real Firebase project or the Firebase emulators; a real project may incur cost. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires a real Firebase project or the Firebase emulators; a real project may incur cost. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-jasync": {
       "family": "client",
@@ -278,7 +278,7 @@
       ],
       "backend": "YAML/`JdbcClientServiceConfiguration`; needs a reachable MariaDB/MySQL or PostgreSQL database. Built on HikariCP with the MariaDB and PostgreSQL drivers.",
       "docs_destination": "Javadoc is not published yet (internal work item 1401); no stack-test example configuration",
-      "limitations": "Requires external MariaDB/MySQL or PostgreSQL database infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires external MariaDB/MySQL or PostgreSQL database infrastructure; integration tests need it running. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-jdbi": {
       "family": "client",
@@ -289,7 +289,7 @@
       ],
       "backend": "YAML/`JdbiClientServiceConfiguration`; needs a reachable JDBC database (via `appbase-client-jdbc`). Built on Jdbi 3 (core, SQL objects, postgres) over `appbase-client-jdbc`.",
       "docs_destination": "Javadoc is not published yet (internal work item 1401); no stack-test example configuration",
-      "limitations": "Requires external JDBC database (via `appbase-client-jdbc`) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires external JDBC database (via `appbase-client-jdbc`) infrastructure; integration tests need it running. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-jpa": {
       "family": "client",
@@ -300,7 +300,7 @@
       ],
       "backend": "YAML/`JpaClientServiceConfiguration`; needs a reachable JDBC database (via `appbase-client-jdbc`). Built on Hibernate ORM over `appbase-client-jdbc`.",
       "docs_destination": "Javadoc is not published yet (internal work item 1401); no stack-test example configuration",
-      "limitations": "Requires external JDBC database (via `appbase-client-jdbc`) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires external JDBC database (via `appbase-client-jdbc`) infrastructure; integration tests need it running. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-kafka": {
       "family": "client",
@@ -311,7 +311,7 @@
       ],
       "backend": "YAML/`KafkaProducerClientServiceConfiguration`; needs a reachable Kafka cluster. Built on kafka-clients + reactor-kafka (Micrometer metrics).",
       "docs_destination": "Javadoc is not published yet (internal work item 1401); no stack-test example configuration",
-      "limitations": "Requires external Kafka cluster infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires external Kafka cluster infrastructure; integration tests need it running. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-r2dbc": {
       "support": "supported-public",
@@ -322,7 +322,7 @@
       ],
       "backend": "MariaDB or PostgreSQL",
       "docs_destination": "Javadoc is not published yet (internal work item 1401)",
-      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-redis": {
       "family": "client",
@@ -333,7 +333,7 @@
       ],
       "backend": "YAML/`RedisClientServiceConfiguration`; needs a reachable Redis server. Built on Lettuce.",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-redis.yaml`; Javadoc is not published yet (internal work item 1401)",
-      "limitations": "Requires external Redis server infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires external Redis server infrastructure; integration tests need it running. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-smtp": {
       "family": "client",
@@ -354,7 +354,7 @@
       ],
       "backend": "YAML/`VitessGrpcClientServiceConfiguration`; needs a reachable Vitess cluster (vtgate). Built on vitess-grpc-client + vitess-jdbc.",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-grpc.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-jdbc.yaml`; stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-vitess-jdbi.yaml`; Javadoc is not published yet (internal work item 1401)",
-      "limitations": "Requires external Vitess cluster (vtgate) infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires external Vitess cluster (vtgate) infrastructure; integration tests need it running. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-client-zookeeper": {
       "family": "client",
@@ -365,7 +365,7 @@
       ],
       "backend": "YAML/`ZooKeeperClientServiceConfiguration`; needs a reachable ZooKeeper ensemble. Built on Apache Curator (framework, recipes, async) (Micrometer metrics).",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-zookeeper.yaml`; Javadoc is not published yet (internal work item 1401)",
-      "limitations": "Requires external ZooKeeper ensemble infrastructure; integration tests need it running. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires external ZooKeeper ensemble infrastructure; integration tests need it running. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-config-wizard": {
       "family": "tool",
@@ -376,7 +376,7 @@
       ],
       "backend": "Local only; no backend",
       "docs_destination": "`appbase-config-wizard/README.md`; the User Guide config-wizard chapter (internal work item 1416)",
-      "limitations": "Its Java classes are implementation detail, not an API. The web frontend is built only by `--wizard-frontend` or the staging/release modes. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Its Java classes are implementation detail, not an API. The web frontend is built only by `--wizard-frontend` or the staging/release modes. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-core": {
       "family": "core",
@@ -387,7 +387,7 @@
       ],
       "backend": "YAML core configuration (`AppbaseCoreBootstrapConfiguration`); no external backend required — the JPA and Lucene stores are optional",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-core.yaml`; Javadoc is not published yet (internal work item 1402)",
-      "limitations": "The largest public surface (about 560 public types); the published-vs-internal package split is still undecided (internal work item 1399 work list). Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "The largest public surface (about 560 public types); the published-vs-internal package split is still undecided (internal work item 1399 work list). Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-java": {
       "family": "build",
@@ -408,7 +408,7 @@
       ],
       "backend": "YAML service configuration; pulls in the Firebase, S3, ZooKeeper and Jdbi clients, whose backends are needed only for the features you enable",
       "docs_destination": "`docs/configuration/authorization-and-path-matching.md`; Javadoc is not published yet (internal work item 1403)",
-      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-supportmessage": {
       "family": "service",
@@ -419,7 +419,7 @@
       ],
       "backend": "YAML service configuration; a store backend",
       "docs_destination": "Javadoc is not published yet (internal work item 1403)",
-      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-user": {
       "family": "service",
@@ -430,7 +430,7 @@
       ],
       "backend": "YAML service configuration; the stores come from a backend module (Jdbi, Firebase Auth or Aerospike sessions)",
       "docs_destination": "Javadoc is not published yet (internal work item 1403)",
-      "limitations": "Store implementations live in the backend modules; this module alone has no persistence. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Store implementations live in the backend modules; this module alone has no persistence. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-user-account-firebaseauth": {
       "family": "service",
@@ -441,7 +441,7 @@
       ],
       "backend": "YAML configuration plus `appbase-client-firebase` (a Firebase project and credentials)",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-firebase-auth.yaml`; Javadoc is not published yet (internal work item 1403)",
-      "limitations": "Requires a Firebase project or the emulators. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires a Firebase project or the emulators. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-user-account-jdbi": {
       "family": "service",
@@ -452,7 +452,7 @@
       ],
       "backend": "YAML store configuration plus `appbase-client-jdbi` (a JDBC database)",
       "docs_destination": "Javadoc is not published yet (internal work item 1403); no dedicated example",
-      "limitations": "Requires a relational database and the account schema. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires a relational database and the account schema. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-user-account-r2dbc": {
       "family": "service",
@@ -468,7 +468,7 @@
       ],
       "backend": "YAML store configuration plus `appbase-client-aerospike` (an Aerospike cluster)",
       "docs_destination": "stack-test configuration `appbase-stacktest/src/main/resources/appbase-stacktest-aerospike.yaml`; Javadoc is not published yet (internal work item 1403)",
-      "limitations": "Requires Aerospike. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Requires Aerospike. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-web": {
       "family": "service",
@@ -479,7 +479,7 @@
       ],
       "backend": "YAML web/service configuration; runs inside a bootstrap container",
       "docs_destination": "`docs/configuration/authorization-and-path-matching.md`; Javadoc is not published yet (internal work item 1403)",
-      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-web-oauth": {
       "family": "service",
@@ -490,7 +490,7 @@
       ],
       "backend": "YAML OAuth configuration (issuer, audience, JWKS); needs the identity provider's endpoints",
       "docs_destination": "`docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)",
-      "limitations": "The reactive face is `appbase-service-web-oauth-reactive`. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "The reactive face is `appbase-service-web-oauth-reactive`. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-web-oauth-apple": {
       "support": "supported-public",
@@ -501,7 +501,7 @@
       ],
       "backend": "Apple identity endpoints",
       "docs_destination": "`docs/OAuth-Primer.md`",
-      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-web-oauth-github": {
       "family": "service",
@@ -512,7 +512,7 @@
       ],
       "backend": "YAML GitHub OAuth configuration; needs network access to the GitHub API",
       "docs_destination": "`docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)",
-      "limitations": "GitHub is not OIDC — tokens are validated by calling the GitHub API rather than locally. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "GitHub is not OIDC — tokens are validated by calling the GitHub API rather than locally. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-web-oauth-google": {
       "support": "supported-public",
@@ -523,7 +523,7 @@
       ],
       "backend": "Google identity endpoints",
       "docs_destination": "`docs/OAuth-Primer.md`",
-      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-web-oauth-microsoft": {
       "support": "supported-public",
@@ -534,7 +534,7 @@
       ],
       "backend": "Microsoft identity endpoints",
       "docs_destination": "`docs/OAuth-Primer.md`",
-      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-web-oauth-okta": {
       "support": "supported-public",
@@ -545,7 +545,7 @@
       ],
       "backend": "Okta org endpoints",
       "docs_destination": "`docs/OAuth-Primer.md`",
-      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-web-oauth-reactive": {
       "family": "service",
@@ -556,7 +556,7 @@
       ],
       "backend": "the same YAML OAuth configuration as `appbase-service-web-oauth`; runs on the Reactor Netty web server",
       "docs_destination": "`docs/OAuth-Primer.md`; Javadoc is not published yet (internal work item 1403)",
-      "limitations": "Reactive (Reactor Netty) face only; the servlet face is `appbase-service-web-oauth`. Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Reactive (Reactor Netty) face only; the servlet face is `appbase-service-web-oauth`. Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-web-oauth-tokencache-aerospike": {
       "support": "supported-public",
@@ -567,7 +567,7 @@
       ],
       "backend": "Aerospike cluster",
       "docs_destination": "Javadoc is not published yet (internal work item 1403)",
-      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-service-web-oauth-tokencache-redis": {
       "support": "supported-public",
@@ -578,7 +578,7 @@
       ],
       "backend": "Redis server",
       "docs_destination": "Javadoc is not published yet (internal work item 1403)",
-      "limitations": "Pre-release `1.0.0-SNAPSHOT`: coordinates and names may still change before 1.0.0 (P01 renames)."
+      "limitations": "Release coordinate: `1.0.0`."
     },
     "com.viveworks.appbase:appbase-stacktest": {
       "family": "examples",

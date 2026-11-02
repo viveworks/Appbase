@@ -27,7 +27,7 @@
     <parent>
         <groupId>com.viveworks.appbase</groupId>
         <artifactId>appbase-java</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
     <artifactId>appbase-core</artifactId>
     <name>Appbase Core</name>
