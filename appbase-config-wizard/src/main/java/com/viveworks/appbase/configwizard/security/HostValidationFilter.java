@@ -92,7 +92,7 @@ public final class HostValidationFilter implements Filter {
      * The comparison is case-insensitive ({@link Locale#ROOT}): DNS hostnames are
      * case-insensitive, and a browser-originated {@code Host} header is not guaranteed to be
      * lower-case (code-review Agent 4, prior-PR-comments pass, final gate re-run — citing an
-     * unresolved finding from PR internal work item 2627 against this exact comparison).
+     * unresolved finding from internal work item 2627 against this exact comparison).
      *
      * @param hostHeader the raw {@code Host} header value, or {@code null} when absent
      * @return {@code true} only when the hostname is explicitly permitted
@@ -173,7 +173,7 @@ public final class HostValidationFilter implements Filter {
             // The only valid continuation after the closing bracket is nothing, or ":<port>".
             // Anything else (e.g. "[::1].evil", "[::1]junk") means this is NOT actually the
             // bracketed literal alone -- fail closed rather than being silently truncated into a
-            // false match (code-review Agent 4, citing the identical bypass class on PR internal work item 1510 F9).
+            // false match (code-review Agent 4, citing the identical bypass class on internal work item 1510 F9).
             return hasOnlyAValidPortSuffix(afterBracket) ? bracketed : hostHeader;
         }
         final int colon = hostHeader.indexOf(':');

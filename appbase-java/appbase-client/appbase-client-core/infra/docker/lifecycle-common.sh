@@ -140,20 +140,46 @@ appbase_tcp_probe() {
 #   then lets a later local command's exit status stand, so the script reports success even when NOTHING
 #   was removed — which silently defeats the orchestrator's child-status aggregation.
 #   Contract:
-#     • already absent (docker reports "No such container") → SUCCESS: removal is idempotent;
-#     • present and removed                                 → SUCCESS;
-#     • present but `docker rm` fails for any OTHER reason  → NON-ZERO, with the daemon's message.
+#     • already absent (docker reports "No such container: $c") → SUCCESS: removal is idempotent;
+#     • present and removed                                     → SUCCESS;
+#     • present but `docker rm` fails for any OTHER reason      → NON-ZERO, with the daemon's message.
 #   `docker stop` is best-effort (an already-stopped/absent container is fine); the removal decides the
 #   status, distinguishing "already gone" from "could not remove" by the daemon's own error text rather
 #   than swallowing every error the way `docker rm … 2>/dev/null || true` would.
+#   ⚠️ The absence match is ANCHORED TO THIS CONTAINER'S OWN NAME ($c), the same discipline internal work item 1291's
+#   adversarial review made load-bearing for appbase_remove_network/appbase_remove_volume below (a bare
+#   "not found" is NOT safe — it also matches real failures like "docker: command not found" or a
+#   misconfigured `context "<n>" not found"). Docker's own "No such container: <ref>" text always
+#   embeds the exact ref you asked it to stop/remove, so anchoring here costs nothing and closes the
+#   same over-match class those two functions were specifically hardened against.
 appbase_remove_container() {
   local c="${1:?appbase_remove_container: container required}" out
   docker stop "$c" >/dev/null 2>&1
   out="$(docker rm "$c" 2>&1)" && return 0
   case "$out" in
-    *[Nn]"o such container"*) return 0 ;;   # already absent — idempotent success
+    *[Nn]"o such container: $c"*) return 0 ;;   # already absent — idempotent success
   esac
   echo "appbase lifecycle: failed to remove container '$c': $out" >&2
+  return 1
+}
+
+# appbase_stop_container CONTAINER
+#   The STOP-only mirror of appbase_remove_container, for stop-*.sh scripts that must not abort a
+#   teardown orchestrator running under `set -e` just because a backend was never created in the
+#   first place (e.g. its own run-*.sh failed to start it). A bare `docker stop <name>` on an absent
+#   container exits non-zero, which under `set -e` kills the whole orchestrator at that step -- for
+#   any later-ordered backend, not just this one. Contract, mirroring appbase_remove_container
+#   (including the same name-anchored absence match, for the same reason -- see its comment above):
+#     • already absent (docker reports "No such container: $c") → SUCCESS: stop is idempotent;
+#     • present and stopped (or already stopped)                 → SUCCESS;
+#     • present but `docker stop` fails for any OTHER reason     → NON-ZERO, with the daemon's message.
+appbase_stop_container() {
+  local c="${1:?appbase_stop_container: container required}" out
+  out="$(docker stop "$c" 2>&1)" && return 0
+  case "$out" in
+    *[Nn]"o such container: $c"*) return 0 ;;   # already absent — idempotent success
+  esac
+  echo "appbase lifecycle: failed to stop container '$c': $out" >&2
   return 1
 }
 

@@ -331,7 +331,7 @@ public final class DruidConnectionConfiguration {
     public String toString() {
         // AUD-34/L4-06: url and authentication (may embed credentials; e.g. JDBC userinfo) and
         // clientInfo/additionalProperties (open-ended maps) are redacted alongside password,
-        // matching the broader redaction PR internal work item 2558 established for this same class after review
+        // matching the broader redaction internal work item 2558 established for this same class after review
         // found a single-field redaction insufficient.
         return "DruidConnectionConfiguration{" +
                 "url='" + AppbaseUtil.OBFUSCATE + '\'' +

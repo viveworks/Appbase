@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # bom_release1_test.sh — appbase-bom pins exactly the Release-1 publishable surface (internal work item 2419, owner
-# decision on PR internal work item 2504: "Need to fix BOM").
+# decision on internal work item 2504: "Need to fix BOM").
 #
 # The rule, from the Release 1.0 Lean Requirements baseline (reconciled 2026-08-28) §4.2/§4.3: deferred capability
 # and empty artifact shells must not appear in Maven publication claims, and the BOM is the one
@@ -180,7 +180,7 @@ while IFS= read -r a; do
 done <<< "$excluded"
 [ ${#miss[@]} -eq 0 ] && ok "EXTRA_exclusion_copies_agree" || bad "EXTRA_exclusion_copies_agree" "${miss[@]}"
 
-# Owner ruling Q-A on PR internal work item 2504 (2026-09-27): a Release-1 module must not drag a deferred or empty-shell
+# Owner ruling Q-A on internal work item 2504 (2026-09-27): a Release-1 module must not drag a deferred or empty-shell
 # artifact onto a consumer's classpath. So no reactor module outside the exclusion list may depend on an
 # excluded artifact at compile or runtime scope unless the edge is <optional>true</optional>. Before the
 # ruling, appbase-bootstrap-core pulled eight (ledger N9). The three empty shells are now removed;

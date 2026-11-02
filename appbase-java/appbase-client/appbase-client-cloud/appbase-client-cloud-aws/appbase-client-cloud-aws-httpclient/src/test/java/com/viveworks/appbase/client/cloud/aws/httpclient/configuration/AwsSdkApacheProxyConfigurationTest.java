@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * any other field that can carry a credential or arbitrary caller-supplied content — {@code
  * endpoint} (a proxy URI may embed {@code user:password@host} userinfo) and {@code nonProxyHosts}
  * (an open-ended collection, same reasoning as a map field). This mirrors the broader redaction
- * {@code appbase-service-core}'s companion fix (PR internal work item 2558, {@code T2553}) was required to land after
+ * {@code appbase-service-core}'s companion fix (internal work item 2558, {@code T2553}) was required to land after
  * review found that redacting only {@code password} was insufficient for this same class.
  *
  * @author Navaneeth Mysore G

@@ -1,0 +1,492 @@
+# Generated public develop nightly. Do not edit after export.
+name: Public nightly
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  VERIFY_REF: ${{ github.sha }}
+
+concurrency:
+  group: public-nightly-develop
+  cancel-in-progress: true
+
+jobs:
+  changed-modules:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      has_changes: ${{ steps.compute.outputs.has_changes }}
+      modules: ${{ steps.compute.outputs.modules }}
+      head_sha: ${{ steps.compute.outputs.head_sha }}
+      run_shell_suites: ${{ steps.compute.outputs.run_shell_suites }}
+      run_console_suite: ${{ steps.compute.outputs.run_console_suite }}
+      run_emulator: ${{ steps.compute.outputs.run_emulator }}
+      run_stacktest: ${{ steps.compute.outputs.run_stacktest }}
+      run_hosted_tiers: ${{ steps.compute.outputs.run_hosted_tiers }}
+      run_unit_tests: ${{ steps.compute.outputs.run_unit_tests }}
+    steps:
+      - name: Check out the exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require the develop ref
+        run: test "$GITHUB_REF" = refs/heads/develop
+      - name: Select commits and relevant product jobs from the last 24 hours
+        id: compute
+        run: |
+          set -euo pipefail
+          cutoff="$(date -u -d '24 hours ago' +%s)"
+          .github/scripts/nightly-scope.sh "$GITHUB_OUTPUT" HEAD "$cutoff"
+  maven-compile:
+    needs: changed-modules
+    if: >-
+      needs.changed-modules.outputs.modules != 'NONE' &&
+      needs.changed-modules.outputs.run_hosted_tiers == 'true'
+    outputs:
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+      static_acceptance_result: ${{ steps.static-receipt.outputs.result }}
+      static_acceptance_tested_sha: ${{ steps.static-receipt.outputs.tested_sha }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      # Maven >= 3.9 appends MAVEN_ARGS to every invocation, including the one inside build.sh.
+      MAVEN_ARGS: -B -ntp
+      MODULES: ${{ needs.changed-modules.outputs.modules }}
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          # git-commit-id-plugin (useNativeGit) reads git metadata in `initialize`.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+
+      - name: Install ripgrep for build.sh bounded manifest scan
+        run: sudo apt-get update && sudo apt-get install -y ripgrep && rg --version
+
+      - name: Set up Temurin JDK 25 (build.sh hard-requires 25)
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      # setup-java's own maven key format, file patterns and absolute path (the cache version hashes
+      # the path string), so the entries `cache: maven` saved on develop still hit. ubuntu-24.04 x64.
+      - name: Restore the ~/.m2 repository cache
+        id: restore-maven
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+
+      - name: Toolchain
+        run: |
+          java -version
+          mvn -version
+
+      - name: Full reactor — ./build.sh --mode compile (coverage self-check + clean test-compile)
+        if: env.MODULES == 'ALL'
+        run: ./build.sh --mode compile
+
+      - name: Changed modules — clean test-compile -pl <directed closure> -am
+        if: env.MODULES != 'ALL'
+        # build.sh refuses --modules for compile, so the Maven part is mirrored directly. The coverage
+        # self-check is not needed here: adding/removing a pom.xml or pubspec.yaml forces ALL.
+        #
+        # Maven's own -am/-amd each expand $MODULES exactly once, in one direction: -amd adds modules
+        # that depend on $MODULES, -am adds modules $MODULES depends on. Neither flag re-expands for a
+        # module the OTHER flag adds, so a module pulled in by -amd can have its own, unrelated -am-style
+        # dependency silently missing from the reactor (internal work item 2655 PR#3: changed appbase-core pulled in
+        # appbase-service-web-oauth-reactive via -amd, through appbase-service-core, but not that
+        # module's separate, parallel dependency appbase-service-web-oauth, which has no relationship to
+        # appbase-core at all -- the build then failed resolving it as a never-published internal
+        # SNAPSHOT jar). reactor-closure.sh therefore runs two directed phases: first the transitive
+        # downstream consumers of the ORIGINAL seeds, then the transitive prerequisites of that set.
+        # It deliberately does not feed phase-two prerequisites back through the consumer phase: doing
+        # so would add every unrelated sibling consumer of a shared prerequisite. For the same reason,
+        # never pass -amd on $FULL_MODULES. -am follows only the safe prerequisite direction; it should
+        # be idempotent after phase two and remains as Maven's native backstop if the shell parser ever
+        # misses a prerequisite edge.
+        run: |
+          FULL_MODULES="$(.github/scripts/reactor-closure.sh "$MODULES")"
+          mvn -q clean test-compile -pl "$FULL_MODULES" -am -Dsurefire.failIfNoSpecifiedTests=false
+
+      - name: Generate and verify MCP API surface against compiled classes
+        if: env.MODULES == 'ALL'
+        env:
+          MCP_API_SOURCE_REVISION: ${{ needs.changed-modules.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+          bash scripts/generate-mcp-api-surface.sh "$RUNNER_TEMP/appbase-api-surface.json"
+          bash scripts/verify-mcp-api-surface.sh "$RUNNER_TEMP/appbase-api-surface.json"
+
+  api-inventory:
+    needs: changed-modules
+    if: needs.changed-modules.outputs.modules != 'NONE'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Fast inventory gate and fixture suite
+        run: |
+          set -euo pipefail
+          bash scripts/api-inventory-fast-check.sh
+          bash scripts/test/inventory_test.sh
+
+  # Deliberately separate from maven-compile: that prerequisite preserves full-reactor coverage/self-check
+  # evidence and the trusted cache-save boundary. Maven's test lifecycle necessarily recompiles selected
+  # modules; merging the jobs would either lose that distinct compile evidence or complicate cache trust.
+  maven-unit-tests:
+    needs: [changed-modules, maven-compile]
+    if: >-
+      needs.maven-compile.result == 'success' &&
+      needs.changed-modules.outputs.run_hosted_tiers == 'true' &&
+      needs.changed-modules.outputs.run_unit_tests == 'true'
+    outputs:
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+    runs-on: ubuntu-24.04
+    # Changed-module scope is deliberately bounded at 20 minutes; Surefire's 8-minute fork timeout
+    # remains smaller so Maven can report the failed module before the job is cancelled.
+    timeout-minutes: 20
+    env:
+      MAVEN_ARGS: -B -ntp
+      MODULES: ${{ needs.changed-modules.outputs.modules }}
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Reactor unit tests
+        run: |
+          set -euo pipefail
+          client_gates=(
+            -DAerospikeClientServiceTests.enabled=false -DCassandraClientServiceTests.enabled=false
+            -DClamAVClientServiceTests.enabled=false -DDruidClientServiceTests.enabled=false
+            -DElasticsearchClientServiceTests.enabled=false -DFirebaseAuthClientServiceTests.enabled=false
+            -DJasyncClientServiceTests.enabled=false -DJdbcClientServiceTests.enabled=false
+            -DJdbiClientServiceTests.enabled=false -DJpaClientServiceTests.enabled=false
+            -DKafkaClientServiceTests.enabled=false -DR2dbcClientServiceTests.enabled=false
+            -DRedisClientServiceTests.enabled=false
+            -DS3ClientServiceTests.enabled=false -DSmtpClientServiceTests.enabled=false
+            -DSparkClientServiceTests.enabled=false -DVitessClientServiceTests.enabled=false
+            -DZooKeeperClientServiceTests.enabled=false
+          )
+          if [[ "$MODULES" == ALL ]]; then
+            mvn -B -fae test -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
+          else
+            # Same combined -am/-amd single-pass gap as maven-compile's narrow build; see that job's
+            # comment and internal work item 2655 PR#3. The helper computes downstream-from-original-seeds first, then
+            # prerequisites. Retain Maven's safe prerequisite-only -am backstop; never reapply -amd to
+            # phase-two prerequisites, because that would add their unrelated sibling consumers.
+            FULL_MODULES="$(.github/scripts/reactor-closure.sh "$MODULES")"
+            mvn -B -fae test -pl "$FULL_MODULES" -am -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
+          fi
+      - name: Print bounded Surefire fork diagnostics
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import pathlib
+
+          reports = sorted(pathlib.Path('.').glob('**/target/surefire-reports/*.dumpstream'))
+          reports += sorted(pathlib.Path('.').glob('**/target/surefire-reports/*.dump'))
+          remaining = 64 * 1024
+          selected = reports[:64]
+          if not reports:
+              print('No Surefire .dumpstream or .dump files were produced.')
+          for index, report in enumerate(selected):
+              print(f'===== {report} =====')
+              size = report.stat().st_size
+              with report.open('rb') as stream:
+                  shown = stream.read(min(64 * 1024, remaining))
+              print(shown.decode('utf-8', errors='replace'), end='')
+              if shown and not shown.endswith(b'\n'):
+                  print()
+              if len(shown) < size:
+                  print(f'[truncated: showed {len(shown)} of {size} bytes]')
+              remaining -= len(shown)
+              if remaining <= 0:
+                  omitted = len(reports) - index - 1
+                  print(f'[64 KiB content limit reached; {omitted} additional files omitted]')
+                  break
+          else:
+              omitted = len(reports) - len(selected)
+              if omitted:
+                  print(f'[64-file metadata limit reached; {omitted} additional files omitted]')
+          PY
+
+      - name: Summarize Surefire results by module
+        if: always()
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import pathlib
+          import xml.etree.ElementTree as ET
+
+          totals = {}
+          for report in pathlib.Path('.').glob('**/surefire-reports/*.xml'):
+              module = str(report.parents[2])
+              counts = totals.setdefault(module, [0, 0, 0, 0])
+              root = ET.parse(report).getroot()
+              for index, key in enumerate(('tests', 'failures', 'errors', 'skipped')):
+                  counts[index] += int(root.attrib.get(key, 0))
+          print('## Surefire unit-test results')
+          print('| module | tests | failures | errors | skipped |')
+          print('|---|---:|---:|---:|---:|')
+          for module, counts in sorted(totals.items()):
+              print(f'| {module} | {counts[0]} | {counts[1]} | {counts[2]} | {counts[3]} |')
+          if not totals:
+              print('| *(no Surefire XML produced)* | 0 | 0 | 0 | 0 |')
+          PY
+
+      - name: Require at least one executed unit test
+        run: .github/scripts/require-test-count.py '**/surefire-reports/*.xml'
+
+  offline-shell-suites:
+    needs: changed-modules
+    if: needs.changed-modules.outputs.run_shell_suites == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out the exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install xmllint (checkstyle_baseline_ratchet_test.sh requires it, line 163)
+        # ubuntu-24.04 runners do not ship libxml2-utils by default; the suite's own tool-availability
+        # check (line 20) fails closed without it. Scoped to this job only -- no other job needs it.
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+      - name: Set up Temurin JDK 25
+        # checkstyle_baseline_ratchet_test.sh's direct `mvn checkstyle:check` needs Checkstyle
+        # 13.8.0's own class files (version 65 = Java 21+); this job otherwise fell through to the
+        # runner's default Java 17 (class file version 61), which the other six suites never
+        # noticed since none of them invoke Checkstyle. Matches maven-compile/maven-unit-tests/
+        # config-wizard-console's own setup exactly.
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Public offline product contracts
+        run: |
+          set -euo pipefail
+          for suite in             aerospike_container_contract_test.sh             checkstyle_baseline_ratchet_test.sh             ci_release_rehearsal_test.sh             ci_verify_compile_prereqs_test.sh; do
+            timeout 900 bash "scripts/test/$suite"
+          done
+  config-wizard-console:
+    needs: changed-modules
+    if: needs.changed-modules.outputs.run_console_suite == 'true'
+    concurrency:
+      group: ci-verify-live-l09-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    # Advisory-skip until internal work item 1302's prompt rebaseline reaches this branch. The content probe below
+    # automatically opts in the suite once conftest expects the shipped `number=pick` prompt.
+    # Follow-up: remove this `number=pick` content probe once internal work item 1302 merges.
+    # The prior exact-head full verification occupied its lease window for at most 63 minutes
+    # (06:03:48Z reservation to 07:06:31Z receipt, internal work item 2513 comment 5966612358). Ninety minutes keeps
+    # that measured workload bounded while allowing hosted-runner variance; billing stops when the
+    # job finishes, so this is a failure ceiling rather than planned spend.
+    timeout-minutes: 90
+    env:
+      MAVEN_ARGS: -B -ntp
+    outputs:
+      prompt_fix_ready: ${{ steps.prompt-fix.outputs.ready }}
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Detect internal work item 1302 prompt fixes
+        id: prompt-fix
+        run: |
+          conftest=appbase-config-wizard/test/console/conftest.py
+          [ -f "$conftest" ] || { echo '::error::console conftest missing'; exit 1; }
+          if grep -q 'number=pick' "$conftest"; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'Advisory skip: internal work item 1302 prompt fixes are not present.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Set up Temurin JDK 25
+        if: steps.prompt-fix.outputs.ready == 'true'
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Build config-wizard JAR (tests skipped)
+        if: steps.prompt-fix.outputs.ready == 'true'
+        run: mvn -B -P quick-profile -pl appbase-config-wizard -am -DskipTests clean install
+      - name: Set up Python 3
+        if: steps.prompt-fix.outputs.ready == 'true'
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install console-suite dependencies
+        if: steps.prompt-fix.outputs.ready == 'true'
+        run: |
+          python -m venv .ci-console-venv
+          .ci-console-venv/bin/python -m pip install --require-hashes -r .github/scripts/console-requirements.lock
+      - name: Run config-wizard pexpect suite
+        if: steps.prompt-fix.outputs.ready == 'true'
+        run: .ci-console-venv/bin/python -m pytest -v appbase-config-wizard/test/console --junitxml=appbase-config-wizard/target/console-junit.xml
+      - name: Require at least one executed console test
+        if: steps.prompt-fix.outputs.ready == 'true'
+        run: .github/scripts/require-test-count.py appbase-config-wizard/target/console-junit.xml
+  emulator:
+    needs: changed-modules
+    if: needs.changed-modules.outputs.run_emulator == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Emulator configuration and schema contract
+        run: bash scripts/test/appbase_emulator_infra_test.sh
+  stacktest:
+    needs: changed-modules
+    if: needs.changed-modules.outputs.run_stacktest == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 170
+    steps:
+      - name: Check out the exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+        timeout-minutes: 5
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        timeout-minutes: 5
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Build local StackTest infrastructure images
+        timeout-minutes: 20
+        run: |
+          bash appbase-java/appbase-client/appbase-client-aerospike/infra/docker/aerospike/build-aerospike.sh
+          bash appbase-java/appbase-client/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/build-s3.sh
+          bash appbase-java/appbase-client/appbase-client-druid/infra/docker/druid/build-druid.sh
+          bash appbase-java/appbase-client/appbase-client-firebase/infra/docker/firebase/build-firebase.sh
+          bash appbase-java/appbase-client/appbase-client-redis/infra/docker/redis/build-redis.sh
+          bash appbase-java/appbase-client/appbase-client-vitess/infra/docker/vitess/build-vitess.sh
+      - name: Start public product infrastructure
+        timeout-minutes: 15
+        run: bash appbase-stacktest/infra/run-infra.sh
+      - name: Build StackTestMain
+        # install_stacktest() in stacktest-live-runner.sh already self-bounds its mvn invocation with
+        # its own `timeout --signal=TERM --kill-after=30s 30m`; this step-level timeout is a backstop
+        # in case that internal bound itself ever fails to fire, and it is also what the cumulative
+        # budget check below sums over.
+        timeout-minutes: 35
+        run: .github/scripts/stacktest-live-runner.sh install
+      - name: Live product gate
+        # Vitess's readiness/outage-restoration path has a documented hang history (internal work item 2749/internal work item 2788).
+        # Bounding this step below the job's own timeout is necessary but not sufficient on its own --
+        # see the job-level comment above for why every OTHER step's own budget also has to be summed.
+        timeout-minutes: 70
+        env:
+          FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099"
+        run: .github/scripts/stacktest-live-runner.sh green public-pr
+      - name: Capture infrastructure diagnostics on failure
+        if: failure()
+        timeout-minutes: 5
+        run: |
+          echo "::group::docker ps -a"
+          docker ps -a || true
+          echo "::endgroup::"
+          for name in vitess.local aerospike.local druid.local firebase.local minio-s3.local redis.local; do
+            echo "::group::docker logs --tail 200 $name"
+            docker logs --tail 200 "$name" 2>&1 || true
+            echo "::endgroup::"
+          done
+      - name: Stop public product infrastructure
+        if: always()
+        timeout-minutes: 10
+        run: bash appbase-stacktest/infra/stop-infra.sh
+  summary:
+    needs: [changed-modules, maven-compile, api-inventory, maven-unit-tests, offline-shell-suites, config-wizard-console, emulator, stacktest]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require every selected nightly job
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          RUN_HOSTED: ${{ needs.changed-modules.outputs.run_hosted_tiers }}
+          RUN_SHELL: ${{ needs.changed-modules.outputs.run_shell_suites }}
+          RUN_CONSOLE: ${{ needs.changed-modules.outputs.run_console_suite }}
+          RUN_EMULATOR: ${{ needs.changed-modules.outputs.run_emulator }}
+          RUN_STACKTEST: ${{ needs.changed-modules.outputs.run_stacktest }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          needs = json.loads(os.environ['NEEDS_JSON'])
+          selected = {
+              'changed-modules': True,
+              'maven-compile': os.environ['RUN_HOSTED'] == 'true',
+              'api-inventory': os.environ['RUN_HOSTED'] == 'true',
+              'maven-unit-tests': os.environ['RUN_HOSTED'] == 'true',
+              'offline-shell-suites': os.environ['RUN_SHELL'] == 'true',
+              'config-wizard-console': os.environ['RUN_CONSOLE'] == 'true',
+              'emulator': os.environ['RUN_EMULATOR'] == 'true',
+              'stacktest': os.environ['RUN_STACKTEST'] == 'true',
+          }
+          failed = {name: data['result'] for name, data in needs.items()
+                    if data['result'] != ('success' if selected[name] else 'skipped')}
+          if failed:
+              raise SystemExit('public nightly failure: ' + repr(failed))
+          print('public nightly completed:', ', '.join(sorted(needs)))
+          PY

@@ -35,7 +35,10 @@
 #
 set -uo pipefail
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT="$( cd "$HERE/.." && pwd )"
+# Not "$HERE/.." -- the public export relocates this file one directory deeper than its private
+# home, so a fixed parent-count silently resolves to the wrong root in whichever copy it wasn't
+# tuned for. git's own repo-root lookup is correct at any depth, in either copy.
+ROOT="$(git -C "$HERE" rev-parse --show-toplevel 2>/dev/null)" || ROOT="$( cd "$HERE/.." && pwd )"
 CALLER_DIR="$PWD"
 ENTRY_MARKER='^  \* '
 die() { echo "notice-check: $2" >&2; exit "$1"; }

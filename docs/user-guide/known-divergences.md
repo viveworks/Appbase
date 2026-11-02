@@ -14,7 +14,7 @@ cited; items without a number have no known tracker.
 | `appbase-config-wizard/bin/start-console.sh`, `appbase-config-wizard/bin/start-web.sh` | build the jar automatically when it is missing | the fallback build uses `-Dmaven.test.skip=true`, which never builds `appbase-client-core`'s test-jar. `appbase-client-clamav` (pulled in through `appbase-bootstrap-core`) needs it, so the build fails from a clean checkout. Build first (part 1, or `-DskipTests`) |
 | `appbase-config-wizard/README.md`, `appbase-config-wizard/bin/start-web.sh` | the script "builds the JAR automatically" and the web UI works | the automatic build skips the Flutter frontend, so the web page is blank. Build with `--wizard-frontend` first (part 5) |
 | `appbase-config-wizard/frontend/README.md` | `mvn install -pl appbase-config-wizard` runs `flutter build web` | only with `-Dappbase-config-wizard.skipFrontend=false` (which `--wizard-frontend` sets) |
-| `README.adoc` | modules `appbase-net`, `appbase-platform`, `appbase-flutter`, `appbase-react` | none of these exist. The root README is being rewritten |
+| `README.adoc` | modules `appbase-net`, `appbase-platform`, `appbase-flutter`, `appbase-react` | none of these exist. The root README is being rewritten under internal work item 2419 |
 | `appbase-java/README.adoc` | run `./build.sh quick` from `appbase-java/` | `build.sh` is at the repository root, and the mode flag is `--mode` |
 | Root README | a maintainer-only container guide is described as "921 lines" | that private guide has 1012 lines; it is not part of the public User Guide |
 | `docs/OAuth-Primer.md` section 7 | configuring a provider is deferred to a future usage guide and API reference | [part 3](03-service-modules.md) of this guide now carries the provider configuration step; the primer was not edited |
@@ -22,32 +22,32 @@ cited; items without a number have no known tracker.
 | `appbase-java/appbase-client/appbase-client-vitess/infra/docker/vitess/README.adoc` | the Docker container "seems unstable" | recorded as the README says; not reproduced here |
 | `appbase-codeagents/claude/skills/add-appbase-service/*.md` | reference modules at `appbase-client/appbase-client-aerospike/` and similar | those paths do not exist at the repository root. The modules are under `appbase-java/` |
 
-## Local infrastructure scripts
+## Local infrastructure scripts (internal work item 2547)
 
 | Where | What it says | What the tree does |
 |---|---|---|
 | `appbase-java/appbase-client/appbase-client-core/infra/docker/common-all.sh` | `MINIO_DIR` is `appbase-java/appbase-client/appbase-client-aws/infra/docker/minio` | no such directory exists |
 
-The stacktest, service, and Vitess orchestration paths have since been corrected. Part 6 gives the
+The stacktest, service, and Vitess orchestration paths were corrected by internal work item 2562. Part 6 gives the
 per-client commands that now exist; the MinIO path above remains unresolved.
 
 ## Build and artifact coverage
 
 | Where | What it says | What the tree does |
 |---|---|---|
-| the `<groupId>` of the root `pom.xml`, `appbase-bom/pom.xml` and the other module poms | `com.viveworks.appbase` | the Central namespace decision is `com.viveworks`; the rename is in progress. This guide uses the placeholder `GROUP_ID_PENDING_2546` |
+| the `<groupId>` of the root `pom.xml`, `appbase-bom/pom.xml` and the other module poms | `com.viveworks.appbase` | the Central namespace decision is `com.viveworks`; the rename is tracked in **internal work item 2546**. This guide uses the placeholder `GROUP_ID_PENDING_2546`. The earlier version of this guide cited internal work item 1143 for this, which was the wrong reference |
 
-## REST documentation
+## REST documentation (internal work item 2548)
 
 | Where | What it says | What the tree does |
 |---|---|---|
-| `JettyServletContainer.Builder.withSwaggerUI(…)` and `appbase-stacktest` | the stack test serves Swagger UI from `/swagger-ui/dist` | `appbase-stacktest/src/main/resources/swagger-ui/dist` does not exist, and no core-service main code (`appbase-core`, `appbase-service-*`) registers an OpenAPI resource (the configuration wizard's own web server does), so a stock core service does not serve `/openapi.json` |
+| `JettyServletContainer.Builder.withSwaggerUI(…)` and `appbase-stacktest` | the stack test serves Swagger UI from `/swagger-ui/dist` | `appbase-stacktest/src/main/resources/swagger-ui/dist` does not exist, and no core-service main code (`appbase-core`, `appbase-service-*`) registers an OpenAPI resource (the configuration wizard's own web server does), so a stock core service does not serve `/openapi.json` (**internal work item 2548**) |
 
 ### Images in this guide
 
 | Where | What it could be read as | What it is |
 |---|---|---|
-| Swagger UI screenshots | full-page and per-endpoint-group captures from a local stacktest run | **NOT MEASURED**; no images are committed or claimed by this guide revision |
+| Swagger UI screenshots | full-page and per-endpoint-group captures from a local stacktest run | **NOT MEASURED**; no images are committed or claimed by this guide revision (internal work item 2548) |
 | wizard screenshots | screenshots of the configuration wizard | none are committed here: the console screenshots are delivered in the stacked follow-up pull request, and no web-form screenshot exists |
 
 ## Counts quoted in the original task description that differ from the tree
@@ -55,7 +55,7 @@ per-client commands that now exist; the MinIO path above remains unresolved.
 | The brief says | The tree has |
 |---|---|
 | 19 client integrations, listed as 18 names plus core | 19 client directories: the 18 named integrations and `appbase-client-core` |
-| `appbase-service` has 21 sub-modules | 17 service modules (the `<module>` entries of `appbase-java/appbase-service/pom.xml`; three empty skeletons have since been removed) |
+| `appbase-service` has 21 sub-modules | 17 service modules (the `<module>` entries of `appbase-java/appbase-service/pom.xml`; three empty skeletons were removed under internal work item 1135 L-13) |
 | OAuth for 6 providers | 5 provider modules: Apple, GitHub, Google, Microsoft and Okta |
 | `appbase-bootstrap` has 5 flavors | 6 bootstrap modules (core, the shared servlet layer, Jetty, Tomcat, Undertow and Reactor Netty), which give four web-server flavors |
 
@@ -65,8 +65,8 @@ The guide states the counts the tree has.
 
 | Reference | State |
 |---|---|
-| [Module and Service Catalogue](../Module-and-Service-Catalog.md) | landed; it is the source of truth for module support status |
-| shipped-artifact inventory | not cited as existing here |
+| [Module and Service Catalogue (internal work item 2418)](../Module-and-Service-Catalog.md) | landed; it is the source of truth for module support status |
+| shipped-artifact inventory (internal work item 1399) | not cited as existing here |
 
 ## Bootstrap test named in the brief
 

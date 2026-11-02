@@ -46,8 +46,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Reclassified from {@code JdbiSupportMessageStoreTest} and gated by P-051 · E1135 · N11 (internal work item 1301): this class
- * opens a live JDBI {@code Handle} against the vtgate declared by
+ * Reclassified from {@code JdbiSupportMessageStoreTest} gated by P-051/E1135/N11 (internal work item 1301):
+ * this class opens a live JDBI {@code Handle} against the vtgate declared by
  * {@code appbase-service-vitess-jdbc.yaml} ({@code localhost:15306}), so under its former
  * {@code *Test} name Surefire ran it on every ordinary offline build and it failed on
  * connection-refused.

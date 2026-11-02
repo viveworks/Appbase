@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   dependency-review:
@@ -13,8 +14,11 @@ jobs:
     # needs GitHub Advanced Security (a licensed org feature) -- it is free/automatic only once
     # the repo is actually public. Owner ruling: skip this job while private (the owner's own
     # dependency analysis stands in for now) rather than leave it red forever or need a manual
-    # re-enable later; this flips back on by itself the moment visibility changes, no edit needed.
-    if: ${{ !github.event.repository.private }}
+    # re-enable later. This resumes on the next applicable `pull_request` run once the repo is
+    # public -- NOT the instant visibility flips: a check that already completed (even as
+    # `skipped`) while private does not get a new run just because visibility later changes.
+    # The separate publication-sweep workflow is the durable mechanism that closes that gap.
+    if: ${{ github.event_name == 'pull_request' && !github.event.repository.private }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -53,3 +57,4 @@ jobs:
               raise SystemExit('dependency review reported forbidden licences')
           print('dependency licence metadata resolved and policy-compliant')
           PY
+

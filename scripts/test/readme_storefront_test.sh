@@ -56,7 +56,7 @@ bad() { FAILED=$((FAILED + 1)); printf 'FAIL  %s\n' "$1"; [ $# -gt 1 ] && printf
 # not exist AND the linking line says so (`planned`); once the page lands the link must simply resolve.
 PLANNED=(
   "docs/Module-and-Service-Catalog.md"   # internal work item 2418 (N03)
-  "docs/user-guide/README.md"            # internal work item 1416 (N05) — the plan's docs/user-guide/ path, as PR internal work item 2505 adds it
+  "docs/user-guide/README.md"            # internal work item 1416 (N05) — the plan's docs/user-guide/ path, as internal work item 2505 adds it
   "docs/branding/README.md"              # internal work item 1415 (N02)
 )
 
@@ -315,7 +315,7 @@ extra_adoc() {
   [ ${#hits[@]} -eq 0 ] && ok "EXTRA_no_adoc_link" || bad "EXTRA_no_adoc_link" "${hits[@]}"
 }
 
-# EXTRA_brand_embed — reason (RA C3 on PR internal work item 2504): linking the planned brand set is right while internal work item 1415 is
+# EXTRA_brand_embed — reason (RA C3 on internal work item 2504): linking the planned brand set is right while internal work item 1415 is
 # unmerged, but once the lockups exist the link simply resolves and nothing would require the placement
 # docs/branding/README.md prescribes. When both lockups exist, the README must embed them in a <picture>.
 extra_brand_embed() {
@@ -340,7 +340,7 @@ extra_brand_embed() {
 }
 
 # EXTRA_table_shape — reason: a scripted per-row edit once gave every capability-family row a 4th cell
-# its 3-column header lacked (found after push on PR internal work item 2504). GitHub silently drops the extra cell, so
+# its 3-column header lacked (found after push on internal work item 2504). GitHub silently drops the extra cell, so
 # nothing else would notice.
 extra_table_shape() {
   local bad_rows=() f
