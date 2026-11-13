@@ -3,15 +3,23 @@ FROM debian:buster-slim
 ENV DEBIAN_FRONTEND=noninteractive \
     DRUID_VERSION=34.0.0
 
-# Debian 10 (buster) is EOL. Pin both repositories to one immutable snapshot: archive.debian.org
-# repeatedly returned transient 404s for different indexed packages during hosted builds, while
-# APT acquisition retries intentionally do not retry a valid HTTP 404 response.
-RUN rm -f /etc/apt/sources.list.d/*.list \
-    && printf 'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20240311T000000Z buster main\ndeb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/20240311T000000Z buster/updates main\n' > /etc/apt/sources.list
-
-RUN apt-get -o Acquire::Check-Valid-Until=false -o Acquire::Retries=5 update -y \
-    && apt-get -o Acquire::Retries=5 install -y \
-      bash curl wget perl gnupg apt-transport-https vim coreutils lsb-release
+# Debian 10 (buster) is EOL. Prefer its immutable post-LTS snapshot. If and only if that service has
+# a bounded transport outage, use Debian's signed final archive with the same suites and package
+# names. Archive fallback preserves authenticity and availability, but not timestamp reproducibility.
+RUN rm -f /etc/apt/sources.list.d/*.list
+COPY install-apt-packages.sh /usr/local/bin/install-druid-apt-packages
+RUN chmod 0755 /usr/local/bin/install-druid-apt-packages \
+    && install-druid-apt-packages \
+      bash \
+      curl \
+      wget \
+      perl \
+      gnupg \
+      apt-transport-https \
+      vim \
+      coreutils \
+      lsb-release \
+      openjdk-11-jdk
 
 RUN mkdir -p /opt/druid-docker/conf/_common/
 RUN mkdir -p /opt/druid-volume/shared
@@ -22,8 +30,6 @@ RUN mkdir -p /opt/druid-volume/data
 ## Java
 
 RUN echo "Installing Java"
-RUN apt-get -o Acquire::Check-Valid-Until=false -o Acquire::Retries=5 -qq update -y \
-    && apt-get -o Acquire::Retries=5 -qq install -y openjdk-11-jdk
 RUN java -version
 
 

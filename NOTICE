@@ -25,7 +25,7 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
 
   - Each licence below is the one THAT DEPENDENCY'S OWN POM DECLARES, except for
     three exact-coordinate legacy overrides whose POMs omit usable metadata. Those
-    overrides, the five exact-coordinate LGPL-as-used notices, and their
+    overrides, the six exact-coordinate LGPL-as-used notices, and their
     upstream-artifact provenance are recorded in the N05 quality ledger. POM metadata is
     publisher metadata, not a reading of the licence text, and not a check
     against the upstream project. Where an entry reads "A or B" the dependency
@@ -302,6 +302,12 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       Apache 2.0
   * FindBugs-Annotations (com.google.code.findbugs:annotations:3.0.1)
       GNU Lesser Public License
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-2.1-or-later.
+      Corresponding source (embedded): META-INF/lgpl/sources/annotations-3.0.1-sources.jar
+      Upstream provenance:
+      https://repo1.maven.org/maven2/com/google/code/findbugs/annotations/3.0.1/annotations-3.0.1-sources.jar
   * FindBugs-jsr305 (com.google.code.findbugs:jsr305:3.0.2)
       The Apache Software License, Version 2.0
   * firebase-admin (com.google.firebase:firebase-admin:9.3.0)
@@ -382,13 +388,19 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       BSD-2-Clause or Public Domain, per Creative Commons CC0
   * Hibernate Commons Annotations (org.hibernate.common:hibernate-commons-annotations:6.0.6.Final)
       GNU Library General Public License v2.1 or later
-      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
-      LGPL-2.1-or-later. Corresponding source:
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-2.1-or-later.
+      Corresponding source (embedded): META-INF/lgpl/sources/hibernate-commons-annotations-6.0.6.Final-sources.jar
+      Upstream provenance:
       https://repo1.maven.org/maven2/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final-sources.jar
   * Hibernate ORM - hibernate-core (org.hibernate.orm:hibernate-core:6.5.3.Final)
       GNU Library General Public License v2.1 or later
-      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
-      LGPL-2.1-or-later. Corresponding source:
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-2.1-or-later.
+      Corresponding source (embedded): META-INF/lgpl/sources/hibernate-core-6.5.3.Final-sources.jar
+      Upstream provenance:
       https://repo1.maven.org/maven2/org/hibernate/orm/hibernate-core/6.5.3.Final/hibernate-core-6.5.3.Final-sources.jar
   * Hibernate Validator Engine (org.hibernate.validator:hibernate-validator:8.0.1.Final)
       Apache License 2.0
@@ -692,8 +704,11 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       The Apache Software License, Version 2.0
   * mariadb-java-client (org.mariadb.jdbc:mariadb-java-client:2.7.4)
       LGPL-2.1
-      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
-      LGPL-2.1-only. Corresponding source:
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-2.1-only.
+      Corresponding source (embedded): META-INF/lgpl/sources/mariadb-java-client-2.7.4-sources.jar
+      Upstream provenance:
       https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/2.7.4/mariadb-java-client-2.7.4-sources.jar
   * Metrics Core (io.dropwizard.metrics:metrics-core:4.2.26)
       Apache License 2.0
@@ -785,8 +800,11 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       The Apache License, Version 2.0
   * OpenHFT/Java-Thread-Affinity/affinity (net.openhft:affinity:3.0.6)
       GNU General Lesser Public License (LGPL) version 3.0
-      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
-      LGPL-3.0-only. Corresponding source:
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-3.0-only.
+      Corresponding source (embedded): META-INF/lgpl/sources/affinity-3.0.6-sources.jar
+      Upstream provenance:
       https://repo1.maven.org/maven2/net/openhft/affinity/3.0.6/affinity-3.0.6-sources.jar
   * OpenTracing API (io.opentracing:opentracing-api:0.33.0)
       The Apache Software License, Version 2.0
@@ -943,8 +961,11 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       Apache 2.0 License
   * SpotBugs Annotations (com.github.spotbugs:spotbugs-annotations:4.10.3)
       GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
-      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
-      LGPL-2.1-only. Corresponding source:
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-2.1-only.
+      Corresponding source (embedded): META-INF/lgpl/sources/spotbugs-annotations-4.10.3-sources.jar
+      Upstream provenance:
       https://repo1.maven.org/maven2/com/github/spotbugs/spotbugs-annotations/4.10.3/spotbugs-annotations-4.10.3-sources.jar
   * stream-lib (com.clearspring.analytics:stream:2.9.6)
       Apache License, Version 2.0

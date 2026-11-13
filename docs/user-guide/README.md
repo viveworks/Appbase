@@ -45,7 +45,7 @@ That page is not present before the publication commit.
 Existing documents this guide links instead of repeating:
 [OAuth primer](../OAuth-Primer.md) (concepts behind the OAuth modules),
 [authorization and path matching](../configuration/authorization-and-path-matching.md) (path-match
-rules for authorization, CORS, sessions and filters). Maintainer tooling (the control plane and orchestrator) is
+rules for authorization, CORS, sessions and filters). Internal maintainer tooling is
 **not covered here**.
 
 **Contents of this page**

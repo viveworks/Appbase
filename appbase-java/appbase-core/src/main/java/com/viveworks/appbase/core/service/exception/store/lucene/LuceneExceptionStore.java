@@ -39,7 +39,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.document.LongPoint;
-import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -275,23 +275,26 @@ public class LuceneExceptionStore implements ExceptionStore {
             final Query idQuery = IntPoint.newExactQuery(luceneExceptionStoreConfiguration.getIdIntPointName(), id);
             booleanQueryBuilder.add(idQuery, BooleanClause.Occur.MUST);
 
-            final TopDocs topDocs = luceneService.getIndexSearcher().search(booleanQueryBuilder.build(), 1);
-            if (topDocs != null) {
-                final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-                if (scoreDocs != null) {
-                    for (final ScoreDoc scoreDoc : scoreDocs) {
-                        if (scoreDoc != null) {
-                            final int documentId = scoreDoc.doc;
-                            final Document document = luceneService.getDirectoryReader().document(documentId);
-                            if (document != null) {
-                                return toExceptionMessageDetails(document);
+            return luceneService.withSearcher(searcher -> {
+                final TopDocs topDocs = searcher.search(booleanQueryBuilder.build(), 1);
+                if (topDocs != null) {
+                    final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+                    if (scoreDocs != null) {
+                        for (final ScoreDoc scoreDoc : scoreDocs) {
+                            if (scoreDoc != null) {
+                                final int documentId = scoreDoc.doc;
+                                final Document document = searcher.getIndexReader().document(documentId);
+                                if (document != null) {
+                                    return toExceptionMessageDetails(document);
+                                }
                             }
-                        }
 
-                        break;
+                            break;
+                        }
                     }
                 }
-            }
+                return null;
+            });
         } catch (Exception ex) {
             logger.error("Error in 'readExceptionMessageDetailsById()'", ex);
             readExceptionMessageDetailsByIdErrorCounter.inc();
@@ -299,8 +302,6 @@ public class LuceneExceptionStore implements ExceptionStore {
         } finally {
             context.stop();
         }
-
-        return null;
     }
 
     @Override
@@ -338,22 +339,24 @@ public class LuceneExceptionStore implements ExceptionStore {
 
         final Timer.Context context = readAllExceptionMessageDetailsTimer.time();
         try {
-            final List<ExceptionMessageDetails> exceptionMessageDetailsList = new ArrayList<>();
+            return luceneService.withSearcher(searcher -> {
+                final List<ExceptionMessageDetails> exceptionMessageDetailsList = new ArrayList<>();
 
-            final DirectoryReader directoryReader = luceneService.getDirectoryReader();
-            for (int i = 0; i < directoryReader.maxDoc(); ++i) {
-                if (cancelled.getAsBoolean()) {
-                    break;
+                final IndexReader indexReader = searcher.getIndexReader();
+                for (int i = 0; i < indexReader.maxDoc(); ++i) {
+                    if (cancelled.getAsBoolean()) {
+                        break;
+                    }
+
+                    final Document document = indexReader.document(i);
+                    if (document != null) {
+                        final ExceptionMessageDetails exceptionMessageDetails = toExceptionMessageDetails(document);
+                        exceptionMessageDetailsList.add(exceptionMessageDetails);
+                    }
                 }
 
-                final Document document = directoryReader.document(i);
-                if (document != null) {
-                    final ExceptionMessageDetails exceptionMessageDetails = toExceptionMessageDetails(document);
-                    exceptionMessageDetailsList.add(exceptionMessageDetails);
-                }
-            }
-
-            return exceptionMessageDetailsList;
+                return exceptionMessageDetailsList;
+            });
         } catch (Exception ex) {
             logger.error("Error in 'readAllExceptionMessageDetails()'", ex);
             readAllExceptionMessageDetailsErrorCounter.inc();
@@ -400,7 +403,6 @@ public class LuceneExceptionStore implements ExceptionStore {
 
         final Timer.Context context = readAllExceptionMessageDetailsByTimestampsTimer.time();
         try {
-            final List<ExceptionMessageDetails> exceptionMessageDetailsList = new ArrayList<>();
             final BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
             final Query timestampQuery = LongPoint.newRangeQuery(
                     luceneExceptionStoreConfiguration.getTimestampLongPointName(),
@@ -408,26 +410,28 @@ public class LuceneExceptionStore implements ExceptionStore {
                     Math.addExact(exclusiveMaxTimestamp, -1));
             booleanQueryBuilder.add(timestampQuery, BooleanClause.Occur.MUST);
 
-            final TopDocs topDocs = luceneService.getIndexSearcher().search(
-                    booleanQueryBuilder.build(), Integer.MAX_VALUE);
-            if (topDocs != null) {
-                final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-                if (scoreDocs != null) {
-                    for (final ScoreDoc scoreDoc : scoreDocs) {
-                        if (scoreDoc != null) {
-                            final int documentId = scoreDoc.doc;
-                            final Document document = luceneService.getDirectoryReader().document(documentId);
-                            if (document != null) {
-                                final ExceptionMessageDetails exceptionMessageDetails =
-                                        toExceptionMessageDetails(document);
-                                exceptionMessageDetailsList.add(exceptionMessageDetails);
+            return luceneService.withSearcher(searcher -> {
+                final List<ExceptionMessageDetails> exceptionMessageDetailsList = new ArrayList<>();
+                final TopDocs topDocs = searcher.search(booleanQueryBuilder.build(), Integer.MAX_VALUE);
+                if (topDocs != null) {
+                    final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+                    if (scoreDocs != null) {
+                        for (final ScoreDoc scoreDoc : scoreDocs) {
+                            if (scoreDoc != null) {
+                                final int documentId = scoreDoc.doc;
+                                final Document document = searcher.getIndexReader().document(documentId);
+                                if (document != null) {
+                                    final ExceptionMessageDetails exceptionMessageDetails =
+                                            toExceptionMessageDetails(document);
+                                    exceptionMessageDetailsList.add(exceptionMessageDetails);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            return exceptionMessageDetailsList;
+                return exceptionMessageDetailsList;
+            });
         } catch (Exception ex) {
             logger.error("Error in 'readAllExceptionMessageDetailsByTimestamps()'", ex);
             readAllExceptionMessageDetailsByTimestampsErrorCounter.inc();
@@ -480,27 +484,29 @@ public class LuceneExceptionStore implements ExceptionStore {
 
         final Timer.Context context = readUniqueExceptionTypeNamesTimer.time();
         try {
-            final Set<String> uniqueThrowableTypeNames = new HashSet<>();
-            final DirectoryReader directoryReader = luceneService.getDirectoryReader();
-            for (int i = 0; i < directoryReader.maxDoc(); ++i) {
-                if (cancelled.getAsBoolean()) {
-                    break;
-                }
+            return luceneService.withSearcher(searcher -> {
+                final Set<String> uniqueThrowableTypeNames = new HashSet<>();
+                final IndexReader indexReader = searcher.getIndexReader();
+                for (int i = 0; i < indexReader.maxDoc(); ++i) {
+                    if (cancelled.getAsBoolean()) {
+                        break;
+                    }
 
-                final Document document = directoryReader.document(i);
-                if (document != null) {
-                    final IndexableField field =
-                            document.getField(luceneExceptionStoreConfiguration.getThrowableTypeNameFieldName());
-                    if (field != null) {
-                        final String throwableTypeName = field.stringValue();
-                        if (!AppbaseUtil.isBlank(throwableTypeName)) {
-                            uniqueThrowableTypeNames.add(throwableTypeName);
+                    final Document document = indexReader.document(i);
+                    if (document != null) {
+                        final IndexableField field =
+                                document.getField(luceneExceptionStoreConfiguration.getThrowableTypeNameFieldName());
+                        if (field != null) {
+                            final String throwableTypeName = field.stringValue();
+                            if (!AppbaseUtil.isBlank(throwableTypeName)) {
+                                uniqueThrowableTypeNames.add(throwableTypeName);
+                            }
                         }
                     }
                 }
-            }
 
-            return uniqueThrowableTypeNames;
+                return uniqueThrowableTypeNames;
+            });
         } catch (Exception ex) {
             logger.error("Error in 'readUniqueThrowableTypeNames()'", ex);
             readUniqueExceptionTypeNamesErrorCounter.inc();
@@ -546,32 +552,33 @@ public class LuceneExceptionStore implements ExceptionStore {
 
         final Timer.Context context = readExceptionMessageDetailsByTypeNameTimer.time();
         try {
-            final List<ExceptionMessageDetails> exceptionMessageDetailsList = new ArrayList<>();
             final Query booleanQuery = luceneService.getQueryBuilder().createBooleanQuery(
                     luceneExceptionStoreConfiguration.getThrowableTypeNameFieldName(),
                     throwableTypeName,
                     BooleanClause.Occur.MUST);
 
-            final TopDocs topDocs = luceneService.getIndexSearcher().search(
-                    booleanQuery, Integer.MAX_VALUE);
-            if (topDocs != null) {
-                final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-                if (scoreDocs != null) {
-                    for (final ScoreDoc scoreDoc : scoreDocs) {
-                        if (scoreDoc != null) {
-                            final int documentId = scoreDoc.doc;
-                            final Document document = luceneService.getDirectoryReader().document(documentId);
-                            if (document != null) {
-                                final ExceptionMessageDetails exceptionMessageDetails =
-                                        toExceptionMessageDetails(document);
-                                exceptionMessageDetailsList.add(exceptionMessageDetails);
+            return luceneService.withSearcher(searcher -> {
+                final List<ExceptionMessageDetails> exceptionMessageDetailsList = new ArrayList<>();
+                final TopDocs topDocs = searcher.search(booleanQuery, Integer.MAX_VALUE);
+                if (topDocs != null) {
+                    final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+                    if (scoreDocs != null) {
+                        for (final ScoreDoc scoreDoc : scoreDocs) {
+                            if (scoreDoc != null) {
+                                final int documentId = scoreDoc.doc;
+                                final Document document = searcher.getIndexReader().document(documentId);
+                                if (document != null) {
+                                    final ExceptionMessageDetails exceptionMessageDetails =
+                                            toExceptionMessageDetails(document);
+                                    exceptionMessageDetailsList.add(exceptionMessageDetails);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            return exceptionMessageDetailsList;
+                return exceptionMessageDetailsList;
+            });
         } catch (Exception ex) {
             logger.error("Error in 'readExceptionMessageDetailsByThrowableTypeName()'", ex);
             readExceptionMessageDetailsByTypeNameErrorCounter.inc();

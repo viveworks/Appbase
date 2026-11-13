@@ -141,7 +141,7 @@ class TimestampBasedIndexCleanerTest {
 
         final Query rangeQuery = LongPoint.newRangeQuery(
                 creationTimestampFieldName, Long.MIN_VALUE, Long.MAX_VALUE);
-        final TopDocs topDocs = luceneService.getIndexSearcher().search(rangeQuery, 10);
+        final TopDocs topDocs = luceneService.withSearcher(searcher -> searcher.search(rangeQuery, 10));
         final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
         Assertions.assertNotNull(scoreDocs);
         Assertions.assertTrue(scoreDocs.length > 0);
@@ -151,14 +151,14 @@ class TimestampBasedIndexCleanerTest {
 
         final Query rangeQuery1 = LongPoint.newRangeQuery(
                 creationTimestampFieldName, Long.MIN_VALUE, removeBeforeTimestamp);
-        final TopDocs topDocs1 = luceneService.getIndexSearcher().search(rangeQuery1, 10);
+        final TopDocs topDocs1 = luceneService.withSearcher(searcher -> searcher.search(rangeQuery1, 10));
         final ScoreDoc[] scoreDocs1 = topDocs1.scoreDocs;
         Assertions.assertNotNull(scoreDocs1);
         Assertions.assertEquals(0, scoreDocs1.length);
 
         final Query rangeQuery2 = LongPoint.newRangeQuery(
                 creationTimestampFieldName, removeBeforeTimestamp, Long.MAX_VALUE);
-        final TopDocs topDocs2 = luceneService.getIndexSearcher().search(rangeQuery2, 10);
+        final TopDocs topDocs2 = luceneService.withSearcher(searcher -> searcher.search(rangeQuery2, 10));
         final ScoreDoc[] scoreDocs2 = topDocs2.scoreDocs;
         Assertions.assertNotNull(scoreDocs2);
         Assertions.assertEquals(1, scoreDocs2.length);

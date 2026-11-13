@@ -11,9 +11,7 @@
     }
   },
   "excluded_trees": {
-    "appbase-codeagents": "agent configuration only — no build surface (mirrors EXCLUDED_TREES in build.sh)",
-    "orchestrator/console-web": "the private Web console (Flutter, internal work item 1616 Leaf 6): a standalone Flutter Web app with its own per-PR flutter gates, not a Maven surface (mirrors EXCLUDED_TREES in build.sh)",
-    "orchestrator/demo/console": "the retained-demo Flutter Web console (internal work item 1656): a standalone Flutter package with its own per-PR flutter gates, not a Maven surface (mirrors EXCLUDED_TREES in build.sh)"
+    "appbase-codeagents": "agent configuration only — no build surface (mirrors EXCLUDED_TREES in build.sh)"
   },
   "module_groups": [
     {

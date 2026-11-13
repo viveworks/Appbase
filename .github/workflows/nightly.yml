@@ -1,9 +1,9 @@
 # Generated public develop nightly. Do not edit after export.
 name: Public nightly
 
+# Phase 1 (internal work item 2861): the schedule trigger is deliberately omitted here. It is added only by issue
+# 2904's own Phase-2 PR, not this one.
 on:
-  schedule:
-    - cron: '17 3 * * *'
   workflow_dispatch:
 
 permissions:

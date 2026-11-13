@@ -6,7 +6,7 @@
 
 ## Raw public surface
 
-**1598** `.java` files under a `src/main/java` root declare a top-level-looking `public` type. Reproduce it from the repository root with this command:
+**1599** `.java` files under a `src/main/java` root declare a top-level-looking `public` type. Reproduce it from the repository root with this command:
 
 ```sh
 grep -rlE '^\s*public\s+(final\s+|abstract\s+|sealed\s+)?(interface|class|enum|record)\s' \
@@ -15,7 +15,7 @@ grep -rlE '^\s*public\s+(final\s+|abstract\s+|sealed\s+)?(interface|class|enum|r
 
 `appbase-cloud` is absent in this tree; `find` reports it on stderr and the count is unaffected.
 
-Per module group (each `src/main/java` root attributed by the longest `module_groups` prefix, so a nested group such as `cloud` is not also counted in its parent): bootstrap 88, client 548, cloud 83, core 552, service 327.
+Per module group (each `src/main/java` root attributed by the longest `module_groups` prefix, so a nested group such as `cloud` is not also counted in its parent): bootstrap 88, client 548, cloud 83, core 553, service 327.
 
 This raw file count is an upper bound on the surface, not the work list: it counts every artifact, internal and deferred ones included, and a `public` nested type. The measured work below counts only supported-public packages.
 
@@ -34,7 +34,7 @@ Members are public methods/constructors (interface methods included), found stat
 |---|---|---|---|---|---|---|---|---|
 | work item 1400 | bootstrap | 6 | 88 | 0 | 0 | 0 | 0 | 0 |
 | work item 1401 | client | 14 | 450 | 0 | 1520 | 0 | 6080 | 6080 |
-| work item 1402 | core | 1 | 565 | 0 | 1121 | 0 | 4484 | 4484 |
+| work item 1402 | core | 1 | 566 | 0 | 1121 | 0 | 4484 | 4484 |
 | work item 1403 | service | 16 | 322 | 0 | 1118 | 0 | 4472 | 4472 |
 | work item 1404 | cloud | 3 | 81 | 0 | 0 | 0 | 0 | 0 |
 | work item 1406 | wizard-frontend | 1 | 106 | 0 | 0 | 0 | 0 | 0 |

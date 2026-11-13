@@ -329,21 +329,23 @@ public class LuceneLogStoreTest {
             }
             store.synchronize();
 
-            final TopDocs all = store.getLuceneLogIndex().getLuceneService().getIndexSearcher()
-                    .search(new MatchAllDocsQuery(), 5);
-            Assertions.assertEquals(5, all.scoreDocs.length, "expected exactly 5 indexed documents");
-
             final AtomicInteger calls = new AtomicInteger();
             // cancel once two documents have been consumed
             final BooleanSupplier cancelAfterTwo = () -> calls.getAndIncrement() >= 2;
 
-            final Collection<LogRecord> got = store.readLogRecords(all, cancelAfterTwo);
+            final AtomicInteger scoreDocCount = new AtomicInteger();
+            final Collection<LogRecord> got = store.getLuceneLogIndex().getLuceneService().withSearcher(searcher -> {
+                final TopDocs all = searcher.search(new MatchAllDocsQuery(), 5);
+                Assertions.assertEquals(5, all.scoreDocs.length, "expected exactly 5 indexed documents");
+                scoreDocCount.set(all.scoreDocs.length);
+                return store.readLogRecords(all, searcher.getIndexReader(), cancelAfterTwo);
+            });
 
             Assertions.assertTrue(got.size() < 5, "a cancelled fetch must stop early, not read every document");
             // cancelAfterTwo is monotonic (calls only increases), so a loop that merely SKIPS a fetch while
             // still scanning every scoreDoc (e.g. `continue` instead of `break`) would land on the same
             // record count as one that truly stops — this call-count check is what tells the two apart.
-            Assertions.assertTrue(calls.get() < all.scoreDocs.length,
+            Assertions.assertTrue(calls.get() < scoreDocCount.get(),
                     "a cancelled fetch must stop consulting `cancelled` once cancelled, not scan every document");
         } finally {
             store.shutdown();

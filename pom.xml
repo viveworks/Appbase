@@ -2710,6 +2710,29 @@
                                 <failOnError>${build.failOnError}</failOnError>
                                 <keywords>true</keywords>
                                 <nohelp>true</nohelp>
+                                <!-- N09 (internal work item 2541): `outputDirectory` is the parameter the javadoc-report
+                                     mojos actually read when a goal (javadoc-no-fork/aggregate-no-fork)
+                                     is run directly from the command line. (There is no separate
+                                     `reportOutputDirectory` parameter on this goal to confuse it with —
+                                     checked via `mvn help:describe`; under `mvn site`, this same
+                                     `outputDirectory` parameter is ignored entirely and the location is
+                                     governed instead by the project-wide `project.reporting.outputDirectory`
+                                     property plus this mojo's own `apidocs/` subfolder convention, same
+                                     as every other site report — not overridden here, so `site`'s own
+                                     aggregate still lands at its ordinary target/site/apidocs/index.html,
+                                     matching this release-profile's existing convention of reading
+                                     site-generated output from its default location, e.g. the DOAP
+                                     enforcer check a few hundred lines below.) Anchor it at the repo
+                                     root's target/ so the CLI-direct release aggregate lands under
+                                     target/release-javadocs/ regardless of which reactor module ends up
+                                     executing the goal (the mojo always appends its own `apidocs/`
+                                     segment underneath whatever outputDirectory names, so the real file
+                                     is target/release-javadocs/apidocs/index.html — the exact path
+                                     docs/api-inventory/api-docs-link-matrix.json's two "source" fields
+                                     now name). The javadoc-jar packaging execution below pins its own
+                                     outputDirectory back to the per-module default so this redirect
+                                     never touches the real release artifact. -->
+                                <outputDirectory>${maven.multiModuleProjectDirectory}/target/release-javadocs</outputDirectory>
                                 <overview>javadoc-overview.html</overview>
                                 <serialwarn>true</serialwarn>
                                 <show>protected</show>
@@ -2771,6 +2794,15 @@
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-gpg-plugin</artifactId>
                             <version>3.2.8</version>
+                            <configuration>
+                                <!-- Owner-verified signing identity (internal work item 2412, 2026-11-07): the ed25519 key, NOT
+                                     the RSA4096 gmail-uid key that is also on the signing host. Pinning the
+                                     full fingerprint (not the short key ID) so a colliding short ID can never
+                                     select the wrong key. Public identifier only, no private key or
+                                     passphrase here or anywhere else. -->
+                                <keyname>2D95286150A4325C2A3539B7587AE0383B52B0FC</keyname>
+                                <useAgent>true</useAgent>
+                            </configuration>
                             <executions>
                                 <execution>
                                     <id>sign-artifacts</id>
@@ -2855,6 +2887,24 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                                <!-- N09 (internal work item 2541): pin this lifecycle-bound execution's `outputDirectory`
+                                     back to the normal per-module default, overriding the
+                                     pluginManagement-level `outputDirectory` redirect added for the
+                                     CLI-direct release aggregate goal above. Execution-level
+                                     configuration wins over the pluginManagement default for a
+                                     phase-bound execution, so the real per-module javadoc-jar artifact
+                                     this produces during package/install is unaffected by that redirect.
+                                     Deliberately NOT pinning `skip` here: the plugin's own `jar` goal
+                                     already declares `skip` as `${maven.javadoc.skip}` (default
+                                     `false`), which is the standard escape hatch
+                                     (`-Dmaven.javadoc.skip=true`) for suppressing javadoc generation
+                                     during package/install. A literal `<skip>false</skip>` override was
+                                     tried here and reverted (2026-11-11 review finding M1): it
+                                     hardcoded the value and silently broke that escape hatch, which is
+                                     a regression, not a safety pin. -->
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/reports</outputDirectory>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

@@ -40,7 +40,7 @@ import com.viveworks.appbase.core.util.lucene.LuceneService;
 import com.viveworks.appbase.core.util.lucene.LuceneServiceException;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.LongPoint;
-import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -239,8 +239,8 @@ public class LuceneLogStore implements LogStore {
                     luceneLogIndex.getLuceneLogIndexConfiguration().getTimestampLongPointName();
             final Query query = LongPoint.newRangeQuery(
                     timestampLongPointName, inclusiveStartTimestamp, Math.addExact(exclusiveEndTimestamp, -1));
-            final TopDocs topDocs = luceneService.getIndexSearcher().search(query, pageSize);
-            return readLogRecords(topDocs);
+            return luceneService.withSearcher(
+                    searcher -> readLogRecords(searcher.search(query, pageSize), searcher.getIndexReader()));
         } catch (Exception ex) {
             final String message = String.format(
                     "Error in readLogRecordsBetween [inclusiveStartTimestamp=%s, exclusiveEndTimestamp=%s]",
@@ -290,8 +290,8 @@ public class LuceneLogStore implements LogStore {
             final String timestampLongPointName =
                     luceneLogIndex.getLuceneLogIndexConfiguration().getTimestampLongPointName();
             final Query query = LongPoint.newExactQuery(timestampLongPointName, timestamp);
-            final TopDocs topDocs = luceneService.getIndexSearcher().search(query, pageSize);
-            return readLogRecords(topDocs);
+            return luceneService.withSearcher(
+                    searcher -> readLogRecords(searcher.search(query, pageSize), searcher.getIndexReader()));
         } catch (Exception ex) {
             final String message = String.format("Error in readLogRecordsAt [timestamp=%s]", timestamp);
             readLogRecordsAtErrorCounter.inc();
@@ -337,8 +337,8 @@ public class LuceneLogStore implements LogStore {
         try {
             final LuceneService luceneService = luceneLogIndex.getLuceneService();
             final Query query = toQuery(logRecordCriteria);
-            final TopDocs topDocs = luceneService.getIndexSearcher().search(query, pageSize);
-            return readLogRecords(topDocs);
+            return luceneService.withSearcher(
+                    searcher -> readLogRecords(searcher.search(query, pageSize), searcher.getIndexReader()));
         } catch (Exception ex) {
             final String message = String.format(
                     "Error in readLogRecordsByCriteria [logRecordCriteria=%s]", logRecordCriteria);
@@ -543,8 +543,10 @@ public class LuceneLogStore implements LogStore {
         return resultFuture;
     }
 
-    private Collection<LogRecord> readLogRecords(final TopDocs topDocs) throws IOException {
-        return readLogRecords(topDocs, () -> false);
+    private Collection<LogRecord> readLogRecords(final TopDocs topDocs, final IndexReader indexReader)
+            throws IOException
+    {
+        return readLogRecords(topDocs, indexReader, () -> false);
     }
 
     /**
@@ -552,18 +554,26 @@ public class LuceneLogStore implements LogStore {
      * and aborting cooperatively — never via {@link Thread#interrupt()}, which would raise
      * {@code ClosedByInterruptException} against the underlying {@code NIOFSDirectory} and close it.
      *
+     * <p>{@code indexReader} must be the same index generation {@code topDocs} was searched against — the
+     * caller should obtain both from the one {@link LuceneService#withSearcher(LuceneSearcherRead)}
+     * invocation (e.g. {@code searcher.search(...)} and {@code searcher.getIndexReader()}), not from two
+     * separate calls, which could observe different generations if a refresh lands between them.
+     *
      * @param topDocs Search hits to fetch documents for
+     * @param indexReader Reader to fetch stored documents from — the same generation {@code topDocs} was
+     *      searched against
      * @param cancelled Supplies {@code true} once the caller has abandoned this read
      * @return the fetched log records, possibly fewer than {@code topDocs} if cancelled mid-fetch
      * @throws IOException if a document fetch fails
      */
-    Collection<LogRecord> readLogRecords(final TopDocs topDocs, final BooleanSupplier cancelled) throws IOException {
+    Collection<LogRecord> readLogRecords(final TopDocs topDocs,
+                                         final IndexReader indexReader,
+                                         final BooleanSupplier cancelled)
+            throws IOException
+    {
         final List<LogRecord> logRecords = new ArrayList<>();
 
         if (topDocs != null) {
-            final LuceneService luceneService = luceneLogIndex.getLuceneService();
-            final DirectoryReader directoryReader = luceneService.getDirectoryReader();
-
             final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
             if (scoreDocs != null) {
                 for (final ScoreDoc scoreDoc : scoreDocs) {
@@ -572,7 +582,7 @@ public class LuceneLogStore implements LogStore {
                     }
                     if (scoreDoc != null) {
                         final int documentId = scoreDoc.doc;
-                        final Document document = directoryReader.document(documentId);
+                        final Document document = indexReader.document(documentId);
                         if (document != null) {
                             final LogRecord logRecord = toLogRecord(document);
                             logRecords.add(logRecord);
