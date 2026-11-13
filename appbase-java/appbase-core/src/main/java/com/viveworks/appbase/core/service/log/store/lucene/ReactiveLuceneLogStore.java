@@ -27,7 +27,6 @@ import com.viveworks.appbase.core.util.AppbaseUtil;
 import com.viveworks.appbase.core.util.lucene.LuceneService;
 import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TopDocs;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Timer;
 import reactor.core.publisher.Flux;
@@ -89,7 +88,8 @@ public final class ReactiveLuceneLogStore implements ReactiveLogStore {
 
     @Override
     public Flux<LogRecord> streamLogRecordsBetweenReactive(
-            final long inclusiveStartTimestamp, final long exclusiveEndTimestamp, final int pageSize) {
+            final long inclusiveStartTimestamp, final long exclusiveEndTimestamp, final int pageSize)
+    {
         AppbaseUtil.positiveOrZero(pageSize, "pageSize");
 
         final LuceneService luceneService = luceneLogStore.getLuceneLogIndex().getLuceneService();
@@ -99,10 +99,10 @@ public final class ReactiveLuceneLogStore implements ReactiveLogStore {
         final Query query = LongPoint.newRangeQuery(
                 timestampLongPointName, inclusiveStartTimestamp, Math.addExact(exclusiveEndTimestamp, -1));
         return timedFlux(readLogRecordsBetweenTimer, readLogRecordsBetweenErrorCounter,
-                () -> luceneService.searchReactive(query, pageSize)
-                        .flatMapMany(topDocs -> Flux.fromArray(topDocs.scoreDocs)
-                                .concatMap(scoreDoc -> luceneService.documentReactive(scoreDoc.doc)
-                                        .map(luceneLogStore::toLogRecord), 1)));
+                () -> luceneService.readReactive(cancelled -> luceneService.withSearcher(
+                                searcher -> luceneLogStore.readLogRecords(
+                                        searcher.search(query, pageSize), searcher.getIndexReader(), cancelled)))
+                        .flatMapMany(Flux::fromIterable));
     }
 
     @Override
@@ -120,8 +120,8 @@ public final class ReactiveLuceneLogStore implements ReactiveLogStore {
                 () -> luceneService.readReactive(cancelled -> {
                     final Query query = LongPoint.newRangeQuery(
                             timestampLongPointName, inclusiveStartTimestamp, Math.addExact(exclusiveEndTimestamp, -1));
-                    final TopDocs topDocs = luceneService.getIndexSearcher().search(query, pageSize);
-                    return luceneLogStore.readLogRecords(topDocs, cancelled);
+                    return luceneService.withSearcher(searcher -> luceneLogStore.readLogRecords(
+                            searcher.search(query, pageSize), searcher.getIndexReader(), cancelled));
                 }));
     }
 
@@ -137,8 +137,8 @@ public final class ReactiveLuceneLogStore implements ReactiveLogStore {
         return timed(readLogRecordsAtTimer, readLogRecordsAtErrorCounter,
                 () -> luceneService.readReactive(cancelled -> {
                     final Query query = LongPoint.newExactQuery(timestampLongPointName, timestamp);
-                    final TopDocs topDocs = luceneService.getIndexSearcher().search(query, pageSize);
-                    return luceneLogStore.readLogRecords(topDocs, cancelled);
+                    return luceneService.withSearcher(searcher -> luceneLogStore.readLogRecords(
+                            searcher.search(query, pageSize), searcher.getIndexReader(), cancelled));
                 }));
     }
 
@@ -154,8 +154,8 @@ public final class ReactiveLuceneLogStore implements ReactiveLogStore {
         return timed(readLogRecordsByCriteriaTimer, readLogRecordsByCriteriaErrorCounter,
                 () -> luceneService.readReactive(cancelled -> {
                     final Query query = luceneLogStore.toQuery(logRecordCriteria);
-                    final TopDocs topDocs = luceneService.getIndexSearcher().search(query, pageSize);
-                    return luceneLogStore.readLogRecords(topDocs, cancelled);
+                    return luceneService.withSearcher(searcher -> luceneLogStore.readLogRecords(
+                            searcher.search(query, pageSize), searcher.getIndexReader(), cancelled));
                 }));
     }
 
@@ -178,6 +178,7 @@ public final class ReactiveLuceneLogStore implements ReactiveLogStore {
      * A synchronous failure from {@code read.get()} (before any signal is emitted) is handled explicitly, so
      * neither the counter nor the stop is skipped on that path.
      */
+    @SuppressWarnings("checkstyle:IllegalCatch")
     private static <T> Mono<T> timed(
             final Timer timer, final Counter errorCounter, final Supplier<Mono<T>> read)
     {
@@ -187,6 +188,9 @@ public final class ReactiveLuceneLogStore implements ReactiveLogStore {
             try {
                 readMono = read.get();
             } catch (final RuntimeException | Error ex) {
+                // Broad on purpose, and already the narrowest possible catch: Supplier#get() declares
+                // no checked exceptions, so RuntimeException|Error is every synchronous failure this
+                // generic read can throw. Recorded, then rethrown unchanged.
                 errorCounter.inc();
                 context.stop();
                 throw ex;
@@ -198,6 +202,7 @@ public final class ReactiveLuceneLogStore implements ReactiveLogStore {
         });
     }
 
+    @SuppressWarnings("checkstyle:IllegalCatch")
     private static <T> Flux<T> timedFlux(
             final Timer timer, final Counter errorCounter, final Supplier<Flux<T>> read)
     {
@@ -207,6 +212,9 @@ public final class ReactiveLuceneLogStore implements ReactiveLogStore {
             try {
                 readFlux = read.get();
             } catch (final RuntimeException | Error ex) {
+                // Broad on purpose, and already the narrowest possible catch: Supplier#get() declares
+                // no checked exceptions, so RuntimeException|Error is every synchronous failure this
+                // generic read can throw. Recorded, then rethrown unchanged.
                 errorCounter.inc();
                 context.stop();
                 throw ex;

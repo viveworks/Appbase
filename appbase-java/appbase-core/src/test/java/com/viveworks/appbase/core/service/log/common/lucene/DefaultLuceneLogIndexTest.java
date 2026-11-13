@@ -37,11 +37,9 @@ import com.viveworks.appbase.core.util.lucene.DefaultLuceneService;
 import com.viveworks.appbase.core.util.lucene.DefaultLuceneServiceConfiguration;
 import com.viveworks.appbase.core.util.lucene.LuceneService;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
@@ -402,22 +400,29 @@ public class DefaultLuceneLogIndexTest {
         }
 
         luceneService.synchronizeIndex();
-        final DirectoryReader directoryReader = luceneService.getDirectoryReader();
-        final int numDocs = directoryReader.numDocs();
-        Assertions.assertTrue(numDocs > 0);
+        // Both the numDocs check, the search and the by-id document fetch below run against the SAME
+        // acquired searcher/reader generation inside one withSearcher(...) call — calling
+        // getDirectoryReader() and getIndexSearcher() as two separate LuceneService accessors (as this
+        // test formerly did) could observe two different generations if a background synchronizeIndex()
+        // refresh landed between them, and would throw AlreadyClosedException against a superseded
+        // reader before the SearcherManager-based fix in DefaultLuceneService.
+        final Document document = luceneService.withSearcher(searcher -> {
+            final int numDocs = searcher.getIndexReader().numDocs();
+            Assertions.assertTrue(numDocs > 0);
 
-        final IndexSearcher indexSearcher = luceneService.getIndexSearcher();
-        final TopDocs topDocs = indexSearcher.search(booleanQueryBuilder.build(), 1);
-        final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-        Assertions.assertNotNull(scoreDocs);
-        Assertions.assertEquals(expectedDocumentIdsSize, scoreDocs.length);
-        Document document = null;
-        for (ScoreDoc scoreDoc : scoreDocs) {
-            document = directoryReader.document(scoreDoc.doc);
-            if (document != null) {
-                break;
+            final TopDocs topDocs = searcher.search(booleanQueryBuilder.build(), 1);
+            final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+            Assertions.assertNotNull(scoreDocs);
+            Assertions.assertEquals(expectedDocumentIdsSize, scoreDocs.length);
+            Document foundDocument = null;
+            for (ScoreDoc scoreDoc : scoreDocs) {
+                foundDocument = searcher.getIndexReader().document(scoreDoc.doc);
+                if (foundDocument != null) {
+                    break;
+                }
             }
-        }
+            return foundDocument;
+        });
         Assertions.assertNotNull(document);
 
         final List<IndexableField> fields = document.getFields();

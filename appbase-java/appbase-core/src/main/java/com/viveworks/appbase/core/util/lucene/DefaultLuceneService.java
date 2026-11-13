@@ -33,16 +33,19 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.LRUQueryCache;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryCachingPolicy;
+import org.apache.lucene.search.SearcherFactory;
+import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.UsageTrackingQueryCachingPolicy;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
@@ -62,6 +65,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -83,8 +87,8 @@ public class DefaultLuceneService implements LuceneService {
     private final boolean deleteIndexPathUponShutdown;
     private final Directory directory;
     private final IndexWriter indexWriter;
-    private final AtomicReference<DirectoryReader> directoryReaderRef;
-    private final AtomicReference<IndexSearcher> indexSearcherRef;
+    private final SearcherManager searcherManager;
+    private final AtomicInteger activeSearcherAcquisitions;
     private final AtomicReference<LRUQueryCache> lruQueryCacheRef;
     private final AtomicReference<QueryCachingPolicy> queryCachingPolicyRef;
     private final AtomicReference<IndexCleaner> indexCleanerRef;
@@ -99,7 +103,7 @@ public class DefaultLuceneService implements LuceneService {
     private final AtomicBoolean shutdown;
     private final AtomicBoolean shutdownCleanupComplete;
     private final ReactiveReadBoundary reactiveReadBoundary;
-    private volatile Consumer<DirectoryReader> indexSynchronizerBeforePublication = ignored -> { };
+    private volatile Consumer<IndexReader> indexSynchronizerBeforePublication = ignored -> { };
 
     @SuppressWarnings("IllegalCatch")
     public DefaultLuceneService(final LogService logService,
@@ -172,11 +176,16 @@ public class DefaultLuceneService implements LuceneService {
         registerIndexWriterMetrics(indexWriter);
         registerDirectoryMetrics(directory, metricService);
 
-        directoryReaderRef = new AtomicReference<>();
-        indexSearcherRef = new AtomicReference<>();
+        activeSearcherAcquisitions = new AtomicInteger();
         lifecycleLock = new ReentrantLock();
         shutdown = new AtomicBoolean(false);
         shutdownCleanupComplete = new AtomicBoolean(false);
+        try {
+            this.searcherManager = new SearcherManager(indexWriter, new MetricWiringSearcherFactory());
+        } catch (IOException ioe) {
+            throw new AppbaseRuntimeException("Error creating " + SearcherManager.class.getName(), ioe);
+        }
+        registerSearcherManagerMetrics();
         try {
             synchronizeIndex();
         } catch (LuceneServiceException lse) {
@@ -503,42 +512,27 @@ public class DefaultLuceneService implements LuceneService {
             indexWriter.flush();
             indexWriter.commit();
 
-            logger.trace("Creating {} using {}", DirectoryReader.class.getName(), indexWriter.getClass().getName());
-            final DirectoryReader currentDirectoryReader = directoryReaderRef.get();
+            logger.trace("Refreshing {} from {}", SearcherManager.class.getName(), indexWriter.getClass().getName());
+            searcherManager.maybeRefreshBlocking();
 
-            final DirectoryReader directoryReader = DirectoryReader.open(indexWriter);
-            indexSynchronizerBeforePublication.accept(directoryReader);
             if (shutdown.get()) {
-                directoryReader.close();
                 return;
             }
-            registerDirectoryReaderMetrics(directoryReader);
-            directoryReaderRef.set(directoryReader);
 
-            if (currentDirectoryReader != null) {
-                currentDirectoryReader.close();
+            final IndexSearcher refreshed = searcherManager.acquire();
+            try {
+                indexSynchronizerBeforePublication.accept(refreshed.getIndexReader());
+            } finally {
+                searcherManager.release(refreshed);
             }
-
-            logger.trace("Creating {}", IndexSearcher.class.getName());
-            final IndexSearcher indexSearcher = new IndexSearcher(directoryReader);
-            final LRUQueryCache lruQueryCache = lruQueryCacheRef.get();
-            if (lruQueryCache != null) {
-                indexSearcher.setQueryCache(lruQueryCache);
-            }
-
-            final QueryCachingPolicy queryCachingPolicy = queryCachingPolicyRef.get();
-            if (queryCachingPolicy != null) {
-                indexSearcher.setQueryCachingPolicy(queryCachingPolicy);
-            }
-
-            indexSearcherRef.set(indexSearcher);
         } catch (IOException ioe) {
-            throw new LuceneServiceException("Failed to create " + DirectoryReader.class.getName(), ioe);
+            throw new LuceneServiceException("Failed to refresh " + SearcherManager.class.getName(), ioe);
         } finally {
             lifecycleLock.unlock();
         }
     }
 
+    @SuppressWarnings("checkstyle:IllegalCatch")
     void synchronizeIndexIfIdle() {
         if (!lifecycleLock.tryLock()) {
             logger.debug("Skipping scheduled index synchronization because a lifecycle operation is running");
@@ -556,6 +550,9 @@ public class DefaultLuceneService implements LuceneService {
                 context.stop();
             }
         } catch (Exception exception) {
+            // Broad on purpose: this runs on the shared scheduler, which must never die from one bad
+            // refresh (a RuntimeException from the configured indexSynchronizerBeforePublication hook,
+            // or any other failure synchronizeIndex() propagates unchecked).
             indexSynchronizerErrorCounter.inc();
             logger.error("Error while synchronizing index", exception);
         } finally {
@@ -567,15 +564,20 @@ public class DefaultLuceneService implements LuceneService {
         return indexSynchronizerErrorCounter.getCount();
     }
 
-    private void registerDirectoryReaderMetrics(final DirectoryReader directoryReader) {
-        logger.trace("Registering {} metric", DirectoryReader.class.getName());
+    /**
+     * Registers reader-shaped metrics once, backed by a short acquire/release against
+     * {@link #searcherManager} each time a gauge is polled, rather than re-registering against a new
+     * reader instance on every {@link #synchronizeIndex()} refresh.
+     */
+    private void registerSearcherManagerMetrics() {
+        logger.trace("Registering {} metric", SearcherManager.class.getName());
 
         metricService
                 .getMetricRegistry()
                 .register(
                         metricService.name(
                                 getClass(), indexPath.getFileName().toString(), "directoryReader", "maxDoc", "gauge"),
-                        (Gauge<Integer>) directoryReader::maxDoc);
+                        (Gauge<Integer>) () -> withAcquiredReaderOrDefault(IndexReader::maxDoc, 0));
         metricService
                 .getMetricRegistry()
                 .register(
@@ -585,7 +587,7 @@ public class DefaultLuceneService implements LuceneService {
                                 "directoryReader",
                                 "numDeletedDocs",
                                 "gauge"),
-                        (Gauge<Integer>) directoryReader::numDeletedDocs);
+                        (Gauge<Integer>) () -> withAcquiredReaderOrDefault(IndexReader::numDeletedDocs, 0));
         metricService
                 .getMetricRegistry()
                 .register(
@@ -595,28 +597,59 @@ public class DefaultLuceneService implements LuceneService {
                                 "directoryReader",
                                 "numDocs",
                                 "gauge"),
-                        (Gauge<Integer>) directoryReader::numDeletedDocs);
+                        // Preserves the pre-existing behavior of this gauge, which reported numDeletedDocs
+                        // under the "numDocs" name rather than IndexReader::numDocs.
+                        (Gauge<Integer>) () -> withAcquiredReaderOrDefault(IndexReader::numDeletedDocs, 0));
         metricService
                 .getMetricRegistry()
                 .register(
                         metricService.name(
                                 getClass(), indexPath.getFileName().toString(), "directoryReader", "refCount", "gauge"),
-                        (Gauge<Integer>) directoryReader::getRefCount);
+                        // No longer the raw Lucene reader refcount (there is no single long-lived reader to
+                        // count references on anymore) -- reports how many withSearcher(...) reads currently
+                        // hold an acquired searcher.
+                        (Gauge<Integer>) activeSearcherAcquisitions::get);
+    }
+
+    private int withAcquiredReaderOrDefault(final java.util.function.ToIntFunction<IndexReader> read,
+                                             final int defaultValue)
+    {
+        if (shutdown.get()) {
+            return defaultValue;
+        }
+        try {
+            final IndexSearcher searcher = searcherManager.acquire();
+            try {
+                return read.applyAsInt(searcher.getIndexReader());
+            } finally {
+                searcherManager.release(searcher);
+            }
+        } catch (IOException | AlreadyClosedException exception) {
+            return defaultValue;
+        }
     }
 
     @Override
-    public DirectoryReader getDirectoryReader() {
+    public <T> T withSearcher(final LuceneSearcherRead<T> read) throws IOException {
+        AppbaseUtil.notNull(read, "read");
         ensureRunning();
-        return directoryReaderRef.get();
+
+        final IndexSearcher searcher;
+        try {
+            searcher = searcherManager.acquire();
+        } catch (AlreadyClosedException alreadyClosedException) {
+            throw new LuceneServiceShutdownException();
+        }
+        activeSearcherAcquisitions.incrementAndGet();
+        try {
+            return read.read(searcher);
+        } finally {
+            activeSearcherAcquisitions.decrementAndGet();
+            searcherManager.release(searcher);
+        }
     }
 
-    @Override
-    public IndexSearcher getIndexSearcher() {
-        ensureRunning();
-        return indexSearcherRef.get();
-    }
-
-    void setIndexSynchronizerBeforePublication(final Consumer<DirectoryReader> hook) {
+    void setIndexSynchronizerBeforePublication(final Consumer<IndexReader> hook) {
         AppbaseUtil.notNull(hook, "hook");
         indexSynchronizerBeforePublication = hook;
     }
@@ -645,12 +678,13 @@ public class DefaultLuceneService implements LuceneService {
     public Mono<TopDocs> searchReactive(final Query query, final int maxHits) {
         AppbaseUtil.notNull(query, "query");
 
-        return reactiveReadBoundary.read(() -> getIndexSearcher().search(query, maxHits));
+        return reactiveReadBoundary.read(() -> withSearcher(searcher -> searcher.search(query, maxHits)));
     }
 
     @Override
     public Mono<Document> documentReactive(final int docId) {
-        return reactiveReadBoundary.read(() -> getDirectoryReader().storedFields().document(docId));
+        return reactiveReadBoundary.read(
+                () -> withSearcher(searcher -> searcher.getIndexReader().storedFields().document(docId)));
     }
 
     @Override
@@ -699,19 +733,14 @@ public class DefaultLuceneService implements LuceneService {
             }
             boolean cleanupComplete = closeResource("analyzer", analyzer::close);
 
+            // Closed before the writer it wraps: outstanding withSearcher(...) acquisitions stay valid
+            // (SearcherManager defers the actual reader close until each is released) and no new
+            // acquire()/refresh is accepted from this point on.
+            cleanupComplete &= closeResource("directory reader", searcherManager::close);
+
             if (indexWriter.isOpen()) {
                 cleanupComplete &= closeResource("index writer", indexWriter::close);
             }
-
-            final DirectoryReader directoryReader = directoryReaderRef.get();
-            if (directoryReader != null) {
-                final boolean readerClosed = closeResource("directory reader", directoryReader::close);
-                if (readerClosed) {
-                    directoryReaderRef.compareAndSet(directoryReader, null);
-                }
-                cleanupComplete &= readerClosed;
-            }
-            indexSearcherRef.set(null);
 
             cleanupComplete &= closeResource("directory", directory::close);
 
@@ -724,8 +753,12 @@ public class DefaultLuceneService implements LuceneService {
         }
     }
 
+    @SuppressWarnings("checkstyle:IllegalCatch")
     boolean closeResource(final String resourceName, final ResourceCloser closer) {
         try {
+            // Broad on purpose: ResourceCloser is generic over every resource shutdown() closes, each
+            // of which throws a different checked exception; this must capture any of them so the
+            // remaining resources still get a chance to close.
             closer.close();
             return true;
         } catch (Exception exception) {
@@ -777,6 +810,33 @@ public class DefaultLuceneService implements LuceneService {
         @Override
         public SchedulableConfiguration getSchedulableConfiguration() {
             return schedulableConfiguration;
+        }
+    }
+
+    /**
+     * Wires {@link #lruQueryCacheRef} / {@link #queryCachingPolicyRef} onto every {@link IndexSearcher}
+     * {@link #searcherManager} creates on refresh, matching what the former manual
+     * {@code new IndexSearcher(directoryReader)} construction in {@code synchronizeIndex()} did for each
+     * reader it opened directly.
+     */
+    private final class MetricWiringSearcherFactory extends SearcherFactory {
+        @Override
+        public IndexSearcher newSearcher(final IndexReader reader, final IndexReader previousReader)
+                throws IOException
+        {
+            final IndexSearcher indexSearcher = super.newSearcher(reader, previousReader);
+
+            final LRUQueryCache lruQueryCache = lruQueryCacheRef.get();
+            if (lruQueryCache != null) {
+                indexSearcher.setQueryCache(lruQueryCache);
+            }
+
+            final QueryCachingPolicy queryCachingPolicy = queryCachingPolicyRef.get();
+            if (queryCachingPolicy != null) {
+                indexSearcher.setQueryCachingPolicy(queryCachingPolicy);
+            }
+
+            return indexSearcher;
         }
     }
 }

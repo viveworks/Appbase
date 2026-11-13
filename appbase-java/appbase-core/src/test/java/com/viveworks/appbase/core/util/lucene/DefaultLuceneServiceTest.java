@@ -164,8 +164,8 @@ class DefaultLuceneServiceTest {
         Assertions.assertNotNull(luceneService.getDirectory());
         Assertions.assertNotNull(luceneService.getIndexWriter());
         Assertions.assertNotNull(luceneService.getIndexWriter(true));
-        Assertions.assertNotNull(luceneService.getDirectoryReader());
-        Assertions.assertNotNull(luceneService.getIndexSearcher());
+        Assertions.assertNotNull(luceneService.withSearcher(searcher -> searcher));
+        Assertions.assertNotNull(luceneService.withSearcher(searcher -> searcher.getIndexReader()));
         Assertions.assertNotNull(luceneService.getQueryBuilder());
         Assertions.assertNotNull(luceneService.getQueryParser("fieldName:Value"));
     }

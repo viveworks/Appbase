@@ -86,9 +86,11 @@ docker run \
 appbase_verify_running "${CONTAINER_NAME}" || exit 1
 
 # A listening vtgate socket is not sufficient: it opens before vttestserver has installed the target
-# keyspace's SQL and VSchema. Require routed queries through both the StackTest keyspace and the
-# separate gRPC TestTable keyspace so neither caller races initialization or receives VT05003
-# (unknown database in vschema) after bring-up reports success.
+# keyspaces' SQL and VSchema. StackTest opens both the sharded customer/order keyspace and the
+# unsharded product keyspace, while the service schema shares the sharded keyspace. Require a
+# routed query through every one of those surfaces plus the separate gRPC TestTable keyspace so
+# neither caller races initialization or receives VT05003 (unknown database in vschema) after
+# bring-up reports success.
 vitess_keyspace_ready() {
   local probe_exit
   if timeout 5 docker exec "${CONTAINER_NAME}" mysql \
@@ -99,6 +101,22 @@ vitess_keyspace_ready() {
     --batch --skip-column-names \
     --execute 'SELECT 1 FROM stacktest_customer LIMIT 1' \
     >/dev/null 2>"$VITESS_LAST_PROBE_ERROR" \
+    && timeout 5 docker exec "${CONTAINER_NAME}" mysql \
+      --host 127.0.0.1 \
+      --port "$((VITESS_BASE_PORT + 3))" \
+      --user root \
+      --database "${STACKTEST_UNSHARDED_KEYSPACE}" \
+      --batch --skip-column-names \
+      --execute 'SELECT 1 FROM stacktest_product LIMIT 0' \
+      >/dev/null 2>"$VITESS_LAST_PROBE_ERROR" \
+    && timeout 5 docker exec "${CONTAINER_NAME}" mysql \
+      --host 127.0.0.1 \
+      --port "$((VITESS_BASE_PORT + 3))" \
+      --user root \
+      --database "${STACKTEST_KEYSPACE}" \
+      --batch --skip-column-names \
+      --execute 'SELECT 1 FROM appbase_UserAccount LIMIT 0' \
+      >/dev/null 2>"$VITESS_LAST_PROBE_ERROR" \
     && timeout 5 docker exec "${CONTAINER_NAME}" mysql \
       --host 127.0.0.1 \
       --port "$((VITESS_BASE_PORT + 3))" \

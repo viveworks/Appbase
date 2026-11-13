@@ -43,6 +43,7 @@
 - `scripts/test/clean_machine_prerequisites_test.sh`
 - `scripts/test/client_javadocs_test.sh`
 - `scripts/test/core_javadocs_test.sh`
+- `scripts/test/druid_apt_fallback_test.sh`
 - `scripts/test/druid_download_retry_test.sh`
 - `scripts/test/infra_client_paths_test.sh`
 - `scripts/test/inventory_test.sh`

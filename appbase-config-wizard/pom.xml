@@ -118,7 +118,7 @@
                     <instructions>
                         <Export-Package>com.viveworks.appbase.configwizard.*</Export-Package>
                         <Import-Package>!.,*</Import-Package>
-                        <Include-Resource>{maven-resources},static=target/classes/static</Include-Resource>
+                        <Include-Resource>{maven-resources},static=target/classes/static,META-INF/lgpl/sources=target/classes/META-INF/lgpl/sources</Include-Resource>
                     </instructions>
                 </configuration>
             </plugin>
@@ -210,6 +210,128 @@
                                     <filtering>false</filtering>
                                 </resource>
                             </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+              LGPL CORRESPONDING SOURCE. The Config Wizard is the repository's only shaded product
+              JAR. Keep the exact upstream source archives inside that JAR, adjacent to the complete
+              licence texts and relink guide in src/main/resources/META-INF/lgpl. Merely naming a
+              remote repository is not durable enough for a distributed binary, and copying the
+              ordinary dependency JARs would package object code rather than corresponding source.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>package-lgpl-sources</id>
+                        <!--
+                          Run before the bundle plugin snapshots target/classes into the module JAR.
+                          prepare-package is too late in this build: the dependency files reach
+                          target/classes, but are absent from the input JAR consumed by shade.
+                        -->
+                        <phase>process-resources</phase>
+                        <goals><goal>copy</goal></goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF/lgpl/sources</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.google.code.findbugs</groupId>
+                                    <artifactId>annotations</artifactId>
+                                    <version>3.0.1</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>annotations-3.0.1-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.google.code.findbugs</groupId>
+                                    <artifactId>annotations</artifactId>
+                                    <version>3.0.1</version>
+                                    <type>pom</type>
+                                    <destFileName>annotations-3.0.1.pom</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.github.spotbugs</groupId>
+                                    <artifactId>spotbugs-annotations</artifactId>
+                                    <version>4.10.3</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>spotbugs-annotations-4.10.3-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.github.spotbugs</groupId>
+                                    <artifactId>spotbugs-annotations</artifactId>
+                                    <version>4.10.3</version>
+                                    <type>pom</type>
+                                    <destFileName>spotbugs-annotations-4.10.3.pom</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>net.openhft</groupId>
+                                    <artifactId>affinity</artifactId>
+                                    <version>3.0.6</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>affinity-3.0.6-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>net.openhft</groupId>
+                                    <artifactId>affinity</artifactId>
+                                    <version>3.0.6</version>
+                                    <type>pom</type>
+                                    <destFileName>affinity-3.0.6.pom</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.hibernate.common</groupId>
+                                    <artifactId>hibernate-commons-annotations</artifactId>
+                                    <version>6.0.6.Final</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>hibernate-commons-annotations-6.0.6.Final-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.hibernate.common</groupId>
+                                    <artifactId>hibernate-commons-annotations</artifactId>
+                                    <version>6.0.6.Final</version>
+                                    <type>pom</type>
+                                    <destFileName>hibernate-commons-annotations-6.0.6.Final.pom</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-core</artifactId>
+                                    <version>6.5.3.Final</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>hibernate-core-6.5.3.Final-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-core</artifactId>
+                                    <version>6.5.3.Final</version>
+                                    <type>pom</type>
+                                    <destFileName>hibernate-core-6.5.3.Final.pom</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.mariadb.jdbc</groupId>
+                                    <artifactId>mariadb-java-client</artifactId>
+                                    <version>2.7.4</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>mariadb-java-client-2.7.4-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.mariadb.jdbc</groupId>
+                                    <artifactId>mariadb-java-client</artifactId>
+                                    <version>2.7.4</version>
+                                    <type>pom</type>
+                                    <destFileName>mariadb-java-client-2.7.4.pom</destFileName>
+                                </artifactItem>
+                            </artifactItems>
                         </configuration>
                     </execution>
                 </executions>

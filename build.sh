@@ -19,18 +19,6 @@ cd "$SCRIPT_DIR"
 # finds a buildable tree in neither the reactor nor this list.
 EXCLUDED_TREES=(
   "appbase-codeagents"  # agent configuration only — no build surface
-  # The private Web console (Flutter, internal work item 1616 Leaf 6). A standalone Flutter Web app,
-  # not wired into the Maven reactor and not a Java build surface; it has its own
-  # gates (flutter analyze / test / build web) run per-PR. Like the wizard UI it is
-  # opt-in, but unlike it this tree is not nested inside a Maven module, so it is
-  # named here explicitly rather than covered by a parent lifecycle.
-  "orchestrator/console-web"
-  # The retained-demo Flutter Web console (internal work item 1656). A separate Flutter package that
-  # depends one-way on console-web and holds all Demo* adapters, fixtures and the
-  # demo entrypoint, so no demo code can reach the production console build. Like
-  # console-web it is a standalone Flutter app with its own per-PR flutter gates,
-  # not a Maven surface, so it is excluded here explicitly.
-  "orchestrator/demo/console"
 )
 
 MODE="quick"
@@ -269,8 +257,8 @@ assert_no_concurrent_java_builder() {
 }
 
 is_excluded_tree() {
-  # Match either the FULL directory (for a precise nested exclusion like
-  # orchestrator/console-web) or its top-level tree (the original behaviour, kept
+  # Match either the FULL directory for a precise nested exclusion or its
+  # top-level tree (the original behaviour, kept
   # so existing single-segment entries such as appbase-codeagents still match).
   local dir="$1" tree="${1%%/*}" e
   for e in "${EXCLUDED_TREES[@]}"; do
