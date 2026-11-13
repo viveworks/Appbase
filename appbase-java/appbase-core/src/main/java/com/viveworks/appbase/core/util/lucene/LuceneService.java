@@ -32,6 +32,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.QueryBuilder;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -89,21 +90,24 @@ public interface LuceneService extends Shutdownable {
 
 
     /**
-     * Get the {@link DirectoryReader}.
+     * Acquire a point-in-time-consistent {@link IndexSearcher} for the duration of {@code read}, and
+     * release it afterward regardless of outcome.
      *
-     * @return Directory reader
+     * <p>Replaces the former {@code getDirectoryReader()} / {@code getIndexSearcher()} accessors, which
+     * handed out a live reference with no release signal: a concurrent {@link #synchronizeIndex()} could
+     * then close the exact reader a caller was still searching, throwing
+     * {@link org.apache.lucene.store.AlreadyClosedException}. When a read needs both a search and a
+     * stored-document lookup, do both inside one {@code withSearcher} call (via
+     * {@link IndexSearcher#getIndexReader()}) rather than two separate calls — see
+     * {@link LuceneSearcherRead}.
+     *
+     * @param read the search/read to run against the acquired searcher
+     * @param <T> result type
+     * @return whatever {@code read} returns
+     * @throws IOException if acquiring the searcher, or {@code read} itself, fails
      * @throws LuceneServiceShutdownException if shutdown has completed
      */
-    DirectoryReader getDirectoryReader();
-
-
-    /**
-     * Get the {@link IndexSearcher}.
-     *
-     * @return Index searcher
-     * @throws LuceneServiceShutdownException if shutdown has completed
-     */
-    IndexSearcher getIndexSearcher();
+    <T> T withSearcher(LuceneSearcherRead<T> read) throws IOException;
 
 
     /**

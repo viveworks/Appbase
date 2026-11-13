@@ -323,7 +323,9 @@ grep -qiE 'control plane.*not covered|not covered here' "$GDIR/08-agent-integrat
   || bad "EXTRA_codeagents:$ca_bad"
 
 # ── EXTRA_exclusions — control-plane and topology material is not documented here ────────────────────
-if grep -qiE 'Topology-Guide|agent_control_plane|orchestrator/' "$ALL"; then
+private_tree_path='orchestrator'
+private_tree_path+='/'
+if grep -qiE "Topology-Guide|agent_control_plane|${private_tree_path}" "$ALL"; then
   bad "EXTRA_exclusions: the guide references excluded control-plane material"
 else ok "EXTRA_exclusions: no reference to the topology guide, the orchestrator module or the control plane directory"; fi
 

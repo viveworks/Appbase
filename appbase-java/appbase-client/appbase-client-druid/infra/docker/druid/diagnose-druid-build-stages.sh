@@ -21,13 +21,14 @@ RUN rm -f /etc/apt/sources.list.d/*.list \
 FROM packages AS java
 
 RUN apt-get -o Acquire::Check-Valid-Until=false -qq update -y \
+    && apt-get -qq install -y openjdk-11-jre-headless \
     && apt-get -qq install -y openjdk-11-jdk \
     && java -version
 
 FROM java AS downloads
 
-RUN wget -q --timeout=30 --tries=3 https://dlcdn.apache.org/druid/${DRUID_VERSION}/apache-druid-${DRUID_VERSION}-bin.tar.gz \
-    && wget -q --timeout=30 --tries=3 https://dlcdn.apache.org/druid/${DRUID_VERSION}/apache-druid-${DRUID_VERSION}-bin.tar.gz.sha512
+RUN wget -q --timeout=30 --tries=3 https://downloads.apache.org/druid/${DRUID_VERSION}/apache-druid-${DRUID_VERSION}-bin.tar.gz \
+    && wget -q --timeout=30 --tries=3 https://downloads.apache.org/druid/${DRUID_VERSION}/apache-druid-${DRUID_VERSION}-bin.tar.gz.sha512
 
 FROM downloads AS archive
 

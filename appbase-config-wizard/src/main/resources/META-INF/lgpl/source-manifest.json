@@ -1,0 +1,53 @@
+{
+  "format": "appbase-config-wizard-lgpl-source-v1",
+  "dependencies": [
+    {
+      "gav": "com.google.code.findbugs:annotations:3.0.1",
+      "spdx": "LGPL-2.1-or-later",
+      "source": "annotations-3.0.1-sources.jar",
+      "sha256": "1a64119813ca80a6ebef047190a4f62ee4ad44afe786e92d698ba7aa730ffc0a",
+      "pom": "annotations-3.0.1.pom",
+      "pom_sha256": "649ecedb944702cd5ed3538d0bd651bbe3866cfc1008f6fb265de986d6760292"
+    },
+    {
+      "gav": "com.github.spotbugs:spotbugs-annotations:4.10.3",
+      "spdx": "LGPL-2.1-only",
+      "source": "spotbugs-annotations-4.10.3-sources.jar",
+      "sha256": "87974d23caffbc8c6e66c567747627267b5ed06573cee966d7af6d236b8d65bd",
+      "pom": "spotbugs-annotations-4.10.3.pom",
+      "pom_sha256": "9aca49f4a1c39a2df7a22989989b76886cd19e4e795e63e6b8f16bf00e840cf5"
+    },
+    {
+      "gav": "net.openhft:affinity:3.0.6",
+      "spdx": "LGPL-3.0-only",
+      "source": "affinity-3.0.6-sources.jar",
+      "sha256": "8e797604b4ad747b7f993c185400dbfc6966572c30d7b2715915682d3a206be9",
+      "pom": "affinity-3.0.6.pom",
+      "pom_sha256": "f0686b5f96193247f32ad04e4bd4fadaeca54260fd9c60564c077499d62df56b"
+    },
+    {
+      "gav": "org.hibernate.common:hibernate-commons-annotations:6.0.6.Final",
+      "spdx": "LGPL-2.1-or-later",
+      "source": "hibernate-commons-annotations-6.0.6.Final-sources.jar",
+      "sha256": "5f9ef9fcd3a6942102f4857a4c7fb2a85e203d9a6ece7d700ec7d1f789411991",
+      "pom": "hibernate-commons-annotations-6.0.6.Final.pom",
+      "pom_sha256": "87387244eda18c181d0ef1301f8cf2790f074ced8b5eb165d6a5bd4ed207e4c4"
+    },
+    {
+      "gav": "org.hibernate.orm:hibernate-core:6.5.3.Final",
+      "spdx": "LGPL-2.1-or-later",
+      "source": "hibernate-core-6.5.3.Final-sources.jar",
+      "sha256": "dc63ac15239aad5666e15988bdbf28ddd98b2fbe558b3cc79bfd6a7c19df52bf",
+      "pom": "hibernate-core-6.5.3.Final.pom",
+      "pom_sha256": "1c914c1a777714072246f51003195ff9ff3efc36054bdddb4eca301a048585c9"
+    },
+    {
+      "gav": "org.mariadb.jdbc:mariadb-java-client:2.7.4",
+      "spdx": "LGPL-2.1-only",
+      "source": "mariadb-java-client-2.7.4-sources.jar",
+      "sha256": "84bf45e993d4e144a1efec6df943e00a1f454c5f5a3eb565cf820de2fb089406",
+      "pom": "mariadb-java-client-2.7.4.pom",
+      "pom_sha256": "0232c207f2e5249270fc7bcd5c0e94813c36becb0902afb682aba729787b8254"
+    }
+  ]
+}

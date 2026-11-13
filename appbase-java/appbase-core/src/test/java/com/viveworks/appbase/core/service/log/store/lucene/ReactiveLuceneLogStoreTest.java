@@ -33,8 +33,12 @@ import com.viveworks.appbase.core.service.validation.ValidationService;
 import com.viveworks.appbase.core.test.CoreTestFixtures;
 import com.viveworks.appbase.core.util.lucene.DefaultLuceneService;
 import com.viveworks.appbase.core.util.lucene.DefaultLuceneServiceConfiguration;
+import com.viveworks.appbase.core.util.lucene.LuceneService;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TopDocs;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -42,10 +46,18 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+import org.mockito.AdditionalAnswers;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests {@link ReactiveLuceneLogStore} — the three reactive reads it adds on top of the N01
@@ -180,6 +192,55 @@ class ReactiveLuceneLogStoreTest {
     }
 
     @Test
+    void test_AC2964_1_streamPageDoesNotCrossSearcherGenerations() throws Exception {
+        final long matchedTimestamp = record0.getTimestamp();
+        final String timestampLongPointName = luceneLogStore.getLuceneLogIndex()
+                .getLuceneLogIndexConfiguration()
+                .getTimestampLongPointName();
+        final Query query = LongPoint.newRangeQuery(
+                timestampLongPointName, matchedTimestamp, Math.addExact(matchedTimestamp, 1));
+        final TopDocs previousGenerationHits =
+                luceneService.withSearcher(searcher -> searcher.search(query, 1));
+        Assertions.assertEquals(1, previousGenerationHits.scoreDocs.length);
+
+        // Deterministically model a refresh between search and fetch: retain generation A's TopDocs,
+        // then publish generation B with an unrelated document occupying the same internal doc id.
+        // A page materialized from one acquired searcher is empty in generation B; separate search and
+        // document acquisitions incorrectly turn A's doc id into generation B's unrelated record.
+        final LogRecord replacement = CoreTestFixtures.getLogRecord(
+                "replacement fmt: {}", "replacement msg: ARG", "replacement throwable", "replacement cause",
+                "replacement-key", "replacement-value", "REPLACEMENT", matchedTimestamp + 10_000,
+                CoreTestFixtures.class.getName(), LogLevel.ERROR);
+        luceneService.getIndexWriter().deleteAll();
+        luceneLogStore.writeLogRecord(replacement);
+        luceneService.getIndexWriter().forceMerge(1);
+        luceneLogStore.synchronize();
+
+        final LuceneService generationSwitchingService =
+                mock(LuceneService.class, AdditionalAnswers.delegatesTo(luceneService));
+        doReturn(Mono.just(previousGenerationHits))
+                .when(generationSwitchingService).searchReactive(any(Query.class), anyInt());
+        final LuceneLogIndex generationSwitchingIndex = mock(
+                LuceneLogIndex.class, AdditionalAnswers.delegatesTo(luceneLogStore.getLuceneLogIndex()));
+        when(generationSwitchingIndex.getLuceneService()).thenReturn(generationSwitchingService);
+        final LuceneLogStore generationSwitchingStore = new LuceneLogStore(
+                logService,
+                metricService,
+                generationSwitchingIndex,
+                mediatorService.getMediator().getSharedExecutorService(),
+                LuceneLogStoreConfiguration.builder().enabled(true).build());
+
+        final List<LogRecord> records = new ReactiveLuceneLogStore(generationSwitchingStore)
+                .streamLogRecordsBetweenReactive(matchedTimestamp, matchedTimestamp + 1, 1)
+                .collectList()
+                .block(BLOCK_TIMEOUT);
+
+        Assertions.assertNotNull(records);
+        Assertions.assertTrue(records.isEmpty(),
+                "a stale doc id must not resolve to an unrelated document from the refreshed generation");
+    }
+
+    @Test
     void betweenReactiveStreamRecordsTheSameTimerTheBlockingReadUses() {
         final String timerName = metricService.name(LuceneLogStore.class, "readLogRecordsBetween", "timer");
         final long before = metricService.getMetricRegistry().timer(timerName).getCount();
@@ -263,7 +324,7 @@ class ReactiveLuceneLogStoreTest {
         Assertions.assertThrows(Throwable.class, () -> mono.block(BLOCK_TIMEOUT));
 
         Assertions.assertEquals(before + 1, metricService.getMetricRegistry().counter(counterName).getCount(),
-                "a failed reactive Lucene read must increment the same per-store error Counter the blocking "
-                        + "read does");
+                "a failed reactive Lucene read must increment the same per-store error Counter the blocking " +
+                        "read does");
     }
 }

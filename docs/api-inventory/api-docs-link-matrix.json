@@ -14,17 +14,17 @@
     },
     {
       "role": "supported-modules",
-      "source": "target/release-javadocs/index.html",
+      "source": "target/release-javadocs/apidocs/index.html",
       "target": "docs/Module-and-Service-Catalog.md#supported-public-artifacts-at-a-glance",
       "status": "pending",
-      "reason": "release-profile Javadoc output and its navigation are owned by internal work item 1405"
+      "reason": "release-profile Javadoc has not yet been generated and linked into the Module-and-Service-Catalog navigation"
     },
     {
       "role": "supported-adapters",
-      "source": "target/release-javadocs/index.html",
-      "target": "docs/Module-and-Service-Catalog.md#supported-public-artifacts-at-a-glance",
+      "source": "target/release-javadocs/apidocs/index.html",
+      "target": null,
       "status": "pending",
-      "reason": "generated documentation has no checked-in adapter-matrix link until internal work item 1405"
+      "reason": "no real public adapter-matrix doc exists yet; interim private-doc placeholder removed 2026-11-13 to stop it leaking into the public export"
     },
     {
       "role": "known-limitations",
