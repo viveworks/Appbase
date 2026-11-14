@@ -48,7 +48,7 @@ Import the bill of materials, then add the modules you need. The bill of materia
     <dependency>
       <groupId>GROUP_ID_PENDING_2546</groupId>
       <artifactId>appbase-bom</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>

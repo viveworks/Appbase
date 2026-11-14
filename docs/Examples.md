@@ -89,7 +89,7 @@ In your service's `pom.xml`, after the reactor has been installed locally with `
     <dependency>
       <groupId>com.viveworks.appbase</groupId>
       <artifactId>appbase-bom</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>

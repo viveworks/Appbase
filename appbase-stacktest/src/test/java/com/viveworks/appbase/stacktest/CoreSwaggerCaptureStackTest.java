@@ -137,7 +137,7 @@ class CoreSwaggerCaptureStackTest {
                         .openAPI(new OpenAPI().info(new Info()
                                 // Same title as the @OpenAPIDefinition in the resources' package-info.
                                 .title("Appbase Core REST API")
-                                .version("1.0.0-SNAPSHOT")
+                                .version("1.0.0")
                                 .description("Real core JAX-RS resources documented through a test-only "
                                         + "OpenAPI resource (no core-service main code "
                                         + "registers one, internal work item 2548). Backend operations are not exercised "

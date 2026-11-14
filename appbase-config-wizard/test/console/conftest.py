@@ -16,7 +16,7 @@ import pytest
 # ---------------------------------------------------------------------------
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _DEFAULT_JAR = os.path.join(_HERE, '..', '..', 'target',
-                             'appbase-config-wizard-1.0.0-SNAPSHOT.jar')
+                             'appbase-config-wizard-1.0.0.jar')
 
 JAR = os.environ.get('CONFIG_WIZARD_JAR', _DEFAULT_JAR)
 

@@ -70,7 +70,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * full HTTP end-to-end proof — a reactor-netty request driven through {@code NativeLogEndpoint}/
  * {@code NativeExceptionEndpoint} under BlockHound — is deferred to the reactor-netty integration
  * tests / {@code appbase-stacktest}, which cannot execute in the offline core build (the
- * {@code appbase-bootstrap-reactor-netty} test run needs an aws-s3 SNAPSHOT jar and the
+ * {@code appbase-bootstrap-reactor-netty} test run needs a reactor-built aws-s3 jar and the
  * maven-jar-plugin archiver, neither available offline here). The endpoints read via the same
  * reactive accessor this test exercises, so the deferred proof adds the transport, not the read
  * semantics.

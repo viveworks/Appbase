@@ -122,7 +122,7 @@ Two levels of proof back the non-blocking claim:
 
 The full **HTTP end-to-end** BlockHound proof — a real request driven through `NativeLogEndpoint` /
 `NativeExceptionEndpoint` under BlockHound — is deferred to the integration tests / `appbase-stacktest`:
-the `appbase-bootstrap-reactor-netty` test run needs an aws-s3 SNAPSHOT jar and the maven-jar-plugin
+the `appbase-bootstrap-reactor-netty` test run needs a reactor-built aws-s3 jar and the maven-jar-plugin
 archiver, neither available in the offline core build. That deferred proof adds the transport, not the
 read semantics, which the core proof above already covers.
 
