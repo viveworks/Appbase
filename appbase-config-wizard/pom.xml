@@ -202,7 +202,7 @@
                         <phase>prepare-package</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
-                            <skip>${appbase-config-wizard.skipFrontend}</skip>
+                            <skip>${appbase-config-wizard.skipFrontendCopy}</skip>
                             <outputDirectory>${project.build.outputDirectory}/static/web</outputDirectory>
                             <resources>
                                 <resource>

@@ -287,6 +287,7 @@
           Same idiom as appbase-stacktest.skipTests directly above.
         -->
         <appbase-config-wizard.skipFrontend>true</appbase-config-wizard.skipFrontend>
+        <appbase-config-wizard.skipFrontendCopy>false</appbase-config-wizard.skipFrontendCopy>
         <archive.addClasspath>true</archive.addClasspath>
         <archive.addDefaultImplementationEntries>true</archive.addDefaultImplementationEntries>
         <archive.addDefaultSpecificationEntries>true</archive.addDefaultSpecificationEntries>
