@@ -132,7 +132,7 @@ public final class AppbaseCoreOpenApiRegistrar {
             final SwaggerConfiguration scanConfiguration = new SwaggerConfiguration()
                     .openAPI(new OpenAPI().info(new Info()
                         .title("Appbase Core REST API")
-                        .version("1.0.0-SNAPSHOT")))
+                        .version("1.0.0")))
                     .prettyPrint(true)
                     .resourceClasses(resourceClasses);
             final OpenApiContext scanContext = new JaxrsOpenApiContextBuilder<>()

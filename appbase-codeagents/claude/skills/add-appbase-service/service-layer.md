@@ -53,7 +53,7 @@ If Q4 selected an external library (`groupId:artifactId:version`):
     <parent>
         <groupId>com.viveworks.appbase</groupId>
         <artifactId>appbase-service</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
     <artifactId>appbase-service-<xxx></artifactId>
     <packaging>jar</packaging>
@@ -389,7 +389,7 @@ Repeat this entire Part B section for each technology listed in Q7 (e.g. `jdbi`,
     <parent>
         <groupId>com.viveworks.appbase</groupId>
         <artifactId>appbase-service</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
     <artifactId>appbase-service-<xxx>-<tech></artifactId>
     <packaging>jar</packaging>

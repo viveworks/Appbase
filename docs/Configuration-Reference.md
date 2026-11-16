@@ -20,7 +20,7 @@ valid file without writing YAML by hand, use the [configuration wizard](#the-con
 | Flutter | only for the configuration wizard's web UI | off by default. Turn it on with `./build.sh --wizard-frontend` |
 | Docker | only for backend integration tests and the broader stacktest | see [Integration test switches](#integration-test-switches) |
 
-Coordinates: group `com.viveworks.appbase`, version `1.0.0-SNAPSHOT`. There is no published Maven
+Coordinates: group `com.viveworks.appbase`, version `1.0.0`. There is no published Maven
 repository yet (see [Known limitations](Known-Limitations.md)), so install from source with Maven.
 
 ## Choosing the configuration file

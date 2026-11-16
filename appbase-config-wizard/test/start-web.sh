@@ -8,13 +8,13 @@
 # Usage (from the module root):
 #   ./test/start-web.sh [JAR_PATH]
 #
-# If JAR_PATH is omitted, defaults to target/appbase-config-wizard-1.0.0-SNAPSHOT.jar.
+# If JAR_PATH is omitted, defaults to target/appbase-config-wizard-1.0.0.jar.
 set -euo pipefail
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MODULE_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
 
-JAR="${1:-${MODULE_DIR}/target/appbase-config-wizard-1.0.0-SNAPSHOT.jar}"
+JAR="${1:-${MODULE_DIR}/target/appbase-config-wizard-1.0.0.jar}"
 PORT_FILE="${MODULE_DIR}/.config-wizard-test.port"
 PID_FILE="${MODULE_DIR}/.config-wizard-test.pid"
 LOG_FILE="${MODULE_DIR}/.config-wizard-test.log"
