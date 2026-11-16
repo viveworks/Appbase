@@ -339,7 +339,40 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
-      - name: Public offline product contracts
+      - name: Offline bash infrastructure suites (bash 5)
+        # A separate macOS runner is intentionally omitted: it is not cheap, and ubuntu's /bin/bash is
+        # the same bash 5 executable used here. macOS bash 3 compatibility remains a host-only check.
+        # Excluded Docker tier: appbase_container_test.sh, appbase_container_contract_test.sh,
+        # demo_stack_{offline,ports,revision_container},
+        # devcontainer_*, graperoot_egress, mcp_{confine,confine_coverage,exercise},
+        # scheduled_supervisor, vw_{backend,frontend}_build. Darwin/launchctl suites are also excluded.
+        # container_keepalive_test.sh is excluded because it can hang until its per-suite timeout.
+        env:
+          DOCKER_HOST: unix:///nonexistent
+        # offline-allowlist:begin
+        run: >-
+          scripts/run-suites.sh --timeout 900
+          aerospike_container_contract_test.sh appbase_container_login_test.sh
+          appbase_test_resource_bootstrap_test.sh appbase_topology_access_test.sh
+          checkstyle_baseline_ratchet_test.sh ci_changed_modules_test.sh
+          ci_release_rehearsal_test.sh ci_verify_compile_prereqs_test.sh
+          epic1137_live_adapter_campaign_test.sh epic1137_stacktest_f1_test.sh
+          epic1138_close_gate_test.sh
+          jersey_resource_config_compatibility_wiring_test.sh
+          lens6_doc_contract_test.sh
+        # offline-allowlist:end
+      - name: Stacktest acceptance static guards (#2537)
+        id: static-acceptance
+        continue-on-error: true
+        run: python3 -B -m unittest scripts.tests.test_AC2537_stacktest_coverage_matrix -v
+      - name: Appbase developer MCP catalog and drift guards (#2687)
+        run: python3 -B -m unittest discover -s appbase_mcp/tests -v
+      - name: Record stacktest static acceptance result
+        id: static-receipt
+        if: always()
+        env:
+          STATIC_OUTCOME: ${{ steps.static-acceptance.outcome }}
+          TESTED_SHA: ${{ steps.verify-sha.outputs.tested_sha }}
         run: |
           set -euo pipefail
           for suite in             aerospike_container_contract_test.sh             checkstyle_baseline_ratchet_test.sh             ci_release_rehearsal_test.sh             ci_verify_compile_prereqs_test.sh; do
@@ -1075,11 +1108,401 @@ jobs:
           RUN_HOSTED: ${{ needs.changed-modules.outputs.run_hosted_tiers }}
           RUN_SHELL: ${{ needs.changed-modules.outputs.run_shell_suites }}
           RUN_CONSOLE: ${{ needs.changed-modules.outputs.run_console_suite }}
-          RUN_EMULATOR: ${{ needs.changed-modules.outputs.run_emulator }}
-          RUN_STACKTEST: ${{ needs.changed-modules.outputs.run_stacktest }}
-          RUN_L04: ${{ github.event.inputs.run_l04_kafka_zookeeper || 'false' }}
-          RUN_RELEASE: ${{ github.event.inputs.run_release_rehearsal || 'false' }}
-          RUN_L10: ${{ github.event.inputs.run_l10_config_wizard_playwright || 'false' }}
+          RUN_UNIT: ${{ needs.changed-modules.outputs.run_unit_tests }}
+          RUN_HOSTED_TIERS: ${{ needs.changed-modules.outputs.run_hosted_tiers }}
+          RUN_RELEASE_REHEARSAL: >-
+            ${{ github.event_name == 'workflow_dispatch' &&
+                github.event.inputs.run_release_rehearsal == 'true' }}
+          ISOLATED_CAMPAIGN_SCOPE: >-
+            ${{ github.event_name == 'workflow_dispatch' &&
+                (github.event.inputs.run_l04_kafka_zookeeper == 'true' ||
+                 github.event.inputs.run_l04_kafka_mutation_control == 'true' ||
+                 github.event.inputs.run_release_rehearsal == 'true' ||
+                 github.event.inputs.run_l10_config_wizard_playwright == 'true' ||
+                 github.event.inputs.run_epic_close_gate == 'true') }}
+          CONSOLE_READY: ${{ needs.config-wizard-console.outputs.prompt_fix_ready }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ATTEMPT: ${{ github.run_attempt }}
+          CHANGED_RESULT: ${{ needs.changed-modules.result }}
+          COMPILE_RESULT: ${{ needs.maven-compile.result }}
+          INVENTORY_RESULT: ${{ needs.api-inventory.result }}
+          UNIT_RESULT: ${{ needs.maven-unit-tests.result }}
+          SHELL_RESULT: ${{ needs.offline-shell-suites.result }}
+          CONSOLE_RESULT: ${{ needs.config-wizard-console.result }}
+          RELEASE_REHEARSAL_RESULT: ${{ needs.release-profile-rehearsal.result }}
+          COMPILE_TESTED_SHA: ${{ needs.maven-compile.outputs.tested_sha }}
+          UNIT_TESTED_SHA: ${{ needs.maven-unit-tests.outputs.tested_sha }}
+          SHELL_TESTED_SHA: ${{ needs.offline-shell-suites.outputs.tested_sha }}
+          STATIC_ACCEPTANCE_RESULT: ${{ needs.offline-shell-suites.outputs.static_acceptance_result }}
+          STATIC_ACCEPTANCE_TESTED_SHA: ${{ needs.offline-shell-suites.outputs.static_acceptance_tested_sha }}
+          CONSOLE_TESTED_SHA: ${{ needs.config-wizard-console.outputs.tested_sha }}
+          RELEASE_REHEARSAL_TESTED_SHA: ${{ needs.release-profile-rehearsal.outputs.tested_sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$MODULES" == ALL ]]; then
+            cmd='./build.sh --mode compile'
+            if [[ "$RUN_UNIT" == true ]]; then
+              unit_cmd='mvn -B -fae test -Dsurefire.timeout=480'
+            else
+              unit_cmd='(not run — hosted test tiers were not opted in)'
+            fi
+          elif [[ "$MODULES" == NONE ]]; then
+            cmd='(none — no Java or pom.xml change)'
+            unit_cmd='(none — no Java or pom.xml change)'
+          else
+            cmd='mvn -q clean test-compile -pl <modules> -am -amd'
+            unit_cmd='mvn -B -fae test -pl <modules> -am -amd -Dsurefire.timeout=480'
+          fi
+          compile_receipt_result="$COMPILE_RESULT"
+          unit_receipt_result="$UNIT_RESULT"
+          shell_receipt_result="$SHELL_RESULT"
+          static_acceptance_receipt_result="${STATIC_ACCEPTANCE_RESULT:-$SHELL_RESULT}"
+          skip_reason='SKIPPED — local evidence per owner ruling A — NOT_VERIFIED'
+          if [[ "$ISOLATED_CAMPAIGN_SCOPE" == true ]]; then
+            skip_reason='SKIPPED — outside isolated campaign scope — NOT_APPLICABLE'
+          fi
+          [[ "$COMPILE_RESULT" == skipped ]] && compile_receipt_result="$skip_reason"
+          if [[ "$UNIT_RESULT" == skipped && "$MODULES" == ALL && "$RUN_UNIT" == false ]]; then
+            unit_receipt_result="$skip_reason"
+          elif [[ "$UNIT_RESULT" == skipped ]]; then
+            unit_receipt_result="$skip_reason"
+          fi
+          unit_explanation=''
+          if [[ "$UNIT_RESULT" == cancelled ]]; then
+            unit_receipt_result='FAIL — cancelled before completion'
+            unit_explanation='The unit job was cancelled before Maven/Surefire could produce a complete result.'
+          fi
+          [[ "$SHELL_RESULT" == skipped ]] && shell_receipt_result="$skip_reason"
+          [[ "$SHELL_RESULT" == skipped ]] && static_acceptance_receipt_result="$skip_reason"
+          if [[ "$RUN_CONSOLE" == true && "$CONSOLE_RESULT" == success && "$CONSOLE_READY" == false ]]; then
+            console_cmd='ADVISORY SKIP — #1302 prompt fixes not present'
+            console_receipt_result=ADVISORY_SKIP
+          else
+            console_cmd='python -m pytest -v appbase-config-wizard/test/console'
+            console_receipt_result="$CONSOLE_RESULT"
+          fi
+          [[ "$CONSOLE_RESULT" == skipped ]] && console_receipt_result="$skip_reason"
+          if [[ "$RUN_RELEASE_REHEARSAL" == true ]]; then
+            release_rehearsal_receipt_result="$RELEASE_REHEARSAL_RESULT"
+          else
+            release_rehearsal_receipt_result='SKIPPED — explicit release rehearsal not requested — NOT_APPLICABLE'
+          fi
+          verdict_output="$(.github/scripts/ci-verify-verdict.sh)" || verdict_rc=$?
+          verdict_rc="${verdict_rc:-0}"
+          verdict="$(sed -n 's/^verdict=//p' <<<"$verdict_output")"
+          tested_sha="$(sed -n 's/^tested_sha=//p' <<<"$verdict_output")"
+          tier_tested_shas="$(sed -n 's/^tier_tested_shas=//p' <<<"$verdict_output")"
+          if [[ "$INVENTORY_RESULT" != success ]]; then
+            verdict=FAIL
+            verdict_rc=1
+          fi
+          {
+            echo '## CI receipt draft (advisory)'
+            echo '```'
+            echo '<!-- VIVEWORKS_CI_RECEIPT v1 (draft) -->'
+            echo "CI-RECEIPT repo=$REPO pr=$PR event=$EVENT"
+            echo "head_sha=$HEAD_SHA   tested_sha=$tested_sha   tree=$TREE"
+            echo "$tier_tested_shas"
+            echo "base_ref=$BASE_REF    base_sha=$BASE_SHA"
+            echo "run=$RUN_URL  attempt=$ATTEMPT"
+            echo "workflow=.github/workflows/ci-verify.yml@$WORKFLOW_BLOB"
+            echo "script=.github/scripts/changed-modules.sh@$CHANGED_MODULES_BLOB"
+            echo "script=.github/scripts/verify-head.sh@$VERIFY_HEAD_BLOB"
+            echo "script=.github/scripts/require-test-count.py@$REQUIRE_TEST_COUNT_BLOB"
+            echo "script=.github/scripts/ci-verify-verdict.sh@$VERDICT_BLOB"
+            echo "script=.github/scripts/ci-verify-scope.sh@$SCOPE_BLOB"
+            echo "selector_modified_by_pr=$SELECTOR_MODIFIED_BY_PR"
+            echo "runner=ubuntu-24.04 image_version=${ImageVersion:-unknown}"
+            echo "toolchain: java=temurin-25 (see maven-compile 'Toolchain' step)"
+            echo "modules=$MODULES"
+            echo "| gate | command | result |"
+            echo "| changed-modules | .github/scripts/changed-modules.sh (tested_sha=$HEAD_SHA) | $CHANGED_RESULT |"
+            echo "| maven-compile | $cmd (tested_sha=${COMPILE_TESTED_SHA:-SKIPPED}) | $compile_receipt_result |"
+            echo "| api-inventory | bash scripts/api-inventory-fast-check.sh; bash scripts/test/inventory_test.sh | $INVENTORY_RESULT |"
+            echo "| maven-unit-tests | $unit_cmd (tested_sha=${UNIT_TESTED_SHA:-SKIPPED}) | $unit_receipt_result |"
+            [[ -z "$unit_explanation" ]] || echo "| maven-unit-tests explanation | $unit_explanation | FAIL |"
+            echo "| offline-shell-suites | scripts/run-suites.sh --timeout 900 <offline-allowlist> (tested_sha=${SHELL_TESTED_SHA:-SKIPPED}) | $shell_receipt_result |"
+            echo "| stacktest-static-acceptance | python3 -B -m unittest scripts.tests.test_AC2537_stacktest_coverage_matrix -v (tested_sha=${STATIC_ACCEPTANCE_TESTED_SHA:-SKIPPED}) | $static_acceptance_receipt_result |"
+            echo "| config-wizard-console | $console_cmd (tested_sha=${CONSOLE_TESTED_SHA:-SKIPPED}) | $console_receipt_result |"
+            echo "| release-profile-rehearsal | whole compile; release:prepare dry-run; release:clean (tested_sha=${RELEASE_REHEARSAL_TESTED_SHA:-SKIPPED}) | $release_rehearsal_receipt_result |"
+            echo "verdict=$verdict   discharges=[] (advisory shadow; not a discharge until the owner rules)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$verdict_rc"
+
+  # Appbase#1138 / #2550 hosted close-gate (#2550 NM-4, NM-5, NM-6, NM-7b and protocol §18).
+  # Deliberately independent of every job above: none of these five jobs read or set
+  # changed-modules outputs, and their OWN `if:` is the only gate that can start them, so they can
+# never be reached by a dispatch without its explicit input, and they are not part of the
+# ordinary verification tiers. This is the one-per-epic hosted evidence run CI
+  # budget §9 describes, not a routine tier: EA-Super/the owner authorizes each dispatch.
+  #
+  # #2622 job split: a single combined runner exhausted disk pulling Vitess+Druid's BuildKit base
+  # images alongside the other five backends plus the staging reactor build (`no space left on
+  # device` at 72G/32M/100%, run 38411023864). Split into six jobs, each on its own clean runner:
+  #   - epic-close-light-live: Postgres/ZooKeeper/Aerospike/Elasticsearch/Firebase/S3/Redis, then
+  #     NM-6 and NM-7b (the two measurements that only need this set).
+  #   - epic-close-heavy-live: Postgres/ZooKeeper/Druid/Vitess — the two heavy-footprint services,
+  #     alone, so BuildKit has the full runner's disk to itself.
+  #   - epic-close-full-live: all backends plus a real StackTestMain run, isolated from the other
+  #     measurements so the full runtime path is proven without recreating the disk collision.
+  #   - epic-close-staging: NM-4/§18, redefined per owner ruling (Option B, 2026-10-13) as the
+  #     non-live full reactor/staging build; it no longer depends on any live backend.
+  #   - epic-close-nm5: the live-router "/admin" probe, using StackTestMain's `--path-probe-only`
+  #     mode (no data backends constructed) — also no longer depends on either live job.
+  #   - epic-close-rollup: depends on all five measurement jobs; fails closed unless every one's
+  #     result is exactly `success` at the same dispatched head. `continue-on-error` on measurement
+  #     steps inside each job is collection-only: it lets that job's own rows produce diagnostics;
+  #     the rollup enforces them across all five jobs.
+  epic-close-light-live:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_epic_close_gate == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    outputs:
+      live_env_result: ${{ steps.live-env.outcome }}
+      s3_result: ${{ steps.s3.outcome }}
+      nm6_result: ${{ steps.nm6.outcome }}
+      nm7b_result: ${{ steps.nm7b.outcome }}
+    steps:
+      - name: Check out the exact dispatched head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      # Restore-only (§13(b), top-of-file): workflow_dispatch never saves.
+      - name: Restore the ~/.m2 repository cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+
+      - name: Bring up the light-service backend set
+        id: live-env
+        continue-on-error: true
+        run: .github/scripts/epic1138-live-env-up.sh light
+
+      - name: Disk checkpoint after light-environment startup and bounded build-cache cleanup
+        if: always()
+        run: |
+          set -euo pipefail
+          echo '=== disk before Docker builder cleanup ==='
+          df -h / /home/runner /tmp
+          timeout 120 docker builder prune --all --force
+          echo '=== disk after Docker builder cleanup ==='
+          df -h / /home/runner /tmp
+
+      - name: NM-6 — live Elasticsearch traversal/encoded-identifier probe
+        id: nm6
+        if: always()
+        continue-on-error: true
+        run: .github/scripts/epic1138-nm6-es-traversal-probe.sh
+
+      - name: S3 / #2584 — MinIO sync+async round trips and NoSuchKey mapping
+        id: s3
+        if: always() && steps.live-env.outcome == 'success'
+        continue-on-error: true
+        run: >-
+          mvn -B -ntp verify -P develop-profile
+          -pl appbase-java/appbase-client/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3
+          -am
+          -DS3ClientServiceTests.enabled=true
+          -Dtest=__NoSurefireTests__
+          -Dsurefire.failIfNoSpecifiedTests=false
+          -Dit.test=ReactiveS3AccessorIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+          -Djacoco.skip=true
+
+      - name: Firebase Auth emulator readiness before NM-7b
+        id: firebase-ready
+        if: always()
+        continue-on-error: true
+        run: .github/scripts/epic1138-firebase-ready.sh
+
+      - name: Disk checkpoint before NM-7b
+        if: always()
+        run: df -h / /home/runner /tmp
+
+      - name: NM-7b — Firebase-Auth-emulator-backed Failsafe IT
+        id: nm7b
+        if: always() && steps.firebase-ready.outcome == 'success'
+        continue-on-error: true
+        env:
+          FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099"
+        run: >-
+          mvn -B -ntp clean verify -P develop-profile
+          -DFirebaseAuthClientServiceTests.enabled=true
+          -Dsurefire.failIfNoSpecifiedTests=false
+
+      - name: Disk checkpoint after NM-7b
+        if: always()
+        run: df -h / /home/runner /tmp
+
+      - name: Tear down light services
+        if: always()
+        run: .github/scripts/epic1138-live-env-down.sh light
+
+  epic-close-heavy-live:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_epic_close_gate == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    outputs:
+      live_env_result: ${{ steps.live-env.outcome }}
+    steps:
+      - name: Check out the exact dispatched head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Bring up the heavy-service backend set (Druid+Vitess, own clean runner)
+        id: live-env
+        continue-on-error: true
+        run: .github/scripts/epic1138-live-env-up.sh heavy
+
+      - name: Disk checkpoint after heavy-environment startup and bounded build-cache cleanup
+        if: always()
+        run: |
+          set -euo pipefail
+          echo '=== disk before Docker builder cleanup ==='
+          df -h / /home/runner /tmp
+          timeout 120 docker builder prune --all --force
+          echo '=== disk after Docker builder cleanup ==='
+          df -h / /home/runner /tmp
+
+      - name: Tear down heavy services
+        if: always()
+        run: .github/scripts/epic1138-live-env-down.sh heavy
+
+  epic-close-full-live:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_epic_close_gate == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    outputs:
+      full_live_result: ${{ steps.full-live.outcome }}
+    steps:
+      - name: Check out the exact dispatched head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Temurin JDK 25 for Maven and StackTestMain
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Restore the pinned Druid 34.0.0 distribution
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: appbase-java/appbase-client/appbase-client-druid/infra/docker/druid/.druid-dist
+          key: druid-34.0.0
+
+      - name: Restore the ~/.m2 repository cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+
+      - name: Bring up every StackTestMain backend
+        run: .github/scripts/epic1138-live-env-up.sh all
+
+      - name: Install StackTestMain and its reactor dependencies
+        run: .github/scripts/stacktest-live-runner.sh install
+
+      - name: Run full live StackTestMain with Druid and Vitess proof markers
+        id: full-live
+        env:
+          FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099"
+        run: .github/scripts/stacktest-live-runner.sh green epic-close-full-live
+
+      - name: Tear down all live services
+        if: always()
+        run: .github/scripts/epic1138-live-env-down.sh all
+
+  epic-close-staging:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_epic_close_gate == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      MAVEN_ARGS: -B -ntp
+    outputs:
+      nm4_result: ${{ steps.nm4.outcome }}
+    steps:
+      - name: Check out the exact dispatched head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      # Restore-only (§13(b), top-of-file): workflow_dispatch never saves.
+      - name: Restore the ~/.m2 repository cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+
+      - name: Set up pinned Flutter SDK and prime the pub cache for NM-4
+        # staging-profile deliberately builds the real Config Wizard frontend. Its Maven execution
+        # resolves with `pub get --offline`, which is correct behind the devcontainer egress wall but
+        # requires a warm pub cache. A fresh hosted runner has neither Flutter nor that cache, so use
+        # the same checksum-pinned SDK as the dedicated Config Wizard job and perform one online,
+        # lockfile-backed resolution before Maven takes over the normal staging lifecycle.
+        run: |
+          set -euo pipefail
+          FLUTTER_VERSION=3.47.7
+          FLUTTER_SHA256=af7455f540df951184c7953fbe3cf884766e7541dacf8571f9f582db03dd6230
+          curl -fsSL "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz" \
+            -o /tmp/flutter.tar.xz
+          echo "${FLUTTER_SHA256}  /tmp/flutter.tar.xz" | sha256sum -c -
+          tar -xf /tmp/flutter.tar.xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+          export PATH="$RUNNER_TEMP/flutter/bin:$PATH"
+          flutter --version
+          cd appbase-config-wizard/frontend
+          flutter pub get
+
+      - name: NM-4 / §18 — staging full build (unit + applicable IT), non-live per owner ruling Option B
+        id: nm4
+        if: always()
+        continue-on-error: true
+        # NOT `./build.sh --mode staging`: that mode's fixed command is `mvn clean install site -P
+        # staging-profile,appbase-config-wizard-it-profile`, and the `site` goal binds a Checkstyle
+        # *report* execution the repository's own pom.xml documents as a known latent gap --
+        # `checkstyle:check` (the gate normal CI already passes) carries an explicit
+        # resourceExcludes for generated sources, but the report binding under `site` does not
+        # inherit it, so `site` run against the full generated-sources tree finds ~429 violations
+        # nothing has caught before (found 2026-10-09, reproducing the Appbase#1138
+        # close-gate's NM-4 failure). That gap is real and tracked separately -- it is not
+        # unit/IT coverage, which is what this row actually needs to measure, so this runs the same
+        # `staging-profile` activation directly, without `site`. The Config Wizard console and
+        # Playwright ITs have dedicated jobs in this workflow, so their IT profile is deliberately
+        # omitted here while staging-profile still builds and packages the Flutter frontend.
+        # #2622 Option B (owner ruling, 2026-10-13): this row no longer brings up or depends on any
+        # live backend — it runs on its own clean runner, with none started before it.
+        run: |
+          scripts/notice-check.sh --generate
+          mvn clean install -P staging-profile
+
+      - name: Disk checkpoint and post-NM-4 toolchain/build cleanup
+        if: always()
         run: |
           python3 - <<'PY'
           import json, os

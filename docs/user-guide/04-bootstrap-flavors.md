@@ -146,6 +146,15 @@ with the application-specific `resourceConfig` and servlet context kept as they 
 
 Source: `appbase-stacktest/src/test/java/com/viveworks/appbase/stacktest/StackTestMain.java`, lines 290-297,300-307,311-327.
 
+All three servlet builders support Jersey `ResourceConfig.packages(...)` scanning on JDK 25 through
+the managed Jersey 3.1.11 runtime. Because Jersey embeds its own ASM scanner, adding a separate ASM
+dependency does not extend that support. On Java 26 or later, a builder rejects package scanning
+before constructing the Jersey servlet. The error says “Jersey package scanning is supported through
+Java 25, but this server is running on Java N” and directs you to use explicit
+`ResourceConfig.register(Class)`, a supported Java runtime, or upgraded Appbase/Jersey. Explicit
+class registration remains available on later runtimes. If Appbase cannot inspect a future Jersey
+layout safely, it fails closed with the same remedies rather than starting unverified scanning.
+
 ## Flavor: Reactor Netty
 
 The reactive face needs a `HealthCheckService` in the service container (its builder reads one). This is

@@ -23,10 +23,9 @@ have no examples here (see [Known limitations](Known-Limitations.md)).
 ./build.sh --mode compile       # refuses immediately on a JDK older than 25
 ```
 
-**Status:** EXECUTED 2026-09-26 at `db781e5cf`, on JDK 21.0.10 and Maven 3.9.11. `--help` printed
-its usage text on stderr and exited 1. `--mode compile` refused before Maven started, printing
-`ERROR: JDK 25+ required, found 21`. This proves only the preflight. It does not prove that a build
-succeeds.
+**Status:** EXECUTED 2026-09-26 at `db781e5cf` against a JDK below the required minimum. `--help`
+printed its usage text on stderr and exited 1. `--mode compile` refused before Maven started with the
+expected JDK 25+ requirement. This proves only the preflight. It does not prove that a build succeeds.
 
 ### 2. Compile the whole repository from source
 

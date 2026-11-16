@@ -21,6 +21,7 @@ package com.viveworks.appbase.bootstrap.jetty.server;
 
 import com.viveworks.appbase.bootstrap.servlet.AppbaseCoreOpenApiRegistrar;
 import com.viveworks.appbase.bootstrap.servlet.AppbaseServletRegistrar;
+import com.viveworks.appbase.bootstrap.servlet.JerseyResourceConfigCompatibility;
 import com.viveworks.appbase.bootstrap.server.AppbaseWebServer;
 import com.viveworks.appbase.bootstrap.service.AppbaseServices;
 import com.viveworks.appbase.core.AppbaseCore;
@@ -280,6 +281,11 @@ public final class JettyServletContainer implements AppbaseWebServer {
         /**
          * Sets the Jersey {@link ResourceConfig} for JAX-RS resource registration.
          * If not set, an empty {@link ResourceConfig} is used.
+         * Package scanning is supported through Java 25. On a later runtime, {@link #build()}
+         * reports {@code Jersey package scanning is supported through Java 25, but this server is
+         * running on Java N} and directs callers to use explicit
+         * {@link ResourceConfig#register(Class)}, a supported Java runtime, or upgraded
+         * Appbase/Jersey.
          *
          * @param resourceConfig the Jersey resource configuration
          * @return this builder
@@ -469,7 +475,9 @@ public final class JettyServletContainer implements AppbaseWebServer {
          *
          * @return the configured but not yet started server
          * @throws NullPointerException  if {@link #from} was not called
-         * @throws IllegalStateException if both {@link #server} and {@link #port} were called
+         * @throws IllegalStateException if both {@link #server} and {@link #port} were called, if
+         *                               package scanning is configured after Java 25, or if
+         *                               future-Jersey compatibility cannot be inspected safely
          */
         public JettyServletContainer build() {
             Objects.requireNonNull(appbaseServices,
@@ -490,6 +498,7 @@ public final class JettyServletContainer implements AppbaseWebServer {
                 AppbaseCoreOpenApiRegistrar.register(
                     rc, coreServletExcludes, coreServletPathOverrides);
             }
+            JerseyResourceConfigCompatibility.validate(rc);
             final ServletContextHandler context =
                 new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
             context.setContextPath("/");

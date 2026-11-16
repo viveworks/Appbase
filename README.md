@@ -63,6 +63,14 @@ mvn test -pl appbase-stacktest -am \
   -Dsurefire.failIfNoSpecifiedTests=false   # starts a real Reactor Netty service; no Docker needed
 ```
 
+The servlet bootstraps use Jersey 3.1.11, whose embedded ASM supports
+`ResourceConfig.packages(...)` scanning on JDK 25. On a later Java runtime, Jetty, Tomcat, and
+Undertow fail fast before startup when package scanning is configured; register resource classes
+explicitly with `ResourceConfig.register(Class)`, run on a supported Java runtime, or upgrade
+Appbase/Jersey. The failure identifies the running Java N: “Jersey package scanning is supported
+through Java 25, but this server is running on Java N.” If Appbase cannot inspect a future Jersey
+layout safely, it fails closed with the same remedies instead of starting with unverified scanning.
+
 If `rg` is missing, use the [ripgrep installation guide](https://github.com/BurntSushi/ripgrep#installation),
 or install it with `brew install ripgrep` on macOS, `sudo apt install ripgrep` on Debian/Ubuntu, or
 `winget install BurntSushi.ripgrep.MSVC` on Windows. Confirm the command name with `rg --version`.
@@ -70,8 +78,8 @@ or install it with `brew install ripgrep` on macOS, `sudo apt install ripgrep` o
 Next, generate a configuration file with `appbase-config-wizard/bin/start-console.sh` and read
 [Configuration reference](docs/Configuration-Reference.md). Whether each of these steps has actually
 been run is recorded in [Examples](docs/Examples.md). All five local examples have been EXECUTED: four
-on JDK 25, and the toolchain check on JDK 21, where it is meant to refuse. Examples that need Docker, a
-backend or external infrastructure are NOT MEASURED.
+on JDK 25, plus the minimum-JDK refusal example against an unsupported older toolchain. Examples that
+need Docker, a backend or external infrastructure are NOT MEASURED.
 
 ## Swagger UI
 

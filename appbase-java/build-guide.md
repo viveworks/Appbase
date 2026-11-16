@@ -35,6 +35,14 @@ This document provides the full reference for the Maven build system.
 
 See `CONTRIBUTING.md` for integration-test env vars and targeted Maven invocations.
 
+The managed Jersey version is 3.1.11, the first 3.1.x release whose embedded ASM 9.8 scanner reads
+JDK 25 class files. Jersey repackages ASM inside `jersey-server`, so adding or overriding an external
+`org.ow2.asm` dependency does not affect `ResourceConfig.packages(...)`. The servlet bootstraps fail
+fast on later Java runtimes when package scanning is configured. The error states that scanning is
+supported through Java 25 and that the server is running on Java N, then directs callers to use
+explicit `ResourceConfig.register(Class)`, a supported Java runtime, or upgraded Appbase/Jersey.
+If future Jersey internals cannot be inspected safely, startup fails closed with those same remedies.
+
 ---
 
 ## Build Lifecycle Goals

@@ -151,7 +151,7 @@
     "module_path": "appbase-java/appbase-bootstrap/appbase-bootstrap-servlet",
     "owning_module": "appbase-java/appbase-bootstrap/appbase-bootstrap-servlet",
     "packages": [
-      {"basis": "rule", "classification": "supported-public", "package": "com.viveworks.appbase.bootstrap.servlet", "public_members": 9, "public_type_count": 3, "public_types": ["AppbaseCoreOpenApiRegistrar", "AppbaseServletDeployment", "AppbaseServletRegistrar"], "reason": "package rule: default for a supported-public artifact", "undocumented_members": 0, "undocumented_types": 0}
+      {"basis": "rule", "classification": "supported-public", "package": "com.viveworks.appbase.bootstrap.servlet", "public_members": 10, "public_type_count": 4, "public_types": ["AppbaseCoreOpenApiRegistrar", "AppbaseServletDeployment", "AppbaseServletRegistrar", "JerseyResourceConfigCompatibility"], "reason": "package rule: default for a supported-public artifact", "undocumented_members": 0, "undocumented_types": 0}
     ],
     "reactor_profile": null,
     "support": "supported-public",
