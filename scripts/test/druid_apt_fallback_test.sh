@@ -31,7 +31,11 @@ printf '%s\n' \
   '    partial) if grep -q snapshot.debian.org "$APT_SOURCES_FILE"; then echo "Failed to fetch snapshot index: Connection timed out" >&2; exit 0; fi ;;' \
   '    http404) if grep -q snapshot.debian.org "$APT_SOURCES_FILE"; then echo "Failed to fetch snapshot index: 404 Not Found" >&2; exit 100; fi ;;' \
   '    signature) echo "The following signatures were invalid: NO_PUBKEY fixture" >&2; exit 100 ;;' \
+  '    deadline-global) if [[ "$*" == *update* ]]; then echo "Failed to fetch index: Connection timed out" >&2; exit 100; fi ;;' \
   '  esac' \
+  'fi' \
+  'if [[ "$APT_MODE" == deadline-source && "$*" == *install* && "$*" == *openjdk-11-jdk* ]] && grep -q snapshot.debian.org "$APT_SOURCES_FILE"; then' \
+  '  echo "Failed to fetch primary package: Connection timed out" >&2; exit 100' \
   'fi' \
   'if [[ "$*" == *install* && ( "$APT_MODE" == archive-java-order || "$APT_MODE" == snapshot-java-order ) ]]; then' \
   '  if [[ "$*" == *openjdk-11-jre-headless* ]]; then : > "$APT_LISTS_DIR/java-security-ready"; fi' \
@@ -55,21 +59,41 @@ printf '%s\n' \
 chmod +x "$TMP/bin/apt-get"
 printf '%s\n' \
   '#!/usr/bin/env bash' \
-  'printf "%s\\n" "$*" >> "$APT_TIMEOUT_LOG"' \
+  'original_args="$*"' \
+  'printf "%s|%s\\n" "$(tr "\\n" ";" < "$APT_SOURCES_FILE")" "$original_args" >> "$APT_TIMEOUT_LOG"' \
   'while [[ "$1" == --* ]]; do shift; done' \
-  'shift' \
+  'duration="$1"; shift' \
+  'if [[ "$APT_MODE" == deadline-source ]]; then' \
+  '  if grep -q snapshot.debian.org "$APT_SOURCES_FILE"; then' \
+  '    case "$original_args" in *" update "*) advance=2 ;; *"openjdk-11-jdk"*) advance="${duration%s}" ;; *" install "*) advance=2 ;; *) advance=0 ;; esac' \
+  '  else advance=0; fi' \
+  'elif [[ "$APT_MODE" == deadline-global ]]; then' \
+  '  advance="${duration%s}"' \
+  'else advance=0; fi' \
+  'if [[ "$advance" -gt 0 ]]; then now="$(cat "$APT_CLOCK_FILE")"; printf "%s\\n" "$((now + advance))" > "$APT_CLOCK_FILE"; fi' \
   'exec "$@"' > "$TMP/bin/timeout"
 chmod +x "$TMP/bin/timeout"
+printf '%s\n' \
+  '#!/usr/bin/env bash' \
+  'if [[ "$1" == +%s ]]; then cat "$APT_CLOCK_FILE"; else exec /bin/date "$@"; fi' > "$TMP/bin/date"
+chmod +x "$TMP/bin/date"
 
 run_case() {
   local mode="$1" case_dir="$TMP/$1"
+  local source_timeout=240 total_timeout=900
+  case "$mode" in
+    deadline-source) source_timeout=10; total_timeout=100 ;;
+    deadline-global) source_timeout=8; total_timeout=10 ;;
+  esac
   mkdir -p "$case_dir/lists"
   : > "$case_dir/lists/stale-before-first-update"
   : > "$case_dir/calls"
   : > "$case_dir/timeouts"
+  printf '%s\n' 1000 > "$case_dir/clock"
   env PATH="$TMP/bin:$PATH" APT_MODE="$mode" APT_CALL_LOG="$case_dir/calls" \
-    APT_TIMEOUT_LOG="$case_dir/timeouts" \
+    APT_TIMEOUT_LOG="$case_dir/timeouts" APT_CLOCK_FILE="$case_dir/clock" \
     APT_SOURCES_FILE="$case_dir/sources.list" APT_LISTS_DIR="$case_dir/lists" APT_RETRY_SLEEP_SECONDS=0 \
+    APT_SOURCE_TIMEOUT_SECONDS="$source_timeout" APT_TOTAL_TIMEOUT_SECONDS="$total_timeout" \
     "$INSTALLER" "${EXPECTED_PACKAGES[@]}"
 }
 
@@ -202,6 +226,38 @@ else
   bad "Java package rotation into archive skipped the required headless bootstrap"
 fi
 
+# test_AC2929_1_source_deadline_spans_all_phases
+if run_case deadline-source >/dev/null 2>&1 \
+    && primary_timeout_limits="$(grep snapshot.debian.org "$TMP/deadline-source/timeouts" \
+      | sed -E 's/.*\|[^|]* ([0-9]+)s .*/\1/' | paste -sd, -)" \
+    && grep -q 'snapshot.debian.org.* update ' "$TMP/deadline-source/calls" \
+    && [[ "$(grep -c 'snapshot.debian.org.* install ' "$TMP/deadline-source/calls")" -eq 3 ]] \
+    && grep -q 'snapshot-cloudflare.debian.org.* update ' "$TMP/deadline-source/calls" \
+    && [[ "$(grep -c 'snapshot-cloudflare.debian.org.* install ' "$TMP/deadline-source/calls")" -eq 2 ]] \
+    && ! grep -q archive.debian.org "$TMP/deadline-source/calls" \
+    && [[ "$primary_timeout_limits" == 10,8,6,4 ]] \
+    && grep -q 'snapshot-cloudflare.debian.org.*|.*10s .* update ' "$TMP/deadline-source/timeouts" \
+    && cloudflare_bootstrap_line="$(grep -n 'snapshot-cloudflare.debian.org.* install .*openjdk-11-jre-headless' "$TMP/deadline-source/calls" | cut -d: -f1)" \
+    && cloudflare_jdk_line="$(grep -n 'snapshot-cloudflare.debian.org.* install .*openjdk-11-jdk' "$TMP/deadline-source/calls" | cut -d: -f1)" \
+    && [[ -n "$cloudflare_bootstrap_line" && -n "$cloudflare_jdk_line" \
+      && "$cloudflare_bootstrap_line" -lt "$cloudflare_jdk_line" ]]; then
+  ok "one source deadline spans update and every install phase before rotating"
+else
+  bad "source deadline reset between update, base install, Java bootstrap, or JDK install"
+fi
+
+# test_AC2929_2_global_deadline_terminates_rotation
+if run_case deadline-global >/dev/null 2>&1; then
+  bad "global APT deadline expiration was accepted"
+elif [[ "$(grep -c ' update ' "$TMP/deadline-global/calls")" -eq 2 ]] \
+    && grep -q '8s .* update ' "$TMP/deadline-global/timeouts" \
+    && grep -q '2s .* update ' "$TMP/deadline-global/timeouts" \
+    && ! grep -q archive.debian.org "$TMP/deadline-global/calls"; then
+  ok "global APT deadline terminates source rotation"
+else
+  bad "global APT deadline did not cap the ordered source attempts"
+fi
+
 if run_case archive-java-order >/dev/null 2>&1 \
     && [[ "$(grep -c ' update ' "$TMP/archive-java-order/calls")" -eq 13 ]] \
     && [[ "$(grep -c 'snapshot.debian.org.* update ' "$TMP/archive-java-order/calls")" -eq 6 ]] \
@@ -259,4 +315,4 @@ else
 fi
 
 echo "druid-apt-fallback-test: $PASSED passed, $FAILED failed"
-[[ "$FAILED" -eq 0 && "$PASSED" -eq 16 ]]
+[[ "$FAILED" -eq 0 && "$PASSED" -eq 18 ]]

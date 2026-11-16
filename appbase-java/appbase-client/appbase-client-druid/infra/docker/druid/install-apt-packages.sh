@@ -46,6 +46,16 @@ APT_OPTIONS=(-o Acquire::Check-Valid-Until=false -o Acquire::Retries=5)
 UPDATE_LOG="$(mktemp)"
 trap 'rm -f -- "$UPDATE_LOG"' EXIT
 APT_TOTAL_DEADLINE_EPOCH=$(( $(date +%s) + APT_TOTAL_TIMEOUT_SECONDS ))
+APT_SOURCE_DEADLINE_EPOCH=0
+
+start_source_deadline() {
+  local now
+  now="$(date +%s)"
+  APT_SOURCE_DEADLINE_EPOCH=$(( now + APT_SOURCE_TIMEOUT_SECONDS ))
+  if [[ "$APT_SOURCE_DEADLINE_EPOCH" -gt "$APT_TOTAL_DEADLINE_EPOCH" ]]; then
+    APT_SOURCE_DEADLINE_EPOCH="$APT_TOTAL_DEADLINE_EPOCH"
+  fi
+}
 
 write_sources() {
   printf '%s\n' "$1" > "$APT_SOURCES_FILE"
@@ -84,14 +94,10 @@ has_transport_failure() {
 # Return 0 for a complete signed index refresh, 10 for an exhausted transport outage (the only
 # condition that may choose another mirror), and 20 for metadata/signature/ordinary APT failures.
 update_with_bounded_retries() {
-  local label="$1" attempt rc now remaining sleep_seconds source_deadline
-  source_deadline=$(( $(date +%s) + APT_SOURCE_TIMEOUT_SECONDS ))
-  if [[ "$source_deadline" -gt "$APT_TOTAL_DEADLINE_EPOCH" ]]; then
-    source_deadline="$APT_TOTAL_DEADLINE_EPOCH"
-  fi
+  local label="$1" attempt rc now remaining sleep_seconds
   for ((attempt = 1; attempt <= APT_RETRY_ATTEMPTS; attempt++)); do
     now="$(date +%s)"
-    remaining=$(( source_deadline - now ))
+    remaining=$(( APT_SOURCE_DEADLINE_EPOCH - now ))
     if [[ "$remaining" -le 0 ]]; then
       echo "Druid $label APT transport retry window exhausted" >&2
       return 10
@@ -128,7 +134,7 @@ update_with_bounded_retries() {
     if [[ "$attempt" -lt "$APT_RETRY_ATTEMPTS" ]]; then
       echo "Druid $label APT transport failure (attempt $attempt/$APT_RETRY_ATTEMPTS); retrying" >&2
       now="$(date +%s)"
-      remaining=$(( source_deadline - now ))
+      remaining=$(( APT_SOURCE_DEADLINE_EPOCH - now ))
       [[ "$remaining" -gt 0 ]] || return 10
       sleep_seconds="$APT_RETRY_SLEEP_SECONDS"
       if [[ "$sleep_seconds" -gt "$remaining" ]]; then
@@ -143,15 +149,11 @@ update_with_bounded_retries() {
 }
 
 install_with_bounded_retries() {
-  local label="$1" attempt rc now remaining sleep_seconds source_deadline
+  local label="$1" attempt rc now remaining sleep_seconds
   shift
-  source_deadline=$(( $(date +%s) + APT_SOURCE_TIMEOUT_SECONDS ))
-  if [[ "$source_deadline" -gt "$APT_TOTAL_DEADLINE_EPOCH" ]]; then
-    source_deadline="$APT_TOTAL_DEADLINE_EPOCH"
-  fi
   for ((attempt = 1; attempt <= APT_RETRY_ATTEMPTS; attempt++)); do
     now="$(date +%s)"
-    remaining=$(( source_deadline - now ))
+    remaining=$(( APT_SOURCE_DEADLINE_EPOCH - now ))
     if [[ "$remaining" -le 0 ]]; then
       echo "Druid $label APT package transport retry window exhausted" >&2
       return 10
@@ -191,7 +193,7 @@ install_with_bounded_retries() {
     fi
     if [[ "$attempt" -lt "$APT_RETRY_ATTEMPTS" ]]; then
       now="$(date +%s)"
-      remaining=$(( source_deadline - now ))
+      remaining=$(( APT_SOURCE_DEADLINE_EPOCH - now ))
       [[ "$remaining" -gt 0 ]] || return 10
       echo "Druid $label APT package transport failure (attempt $attempt/$APT_RETRY_ATTEMPTS); retrying with --fix-missing" >&2
       sleep_seconds="$APT_RETRY_SLEEP_SECONDS"
@@ -207,8 +209,9 @@ install_with_bounded_retries() {
 }
 
 # A signed index refresh can succeed while that same host later times out serving package objects.
-# Give each ordered source its own bounded package window; only exhausted transport failures may
-# advance to the next source, which is always independently refreshed and signature-verified first.
+# Give each ordered source one bounded window spanning its index refresh and every install phase;
+# only exhausted transport failures may advance to the next source, which is always independently
+# refreshed and signature-verified first.
 advance_source_after_transport() {
   local next_source next_sources rc
   while true; do
@@ -228,6 +231,7 @@ advance_source_after_transport() {
     esac
     selected_source="$next_source"
     write_sources "$next_sources"
+    start_source_deadline
     if update_with_bounded_retries "$selected_source"; then
       echo "Druid APT source selected: $selected_source" >&2
       return 0
@@ -276,6 +280,7 @@ install_java_with_source_rotation() {
 }
 
 write_sources "$SNAPSHOT_SOURCES"
+start_source_deadline
 if update_with_bounded_retries snapshot; then
   snapshot_rc=0
 else
@@ -286,6 +291,7 @@ case "$snapshot_rc" in
   10)
     echo "Druid primary immutable snapshot is unavailable; trying the pinned Cloudflare mirror" >&2
     write_sources "$SNAPSHOT_CLOUDFLARE_SOURCES"
+    start_source_deadline
     if update_with_bounded_retries snapshot-cloudflare; then
       cloudflare_rc=0
     else
@@ -296,6 +302,7 @@ case "$snapshot_rc" in
       10)
         echo "Druid immutable snapshot mirrors are unavailable; using signed final Buster archive indexes" >&2
         write_sources "$ARCHIVE_SOURCES"
+        start_source_deadline
         if update_with_bounded_retries archive; then
           archive_rc=0
         else
