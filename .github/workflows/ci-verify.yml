@@ -466,6 +466,8 @@ jobs:
         # in case that internal bound itself ever fails to fire, and it is also what the cumulative
         # budget check below sums over.
         timeout-minutes: 35
+        env:
+          STACKTEST_JAVA_RELEASE: "21"
         run: .github/scripts/stacktest-live-runner.sh install
       - name: Live product gate
         # Vitess's readiness/outage-restoration path has a documented hang history (internal work item 2749/internal work item 2788).

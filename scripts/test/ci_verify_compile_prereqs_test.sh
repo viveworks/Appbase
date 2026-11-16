@@ -38,6 +38,21 @@ has_offline_full_history() {
   [[ "$(grep -Fxc '          fetch-depth: 0' <<< "$checkout_step")" -eq 1 ]]
 }
 
+has_stacktest_java_release() {
+  local section build_step
+  section="$(awk '
+    /^  stacktest:$/ { inside = 1; next }
+    inside && /^  [a-zA-Z0-9_-]+:$/ { exit }
+    inside { print }
+  ' "$1")"
+  build_step="$(awk '
+    $0 == "      - name: Build StackTestMain" { capture = 1 }
+    capture && seen && /^      - name:/ { exit }
+    capture { print; seen = 1 }
+  ' <<< "$section")"
+  [[ "$(grep -Fxc '          STACKTEST_JAVA_RELEASE: "21"' <<< "$build_step")" -eq 1 ]]
+}
+
 if ! has_compile_ripgrep "$WORKFLOW"; then
   echo 'FAIL maven-compile must install and verify ripgrep before build.sh' >&2
   exit 1
@@ -63,4 +78,16 @@ if has_offline_full_history "$TMP/shallow-offline.yml"; then
   exit 1
 fi
 
-echo 'ci-verify-compile-prereqs-test: 4 passed, 0 failed'
+if ! has_stacktest_java_release "$WORKFLOW"; then
+  echo 'FAIL stacktest build must compile the reactor for its guarded Java 21 runtime' >&2
+  exit 1
+fi
+
+sed 's/STACKTEST_JAVA_RELEASE: "21"/STACKTEST_JAVA_RELEASE: "25"/' \
+  "$WORKFLOW" > "$TMP/wrong-stacktest-release.yml"
+if has_stacktest_java_release "$TMP/wrong-stacktest-release.yml"; then
+  echo 'FAIL wrong StackTest Java release mutation was accepted' >&2
+  exit 1
+fi
+
+echo 'ci-verify-compile-prereqs-test: 6 passed, 0 failed'
