@@ -51,7 +51,7 @@ The server binds to **127.0.0.1 only** and has **no authentication**. It is a lo
 never expose it. If the port is busy it tries the next ones. The jar's `web` command supports
 `--root <dir>` to limit which directory it may read and write (default: the current directory), but
 `start-web.sh` does not forward that option. To use it, run
-`java -jar appbase-config-wizard/target/appbase-config-wizard-1.0.0-SNAPSHOT.jar web --root <dir>`.
+`java -jar appbase-config-wizard/target/appbase-config-wizard-1.0.0.jar web --root <dir>`.
 
 ⚠️ Starting `start-web.sh` **without** the frontend build above gives a server with a blank page (see
 [known divergences](known-divergences.md)).

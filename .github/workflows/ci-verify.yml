@@ -447,7 +447,7 @@ jobs:
         timeout-minutes: 5
         with:
           distribution: temurin
-          java-version: '25'
+          java-version: '21'
       - name: Build local StackTest infrastructure images
         timeout-minutes: 20
         run: |
@@ -803,12 +803,12 @@ jobs:
           cd "$GITHUB_WORKSPACE/appbase-config-wizard"
           mkdir -p target/classes/static/web
           cp -r frontend/build/web/. target/classes/static/web/
-          jar --update --file=target/appbase-config-wizard-1.0.0-SNAPSHOT.jar -C target/classes static/web
+          jar --update --file=target/appbase-config-wizard-1.0.0.jar -C target/classes static/web
       - name: jshell diagnostic — ConstSamplerConfiguration naming, plain vs configured mapper
         if: github.event.inputs.l10_jshell_diagnostic == 'true'
         working-directory: appbase-config-wizard
         run: |
-          jshell --class-path target/appbase-config-wizard-1.0.0-SNAPSHOT.jar -q <<'JSHELL'
+          jshell --class-path target/appbase-config-wizard-1.0.0.jar -q <<'JSHELL'
           import com.fasterxml.jackson.databind.ObjectMapper;
           import com.viveworks.appbase.core.service.tracer.configuration.sampler.ConstSamplerConfiguration;
           import com.viveworks.appbase.core.service.tracer.configuration.sampler.JaegerSamplerConfiguration;
@@ -938,7 +938,7 @@ jobs:
           done
           mkdir -p target/classes/static/swagger-ui
           cp "$FILE" target/classes/static/swagger-ui/swagger-initializer.js
-          jar --update --file=target/appbase-config-wizard-1.0.0-SNAPSHOT.jar -C target/classes static/swagger-ui/swagger-initializer.js
+          jar --update --file=target/appbase-config-wizard-1.0.0.jar -C target/classes static/swagger-ui/swagger-initializer.js
           bash bin/start-web.sh 8080
           for i in $(seq 1 30); do curl -sf http://localhost:8080/ >/dev/null && break; sleep 1; done
           curl -sf http://localhost:8080/ >/dev/null || { echo "::error::server did not become ready within 30s (mutant run)"; exit 1; }
@@ -960,7 +960,7 @@ jobs:
           mv -f "$FILE.l11-orig" "$FILE"
           trap - EXIT INT TERM
           cp "$FILE" target/classes/static/swagger-ui/swagger-initializer.js
-          jar --update --file=target/appbase-config-wizard-1.0.0-SNAPSHOT.jar -C target/classes static/swagger-ui/swagger-initializer.js
+          jar --update --file=target/appbase-config-wizard-1.0.0.jar -C target/classes static/swagger-ui/swagger-initializer.js
           bash bin/start-web.sh 8080
           for i in $(seq 1 30); do curl -sf http://localhost:8080/ >/dev/null && break; sleep 1; done
           curl -sf http://localhost:8080/ >/dev/null || { echo "::error::server did not become ready within 30s (restored run)"; exit 1; }

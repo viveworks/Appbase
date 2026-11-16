@@ -2,7 +2,7 @@
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODULE_DIR="$(dirname "$SCRIPT_DIR")"
-JAR="$MODULE_DIR/target/appbase-config-wizard-1.0.0-SNAPSHOT.jar"
+JAR="$MODULE_DIR/target/appbase-config-wizard-1.0.0.jar"
 
 if [ ! -f "$JAR" ]; then
   echo "JAR not found — building..."

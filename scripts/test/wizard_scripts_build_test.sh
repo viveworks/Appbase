@@ -8,7 +8,7 @@
 # test sources, so appbase-client-core's test-jar is never produced — and appbase-client-clamav (pulled in
 # via appbase-bootstrap-core under -am) has a test-scoped dependency on it. Measured 2026-09-26 on
 # OpenJDK 25.0.2 from a clean Maven repo: "Could not find artifact
-# com.viveworks.appbase:appbase-client-core:jar:tests:1.0.0-SNAPSHOT". `-DskipTests` runs no tests but
+# com.viveworks.appbase:appbase-client-core:jar:tests:1.0.0". `-DskipTests` runs no tests but
 # still compiles and packages test-jars, and the same build then succeeds (1m46s, clean repo).
 #
 # WHAT THIS ASSERTS — behaviour, not script text. Each script runs from a scratch copy of the module with

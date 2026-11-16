@@ -56,7 +56,7 @@ property `<aerospike-client.version>` and the managed entry both live in the rep
     <parent>
         <groupId>com.viveworks.appbase</groupId>
         <artifactId>appbase-client</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
     <artifactId>appbase-client-<xxx></artifactId>
     <packaging>jar</packaging>

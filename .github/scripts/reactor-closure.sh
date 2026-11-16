@@ -19,11 +19,11 @@
 # appbase-service-web-oauth, a sibling module with NO dependency on appbase-core at all, which neither
 # -am nor -amd ever added. `mvn ... -pl appbase-java/appbase-core -am -amd` then failed:
 #   Could not resolve dependencies for project appbase-service-web-oauth-reactive:
-#   dependency: appbase-service-web-oauth:jar:1.0.0-SNAPSHOT (compile)
-#   prefixes: Path .../appbase-service-web-oauth-1.0.0-SNAPSHOT.jar NOT allowed from central
+#   dependency: appbase-service-web-oauth:jar:1.0.0 (compile)
+#   prefixes: Path .../appbase-service-web-oauth-1.0.0.jar NOT allowed from central
 # Reproduced with a 4-module synthetic reactor shaped exactly like that (core / service-core / web-oauth
 # / web-oauth-reactive -> {service-core, web-oauth}): `mvn -pl core -am -amd compile` fails identically
-# ("Could not find artifact ...:web-oauth:jar:1.0.0-SNAPSHOT"). This script first computes the
+# ("Could not find artifact ...:web-oauth:jar:1.0.0"). This script first computes the
 # downstream-consumer fixpoint from the ORIGINAL seeds, then computes the prerequisite fixpoint from
 # that result. It never feeds newly added prerequisites back through the consumer phase: that would
 # pull unrelated sibling consumers into the build. The result is prerequisite-closed, so Maven `-am`

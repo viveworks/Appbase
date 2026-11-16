@@ -55,7 +55,7 @@ Derive from the Tomcat POM. Mark every container-specific string with `<CONTAINE
     <parent>
         <groupId>com.viveworks.appbase</groupId>
         <artifactId>appbase-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
     <artifactId>appbase-bootstrap-<CONTAINER></artifactId>
     <name>Appbase Bootstrap <Container></name>
