@@ -66,13 +66,12 @@ package com.viveworks.appbase.core.util;
  * of the stack inside its own rootless daemon. That is the outcome P-050 exists to prevent, and the
  * mechanism to prevent it is specified but unbuilt. <b>The resolver below is correct and fully tested;
  * what is missing is every caller.</b> Registered on
- * <a href="internal work item 884">internal work item 884</a>.
+ * internal work item 884.
  *
  * <p><i>A comment asserting a wiring that does not exist is worse than no comment: it tells the next
  * reader the question has been answered.</i>
  *
  * @author Navaneeth Mysore G
- * @author Claude
  * @since 1.0.0
  */
 public final class AppbaseTestInfraProfile {
