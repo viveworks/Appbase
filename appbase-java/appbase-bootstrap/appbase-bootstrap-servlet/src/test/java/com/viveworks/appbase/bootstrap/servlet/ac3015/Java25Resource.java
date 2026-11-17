@@ -2,7 +2,7 @@
  * Copyright 2019 The original author or authors of Appbase
  *
  * This project includes software developed by the author or authors of
- * Appbase (https://github.com/navaneeth-mysore/Appbase).
+ * Appbase (https://github.com/viveworks/Appbase).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import jakarta.ws.rs.Path;
  * Java 25 resource fixture discovered by Jersey package scanning.
  *
  * @author Navaneeth Mysore G
- * @author Claude
  */
 @Path("/ac3015-java25")
 public final class Java25Resource {

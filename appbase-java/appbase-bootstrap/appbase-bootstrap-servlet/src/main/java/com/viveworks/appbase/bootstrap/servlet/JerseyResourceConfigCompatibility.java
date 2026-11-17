@@ -2,7 +2,7 @@
  * Copyright 2019 The original author or authors of Appbase
  *
  * This project includes software developed by the author or authors of
- * Appbase (https://github.com/navaneeth-mysore/Appbase).
+ * Appbase (https://github.com/viveworks/Appbase).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import java.util.Objects;
  * unsupported future Java runtime; Java 25 and earlier never enter the reflective path.
  *
  * @author Navaneeth Mysore G
- * @author Claude
  * @since 1.0.0
  */
 public final class JerseyResourceConfigCompatibility {
@@ -66,21 +65,23 @@ public final class JerseyResourceConfigCompatibility {
         if (runtimeFeature <= MAX_PACKAGE_SCAN_RUNTIME_FEATURE) {
             return;
         }
-        if (resourceConfig.getProperty(ServerProperties.PROVIDER_PACKAGES) != null
-                || hasDirectPackageScanner(resourceConfig, runtimeFeature)) {
+        if (resourceConfig.getProperty(ServerProperties.PROVIDER_PACKAGES) != null ||
+                hasDirectPackageScanner(resourceConfig, runtimeFeature))
+        {
             throw unsupportedPackageScan(runtimeFeature);
         }
     }
 
     private static boolean hasDirectPackageScanner(
-            final ResourceConfig resourceConfig, final int runtimeFeature) {
+            final ResourceConfig resourceConfig, final int runtimeFeature)
+    {
         try {
-            Object state = resourceFinderState(resourceConfig);
-            Method getResourceFinders = state.getClass().getMethod("getResourceFinders");
+            final Object state = resourceFinderState(resourceConfig);
+            final Method getResourceFinders = state.getClass().getMethod("getResourceFinders");
             if (!getResourceFinders.trySetAccessible()) {
                 throw inspectionFailure(runtimeFeature, null);
             }
-            Object resourceFinders = getResourceFinders.invoke(state);
+            final Object resourceFinders = getResourceFinders.invoke(state);
             if (!(resourceFinders instanceof Iterable<?> finders)) {
                 throw inspectionFailure(runtimeFeature, null);
             }
@@ -96,7 +97,8 @@ public final class JerseyResourceConfigCompatibility {
     }
 
     private static Object resourceFinderState(final ResourceConfig resourceConfig)
-            throws ReflectiveOperationException {
+            throws ReflectiveOperationException
+    {
         for (Field candidate : ResourceConfig.class.getDeclaredFields()) {
             try {
                 candidate.getType().getMethod("getResourceFinders");
@@ -106,7 +108,7 @@ public final class JerseyResourceConfigCompatibility {
             if (!candidate.trySetAccessible()) {
                 throw new IllegalAccessException("Jersey resource-finder state is inaccessible");
             }
-            Object state = candidate.get(resourceConfig);
+            final Object state = candidate.get(resourceConfig);
             if (state != null) {
                 return state;
             }
@@ -115,17 +117,18 @@ public final class JerseyResourceConfigCompatibility {
     }
 
     private static IllegalStateException unsupportedPackageScan(final int runtimeFeature) {
-        return new IllegalStateException("Jersey package scanning is supported through Java 25, "
-            + "but this server is running on Java " + runtimeFeature + ". Register each JAX-RS "
-            + "resource explicitly with ResourceConfig.register(Class), run on a supported Java "
-            + "runtime, or upgrade Appbase/Jersey to a version that supports this runtime.");
+        return new IllegalStateException("Jersey package scanning is supported through Java 25, " +
+            "but this server is running on Java " + runtimeFeature + ". Register each JAX-RS " +
+            "resource explicitly with ResourceConfig.register(Class), run on a supported Java " +
+            "runtime, or upgrade Appbase/Jersey to a version that supports this runtime.");
     }
 
     private static IllegalStateException inspectionFailure(
-            final int runtimeFeature, final Throwable cause) {
-        return new IllegalStateException("Appbase could not verify Jersey package-scanning "
-            + "compatibility on Java " + runtimeFeature + ". Register each JAX-RS resource "
-            + "explicitly with ResourceConfig.register(Class), run on Java 25, or upgrade "
-            + "Appbase/Jersey before starting this servlet container.", cause);
+            final int runtimeFeature, final Throwable cause)
+    {
+        return new IllegalStateException("Appbase could not verify Jersey package-scanning " +
+            "compatibility on Java " + runtimeFeature + ". Register each JAX-RS resource " +
+            "explicitly with ResourceConfig.register(Class), run on Java 25, or upgrade " +
+            "Appbase/Jersey before starting this servlet container.", cause);
     }
 }

@@ -2,7 +2,7 @@
  * Copyright 2019 The original author or authors of Appbase
  *
  * This project includes software developed by the author or authors of
- * Appbase (https://github.com/navaneeth-mysore/Appbase).
+ * Appbase (https://github.com/viveworks/Appbase).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Proves Jersey package scanning accepts classes emitted for the project's Java 25 baseline.
  *
  * @author Navaneeth Mysore G
- * @author Claude
  */
 final class Java25PackageScanningTest {
 
@@ -47,14 +46,15 @@ final class Java25PackageScanningTest {
         assertTrue(Runtime.version().feature() >= 25, "AC3015 requires Java 25 or later");
         try (InputStream classStream = Java25Resource.class
                 .getResourceAsStream("Java25Resource.class");
-                DataInputStream classData = new DataInputStream(classStream)) {
+                DataInputStream classData = new DataInputStream(classStream))
+        {
             assertEquals(0xCAFEBABE, classData.readInt());
             classData.readUnsignedShort();
             assertEquals(69, classData.readUnsignedShort(), "fixture must use Java 25 bytecode");
         }
-        List<String> warnings = new ArrayList<>();
-        Logger logger = Logger.getLogger("jersey.repackaged.org.objectweb.asm.ClassReader");
-        Handler handler = new Handler() {
+        final List<String> warnings = new ArrayList<>();
+        final Logger logger = Logger.getLogger("jersey.repackaged.org.objectweb.asm.ClassReader");
+        final Handler handler = new Handler() {
             @Override
             public void publish(final LogRecord record) {
                 warnings.add(record.getMessage());
@@ -70,7 +70,7 @@ final class Java25PackageScanningTest {
         };
         logger.addHandler(handler);
         try {
-            ResourceConfig config = new ResourceConfig().packages(getClass().getPackageName());
+            final ResourceConfig config = new ResourceConfig().packages(getClass().getPackageName());
 
             assertTrue(config.getClasses().contains(Java25Resource.class));
             assertTrue(warnings.stream()

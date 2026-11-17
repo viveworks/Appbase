@@ -2,7 +2,7 @@
  * Copyright 2019 The original author or authors of Appbase
  *
  * This project includes software developed by the author or authors of
- * Appbase (https://github.com/navaneeth-mysore/Appbase).
+ * Appbase (https://github.com/viveworks/Appbase).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Verifies the future-JDK guard distinguishes Jersey package scanning from explicit registration.
  *
  * @author Navaneeth Mysore G
- * @author Claude
  */
 final class JerseyResourceConfigCompatibilityTest {
 
@@ -39,10 +38,10 @@ final class JerseyResourceConfigCompatibilityTest {
 
     @Test
     void test_AC3015_2_directPackageScanRejectsRuntimeAfterJava25() {
-        ResourceConfig config = new ResourceConfig().packages(getClass().getPackageName());
-        ResourceConfig copiedConfig = new ResourceConfig(config);
+        final ResourceConfig config = new ResourceConfig().packages(getClass().getPackageName());
+        final ResourceConfig copiedConfig = new ResourceConfig(config);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        final IllegalStateException exception = assertThrows(IllegalStateException.class,
             () -> JerseyResourceConfigCompatibility.validate(copiedConfig, FUTURE_RUNTIME_FEATURE));
 
         assertTrue(exception.getMessage().contains("register(Class)"));
@@ -50,10 +49,10 @@ final class JerseyResourceConfigCompatibilityTest {
 
     @Test
     void test_AC3015_3_propertyPackageScanRejectsRuntimeAfterJava25() {
-        ResourceConfig config = new ResourceConfig()
+        final ResourceConfig config = new ResourceConfig()
             .property(ServerProperties.PROVIDER_PACKAGES, getClass().getPackageName());
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        final IllegalStateException exception = assertThrows(IllegalStateException.class,
             () -> JerseyResourceConfigCompatibility.validate(config, FUTURE_RUNTIME_FEATURE));
 
         assertTrue(exception.getMessage().contains("Java 26"));
@@ -61,7 +60,7 @@ final class JerseyResourceConfigCompatibilityTest {
 
     @Test
     void test_AC3015_4_explicitRegistrationRemainsSupportedAfterJava25() {
-        ResourceConfig config = new ResourceConfig().register(ExplicitResource.class);
+        final ResourceConfig config = new ResourceConfig().register(ExplicitResource.class);
 
         assertDoesNotThrow(
             () -> JerseyResourceConfigCompatibility.validate(config, FUTURE_RUNTIME_FEATURE));
