@@ -339,28 +339,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
-      - name: Offline bash infrastructure suites (bash 5)
-        # A separate macOS runner is intentionally omitted: it is not cheap, and ubuntu's /bin/bash is
-        # the same bash 5 executable used here. macOS bash 3 compatibility remains a host-only check.
-        # Excluded Docker tier: appbase_container_test.sh, appbase_container_contract_test.sh,
-        # demo_stack_{offline,ports,revision_container},
-        # devcontainer_*, graperoot_egress, mcp_{confine,confine_coverage,exercise},
-        # scheduled_supervisor, vw_{backend,frontend}_build. Darwin/launchctl suites are also excluded.
-        # container_keepalive_test.sh is excluded because it can hang until its per-suite timeout.
-        env:
-          DOCKER_HOST: unix:///nonexistent
-        # offline-allowlist:begin
-        run: >-
-          scripts/run-suites.sh --timeout 900
-          aerospike_container_contract_test.sh appbase_container_login_test.sh
-          appbase_test_resource_bootstrap_test.sh appbase_topology_access_test.sh
-          checkstyle_baseline_ratchet_test.sh ci_changed_modules_test.sh
-          ci_release_rehearsal_test.sh ci_verify_compile_prereqs_test.sh
-          epic1137_live_adapter_campaign_test.sh epic1137_stacktest_f1_test.sh
-          epic1138_close_gate_test.sh
-          jersey_resource_config_compatibility_wiring_test.sh
-          lens6_doc_contract_test.sh
-        # offline-allowlist:end
+      - name: Public offline product contracts
+        run: |
+          set -euo pipefail
+          for suite in             aerospike_container_contract_test.sh             checkstyle_baseline_ratchet_test.sh             ci_release_rehearsal_test.sh             ci_verify_compile_prereqs_test.sh; do
+            timeout 900 bash "scripts/test/$suite"
+          done
       - name: Stacktest acceptance static guards (#2537)
         id: static-acceptance
         continue-on-error: true
@@ -374,10 +358,11 @@ jobs:
           STATIC_OUTCOME: ${{ steps.static-acceptance.outcome }}
           TESTED_SHA: ${{ steps.verify-sha.outputs.tested_sha }}
         run: |
-          set -euo pipefail
-          for suite in             aerospike_container_contract_test.sh             checkstyle_baseline_ratchet_test.sh             ci_release_rehearsal_test.sh             ci_verify_compile_prereqs_test.sh; do
-            timeout 900 bash "scripts/test/$suite"
-          done
+          echo "result=$STATIC_OUTCOME" >> "$GITHUB_OUTPUT"
+          echo "tested_sha=$TESTED_SHA" >> "$GITHUB_OUTPUT"
+      - name: Enforce stacktest static acceptance result
+        if: steps.static-acceptance.outcome != 'success'
+        run: exit 1
   config-wizard-console:
     needs: changed-modules
     if: needs.changed-modules.outputs.run_console_suite == 'true'
@@ -1106,152 +1091,34 @@ jobs:
           RUN_HOSTED: ${{ needs.changed-modules.outputs.run_hosted_tiers }}
           RUN_SHELL: ${{ needs.changed-modules.outputs.run_shell_suites }}
           RUN_CONSOLE: ${{ needs.changed-modules.outputs.run_console_suite }}
-          RUN_UNIT: ${{ needs.changed-modules.outputs.run_unit_tests }}
-          RUN_HOSTED_TIERS: ${{ needs.changed-modules.outputs.run_hosted_tiers }}
-          RUN_RELEASE_REHEARSAL: >-
-            ${{ github.event_name == 'workflow_dispatch' &&
-                github.event.inputs.run_release_rehearsal == 'true' }}
-          ISOLATED_CAMPAIGN_SCOPE: >-
-            ${{ github.event_name == 'workflow_dispatch' &&
-                (github.event.inputs.run_l04_kafka_zookeeper == 'true' ||
-                 github.event.inputs.run_l04_kafka_mutation_control == 'true' ||
-                 github.event.inputs.run_release_rehearsal == 'true' ||
-                 github.event.inputs.run_l10_config_wizard_playwright == 'true' ||
-                 github.event.inputs.run_epic_close_gate == 'true') }}
-          CONSOLE_READY: ${{ needs.config-wizard-console.outputs.prompt_fix_ready }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          ATTEMPT: ${{ github.run_attempt }}
-          CHANGED_RESULT: ${{ needs.changed-modules.result }}
-          COMPILE_RESULT: ${{ needs.maven-compile.result }}
-          INVENTORY_RESULT: ${{ needs.api-inventory.result }}
-          UNIT_RESULT: ${{ needs.maven-unit-tests.result }}
-          SHELL_RESULT: ${{ needs.offline-shell-suites.result }}
-          CONSOLE_RESULT: ${{ needs.config-wizard-console.result }}
-          RELEASE_REHEARSAL_RESULT: ${{ needs.release-profile-rehearsal.result }}
-          COMPILE_TESTED_SHA: ${{ needs.maven-compile.outputs.tested_sha }}
-          UNIT_TESTED_SHA: ${{ needs.maven-unit-tests.outputs.tested_sha }}
-          SHELL_TESTED_SHA: ${{ needs.offline-shell-suites.outputs.tested_sha }}
-          STATIC_ACCEPTANCE_RESULT: ${{ needs.offline-shell-suites.outputs.static_acceptance_result }}
-          STATIC_ACCEPTANCE_TESTED_SHA: ${{ needs.offline-shell-suites.outputs.static_acceptance_tested_sha }}
-          CONSOLE_TESTED_SHA: ${{ needs.config-wizard-console.outputs.tested_sha }}
-          RELEASE_REHEARSAL_TESTED_SHA: ${{ needs.release-profile-rehearsal.outputs.tested_sha }}
+          RUN_EMULATOR: ${{ needs.changed-modules.outputs.run_emulator }}
+          RUN_STACKTEST: ${{ needs.changed-modules.outputs.run_stacktest }}
+          RUN_L04: ${{ github.event.inputs.run_l04_kafka_zookeeper || 'false' }}
+          RUN_RELEASE: ${{ github.event.inputs.run_release_rehearsal || 'false' }}
+          RUN_L10: ${{ github.event.inputs.run_l10_config_wizard_playwright || 'false' }}
         run: |
-          set -euo pipefail
-          if [[ "$MODULES" == ALL ]]; then
-            cmd='./build.sh --mode compile'
-            if [[ "$RUN_UNIT" == true ]]; then
-              unit_cmd='mvn -B -fae test -Dsurefire.timeout=480'
-            else
-              unit_cmd='(not run — hosted test tiers were not opted in)'
-            fi
-          elif [[ "$MODULES" == NONE ]]; then
-            cmd='(none — no Java or pom.xml change)'
-            unit_cmd='(none — no Java or pom.xml change)'
-          else
-            cmd='mvn -q clean test-compile -pl <modules> -am -amd'
-            unit_cmd='mvn -B -fae test -pl <modules> -am -amd -Dsurefire.timeout=480'
-          fi
-          compile_receipt_result="$COMPILE_RESULT"
-          unit_receipt_result="$UNIT_RESULT"
-          shell_receipt_result="$SHELL_RESULT"
-          static_acceptance_receipt_result="${STATIC_ACCEPTANCE_RESULT:-$SHELL_RESULT}"
-          skip_reason='SKIPPED — local evidence per owner ruling A — NOT_VERIFIED'
-          if [[ "$ISOLATED_CAMPAIGN_SCOPE" == true ]]; then
-            skip_reason='SKIPPED — outside isolated campaign scope — NOT_APPLICABLE'
-          fi
-          [[ "$COMPILE_RESULT" == skipped ]] && compile_receipt_result="$skip_reason"
-          if [[ "$UNIT_RESULT" == skipped && "$MODULES" == ALL && "$RUN_UNIT" == false ]]; then
-            unit_receipt_result="$skip_reason"
-          elif [[ "$UNIT_RESULT" == skipped ]]; then
-            unit_receipt_result="$skip_reason"
-          fi
-          unit_explanation=''
-          if [[ "$UNIT_RESULT" == cancelled ]]; then
-            unit_receipt_result='FAIL — cancelled before completion'
-            unit_explanation='The unit job was cancelled before Maven/Surefire could produce a complete result.'
-          fi
-          [[ "$SHELL_RESULT" == skipped ]] && shell_receipt_result="$skip_reason"
-          [[ "$SHELL_RESULT" == skipped ]] && static_acceptance_receipt_result="$skip_reason"
-          if [[ "$RUN_CONSOLE" == true && "$CONSOLE_RESULT" == success && "$CONSOLE_READY" == false ]]; then
-            console_cmd='ADVISORY SKIP — #1302 prompt fixes not present'
-            console_receipt_result=ADVISORY_SKIP
-          else
-            console_cmd='python -m pytest -v appbase-config-wizard/test/console'
-            console_receipt_result="$CONSOLE_RESULT"
-          fi
-          [[ "$CONSOLE_RESULT" == skipped ]] && console_receipt_result="$skip_reason"
-          if [[ "$RUN_RELEASE_REHEARSAL" == true ]]; then
-            release_rehearsal_receipt_result="$RELEASE_REHEARSAL_RESULT"
-          else
-            release_rehearsal_receipt_result='SKIPPED — explicit release rehearsal not requested — NOT_APPLICABLE'
-          fi
-          verdict_output="$(.github/scripts/ci-verify-verdict.sh)" || verdict_rc=$?
-          verdict_rc="${verdict_rc:-0}"
-          verdict="$(sed -n 's/^verdict=//p' <<<"$verdict_output")"
-          tested_sha="$(sed -n 's/^tested_sha=//p' <<<"$verdict_output")"
-          tier_tested_shas="$(sed -n 's/^tier_tested_shas=//p' <<<"$verdict_output")"
-          if [[ "$INVENTORY_RESULT" != success ]]; then
-            verdict=FAIL
-            verdict_rc=1
-          fi
-          {
-            echo '## CI receipt draft (advisory)'
-            echo '```'
-            echo '<!-- VIVEWORKS_CI_RECEIPT v1 (draft) -->'
-            echo "CI-RECEIPT repo=$REPO pr=$PR event=$EVENT"
-            echo "head_sha=$HEAD_SHA   tested_sha=$tested_sha   tree=$TREE"
-            echo "$tier_tested_shas"
-            echo "base_ref=$BASE_REF    base_sha=$BASE_SHA"
-            echo "run=$RUN_URL  attempt=$ATTEMPT"
-            echo "workflow=.github/workflows/ci-verify.yml@$WORKFLOW_BLOB"
-            echo "script=.github/scripts/changed-modules.sh@$CHANGED_MODULES_BLOB"
-            echo "script=.github/scripts/verify-head.sh@$VERIFY_HEAD_BLOB"
-            echo "script=.github/scripts/require-test-count.py@$REQUIRE_TEST_COUNT_BLOB"
-            echo "script=.github/scripts/ci-verify-verdict.sh@$VERDICT_BLOB"
-            echo "script=.github/scripts/ci-verify-scope.sh@$SCOPE_BLOB"
-            echo "selector_modified_by_pr=$SELECTOR_MODIFIED_BY_PR"
-            echo "runner=ubuntu-24.04 image_version=${ImageVersion:-unknown}"
-            echo "toolchain: java=temurin-25 (see maven-compile 'Toolchain' step)"
-            echo "modules=$MODULES"
-            echo "| gate | command | result |"
-            echo "| changed-modules | .github/scripts/changed-modules.sh (tested_sha=$HEAD_SHA) | $CHANGED_RESULT |"
-            echo "| maven-compile | $cmd (tested_sha=${COMPILE_TESTED_SHA:-SKIPPED}) | $compile_receipt_result |"
-            echo "| api-inventory | bash scripts/api-inventory-fast-check.sh; bash scripts/test/inventory_test.sh | $INVENTORY_RESULT |"
-            echo "| maven-unit-tests | $unit_cmd (tested_sha=${UNIT_TESTED_SHA:-SKIPPED}) | $unit_receipt_result |"
-            [[ -z "$unit_explanation" ]] || echo "| maven-unit-tests explanation | $unit_explanation | FAIL |"
-            echo "| offline-shell-suites | scripts/run-suites.sh --timeout 900 <offline-allowlist> (tested_sha=${SHELL_TESTED_SHA:-SKIPPED}) | $shell_receipt_result |"
-            echo "| stacktest-static-acceptance | python3 -B -m unittest scripts.tests.test_AC2537_stacktest_coverage_matrix -v (tested_sha=${STATIC_ACCEPTANCE_TESTED_SHA:-SKIPPED}) | $static_acceptance_receipt_result |"
-            echo "| config-wizard-console | $console_cmd (tested_sha=${CONSOLE_TESTED_SHA:-SKIPPED}) | $console_receipt_result |"
-            echo "| release-profile-rehearsal | whole compile; release:prepare dry-run; release:clean (tested_sha=${RELEASE_REHEARSAL_TESTED_SHA:-SKIPPED}) | $release_rehearsal_receipt_result |"
-            echo "verdict=$verdict   discharges=[] (advisory shadow; not a discharge until the owner rules)"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-          exit "$verdict_rc"
-
-  # Appbase#1138 / #2550 hosted close-gate (#2550 NM-4, NM-5, NM-6, NM-7b and protocol §18).
-  # Deliberately independent of every job above: none of these five jobs read or set
-  # changed-modules outputs, and their OWN `if:` is the only gate that can start them, so they can
-# never be reached by a dispatch without its explicit input, and they are not part of the
-# ordinary verification tiers. This is the one-per-epic hosted evidence run CI
-  # budget §9 describes, not a routine tier: EA-Super/the owner authorizes each dispatch.
-  #
-  # #2622 job split: a single combined runner exhausted disk pulling Vitess+Druid's BuildKit base
-  # images alongside the other five backends plus the staging reactor build (`no space left on
-  # device` at 72G/32M/100%, run 38411023864). Split into six jobs, each on its own clean runner:
-  #   - epic-close-light-live: Postgres/ZooKeeper/Aerospike/Elasticsearch/Firebase/S3/Redis, then
-  #     NM-6 and NM-7b (the two measurements that only need this set).
-  #   - epic-close-heavy-live: Postgres/ZooKeeper/Druid/Vitess — the two heavy-footprint services,
-  #     alone, so BuildKit has the full runner's disk to itself.
-  #   - epic-close-full-live: all backends plus a real StackTestMain run, isolated from the other
-  #     measurements so the full runtime path is proven without recreating the disk collision.
-  #   - epic-close-staging: NM-4/§18, redefined per owner ruling (Option B, 2026-10-13) as the
-  #     non-live full reactor/staging build; it no longer depends on any live backend.
-  #   - epic-close-nm5: the live-router "/admin" probe, using StackTestMain's `--path-probe-only`
-  #     mode (no data backends constructed) — also no longer depends on either live job.
-  #   - epic-close-rollup: depends on all five measurement jobs; fails closed unless every one's
-  #     result is exactly `success` at the same dispatched head. `continue-on-error` on measurement
-  #     steps inside each job is collection-only: it lets that job's own rows produce diagnostics;
-  #     the rollup enforces them across all five jobs.
+          python3 - <<'PY'
+          import json, os
+          needs = json.loads(os.environ['NEEDS_JSON'])
+          selected = {
+              'changed-modules': True,
+              'api-inventory': True,
+              'maven-compile': os.environ['RUN_HOSTED'] == 'true',
+              'maven-unit-tests': os.environ['RUN_HOSTED'] == 'true',
+              'offline-shell-suites': os.environ['RUN_SHELL'] == 'true',
+              'config-wizard-console': os.environ['RUN_CONSOLE'] == 'true',
+              'emulator': os.environ['RUN_EMULATOR'] == 'true',
+              'stacktest': os.environ['RUN_STACKTEST'] == 'true',
+              'live-l04-kafka-zookeeper': os.environ['RUN_L04'] == 'true',
+              'release-profile-rehearsal': os.environ['RUN_RELEASE'] == 'true',
+              'live-l10-config-wizard-playwright': os.environ['RUN_L10'] == 'true',
+          }
+          failed = {name: data['result'] for name, data in needs.items()
+                    if data['result'] != ('success' if selected[name] else 'skipped')}
+          if failed:
+              raise SystemExit('public CI failure: ' + repr(failed))
+          print('public CI projection completed:', ', '.join(sorted(needs)))
+          PY
   epic-close-light-live:
     if: github.event_name == 'workflow_dispatch' && inputs.run_epic_close_gate == true
     runs-on: ubuntu-24.04
