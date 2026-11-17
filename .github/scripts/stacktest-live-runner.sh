@@ -9,15 +9,15 @@ mkdir -p "$STACKTEST_LOG_ROOT"
 require_stacktest_java_runtime() {
   local java_properties java_spec_values java_spec_version value_count
   if ! java_properties="$(java -XshowSettings:properties -version 2>&1)"; then
-    echo "::error::StackTestMain requires java.specification.version=21; Java runtime inspection failed" >&2
+    echo "::error::StackTestMain requires java.specification.version=25; Java runtime inspection failed" >&2
     return 1
   fi
 
   java_spec_values="$(awk 'NF == 3 && $1 == "java.specification.version" && $2 == "=" { print $3 }' <<<"$java_properties")"
   value_count="$(awk 'NF { count++ } END { print count + 0 }' <<<"$java_spec_values")"
   java_spec_version="$(awk 'NF { print; exit }' <<<"$java_spec_values")"
-  if [[ "$value_count" != 1 || "$java_spec_version" != 21 ]]; then
-    echo "::error::StackTestMain requires java.specification.version=21; found '${java_spec_values:-missing}'" >&2
+  if [[ "$value_count" != 1 || "$java_spec_version" != 25 ]]; then
+    echo "::error::StackTestMain requires java.specification.version=25; found '${java_spec_values:-missing}'" >&2
     return 1
   fi
 }
@@ -81,13 +81,8 @@ run_green() {
 }
 
 install_stacktest() {
-  local -a release_args=()
-  if [[ -n "${STACKTEST_JAVA_RELEASE:-}" ]]; then
-    release_args+=("-Djdk.version=${STACKTEST_JAVA_RELEASE}")
-  fi
   (cd "$STACKTEST_ROOT" && timeout --signal=TERM --kill-after=30s 30m mvn -q -B -ntp \
-    -pl appbase-stacktest -am install -DskipTests -Dcheckstyle.skip=true -Dexec.skip=true \
-    "${release_args[@]}")
+    -pl appbase-stacktest -am install -DskipTests -Dcheckstyle.skip=true -Dexec.skip=true)
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

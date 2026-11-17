@@ -20,6 +20,7 @@ package com.viveworks.appbase.bootstrap.undertow.server;
 
 import com.viveworks.appbase.bootstrap.servlet.AppbaseCoreOpenApiRegistrar;
 import com.viveworks.appbase.bootstrap.servlet.AppbaseServletRegistrar;
+import com.viveworks.appbase.bootstrap.servlet.JerseyResourceConfigCompatibility;
 import com.viveworks.appbase.bootstrap.server.AppbaseWebServer;
 import com.viveworks.appbase.bootstrap.service.AppbaseServices;
 import com.viveworks.appbase.core.AppbaseRuntimeException;
@@ -201,6 +202,11 @@ public final class UndertowServletContainer implements AppbaseWebServer {
         /**
          * Sets the Jersey {@link ResourceConfig} for JAX-RS resource registration.
          * If not set, an empty {@link ResourceConfig} is used.
+         * Package scanning is supported through Java 25. On a later runtime, {@link #build()}
+         * reports {@code Jersey package scanning is supported through Java 25, but this server is
+         * running on Java N} and directs callers to use explicit
+         * {@link ResourceConfig#register(Class)}, a supported Java runtime, or upgraded
+         * Appbase/Jersey.
          *
          * @param resourceConfig the Jersey resource configuration
          * @return this builder
@@ -261,6 +267,8 @@ public final class UndertowServletContainer implements AppbaseWebServer {
          *
          * @return the configured, not yet started, server
          * @throws NullPointerException     if {@link #from} was not called
+         * @throws IllegalStateException    if package scanning is configured after Java 25, or if
+         *                                  future-Jersey compatibility cannot be inspected safely
          * @throws AppbaseRuntimeException  if deployment or Undertow construction fails
          */
         public UndertowServletContainer build() {
@@ -270,6 +278,7 @@ public final class UndertowServletContainer implements AppbaseWebServer {
             if (coreServlets && coreOpenApi) {
                 AppbaseCoreOpenApiRegistrar.register(rc);
             }
+            JerseyResourceConfigCompatibility.validate(rc);
 
             final DeploymentInfo info = Servlets.deployment()
                 .setClassLoader(UndertowServletContainer.class.getClassLoader())

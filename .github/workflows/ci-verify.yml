@@ -345,6 +345,8 @@ jobs:
           for suite in             aerospike_container_contract_test.sh             checkstyle_baseline_ratchet_test.sh             ci_release_rehearsal_test.sh             ci_verify_compile_prereqs_test.sh; do
             timeout 900 bash "scripts/test/$suite"
           done
+      - name: Appbase developer MCP catalog and drift guards (#2687)
+        run: python3 -B -m unittest discover -s appbase_mcp/tests -v
   config-wizard-console:
     needs: changed-modules
     if: needs.changed-modules.outputs.run_console_suite == 'true'
@@ -447,7 +449,7 @@ jobs:
         timeout-minutes: 5
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '25'
       - name: Build local StackTest infrastructure images
         timeout-minutes: 20
         run: |
@@ -466,8 +468,6 @@ jobs:
         # in case that internal bound itself ever fails to fire, and it is also what the cumulative
         # budget check below sums over.
         timeout-minutes: 35
-        env:
-          STACKTEST_JAVA_RELEASE: "21"
         run: .github/scripts/stacktest-live-runner.sh install
       - name: Live product gate
         # Vitess's readiness/outage-restoration path has a documented hang history (internal work item 2749/internal work item 2788).
