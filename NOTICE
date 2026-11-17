@@ -12,7 +12,7 @@ License at http://www.apache.org/licenses/LICENSE-2.0
 THIRD-PARTY DEPENDENCIES
 ================================================================================
 
-This product redistributes the 479 third-party works listed below, on a compile or
+This product redistributes the 472 third-party works listed below, on a compile or
 runtime path. Test- and provided-scope dependencies are excluded: they are not
 redistributed, so Apache-2.0 section 4(d) attribution does not attach to them.
 
@@ -268,10 +268,6 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       Apache License 2.0
   * config (com.typesafe:config:1.4.1)
       Apache-2.0
-  * Core :: EE Common (org.eclipse.jetty:jetty-ee:12.0.22)
-      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
-  * Core :: Sessions (org.eclipse.jetty:jetty-session:12.0.22)
-      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
   * Core functionality for the Reactor Netty library (io.projectreactor.netty:reactor-netty-core:1.1.21)
       The Apache Software License, Version 2.0
   * Core functionality for the Reactor Netty library (io.projectreactor.netty:reactor-netty-core:1.1.22)
@@ -300,10 +296,6 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       The Apache Software License, Version 2.0
   * Eclipse Expressly (org.glassfish.expressly:expressly:5.0.0)
       Eclipse Public License v. 2.0 or GNU General Public License, version 2 with the GNU Classpath Exception
-  * EE10 :: Servlet (org.eclipse.jetty.ee10:jetty-ee10-servlet:12.0.22)
-      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
-  * EE10 :: WebApp (org.eclipse.jetty.ee10:jetty-ee10-webapp:12.0.22)
-      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
   * empty (org.spark-project.spark:unused:1.0.0)
       The Apache License, Version 2.0
   * error-prone annotations (com.google.errorprone:error_prone_annotations:2.26.1)
@@ -410,7 +402,7 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       Corresponding source (embedded): META-INF/lgpl/sources/hibernate-core-6.5.3.Final-sources.jar
       Upstream provenance:
       https://repo1.maven.org/maven2/org/hibernate/orm/hibernate-core/6.5.3.Final/hibernate-core-6.5.3.Final-sources.jar
-  * Hibernate Validator Engine (org.hibernate.validator:hibernate-validator:8.0.1.Final)
+  * Hibernate Validator Engine (org.hibernate.validator:hibernate-validator:8.0.2.Final)
       Apache License 2.0
   * HikariCP (com.zaxxer:HikariCP:5.0.0)
       The Apache Software License, Version 2.0
@@ -510,7 +502,7 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       The Apache License, Version 2.0
   * jaeger-client (io.jaegertracing:jaeger-tracerresolver:1.6.0)
       The Apache License, Version 2.0
-  * Jakarta Activation API (jakarta.activation:jakarta.activation-api:2.1.1)
+  * Jakarta Activation API (jakarta.activation:jakarta.activation-api:2.1.3)
       EDL 1.0
   * Jakarta Annotations API (jakarta.annotation:jakarta.annotation-api:2.1.1)
       EPL 2.0 or GPL2 w/ CPE
@@ -588,10 +580,6 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       Apache License 2.0
   * jdbi3 SqlObject (org.jdbi:jdbi3-sqlobject:3.28.0)
       Apache License 2.0
-  * jersey-container-jetty-http (org.glassfish.jersey.containers:jersey-container-jetty-http:3.1.11)
-      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
-  * jersey-container-jetty-servlet (org.glassfish.jersey.containers:jersey-container-jetty-servlet:3.1.11)
-      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
   * jersey-container-servlet (org.glassfish.jersey.containers:jersey-container-servlet:3.1.11)
       Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
   * jersey-container-servlet-core (org.glassfish.jersey.containers:jersey-container-servlet-core:3.1.11)
@@ -625,8 +613,6 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
   * Jetty :: Servlet Handling (org.eclipse.jetty:jetty-servlet:11.0.26)
       Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
   * Jetty :: Utilities (org.eclipse.jetty:jetty-util:11.0.26)
-      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
-  * Jetty :: XML utilities (org.eclipse.jetty:jetty-xml:11.0.26)
       Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
   * Jetty SSLEngine (org.mortbay.jetty:jetty-sslengine:6.1.26)
       Apache License Version 2
