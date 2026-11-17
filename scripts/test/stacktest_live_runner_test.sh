@@ -72,49 +72,48 @@ assert_runtime_rejected() {
   if FAKE_JAVA_SPEC_VERSION="$version" stacktest_command >"$output_file" 2>&1; then
     fail "runtime version '$version' was accepted"
   fi
-  grep -q -- "requires java.specification.version=21" "$output_file" ||
+  grep -q -- "requires java.specification.version=25" "$output_file" ||
     fail "runtime version '$version' lacked the guard diagnostic"
   test ! -s "$MVN_CALLS" || fail "Maven ran for rejected runtime version '$version'"
 }
 
-test_AC3011_1_rejects_non_21_before_maven() {
-  assert_runtime_rejected "25" jdk25
-  assert_runtime_rejected "21.0" malformed
+test_AC3011_1_rejects_non_25_before_maven() {
+  assert_runtime_rejected "21" jdk21
+  assert_runtime_rejected "25.0" malformed
   assert_runtime_rejected "" empty
-  assert_runtime_rejected "21 trailing" trailing-token
-  FAKE_JAVA_FAIL_AFTER_OUTPUT=1 assert_runtime_rejected "21" nonzero-after-valid
-  FAKE_JAVA_DUPLICATE=1 assert_runtime_rejected "21" duplicate-property
+  assert_runtime_rejected "25 trailing" trailing-token
+  FAKE_JAVA_FAIL_AFTER_OUTPUT=1 assert_runtime_rejected "25" nonzero-after-valid
+  FAKE_JAVA_DUPLICATE=1 assert_runtime_rejected "25" duplicate-property
 }
 
-test_AC3011_2_accepts_21_at_shared_runtime_chokepoint() {
+test_AC3011_2_accepts_25_at_shared_runtime_chokepoint() {
   : >"$MVN_CALLS"
   : >"$JAVA_CALLS"
-  FAKE_JAVA_SPEC_VERSION=21 stacktest_command >"$TEST_TEMP/jdk21.output" 2>&1
-  grep -q -- "StackTestMain" "$MVN_CALLS" || fail "JDK 21 did not reach StackTestMain Maven invocation"
+  FAKE_JAVA_SPEC_VERSION=25 stacktest_command >"$TEST_TEMP/jdk25.output" 2>&1
+  grep -q -- "StackTestMain" "$MVN_CALLS" || fail "JDK 25 did not reach StackTestMain Maven invocation"
   grep -q -- "-XshowSettings:properties -version" "$JAVA_CALLS" || fail "runtime guard did not inspect Java properties"
 }
 
-test_AC3011_3_preserves_install_route() {
+test_EXTRA_install_route_has_no_runtime_guard() {
   : >"$MVN_CALLS"
   : >"$JAVA_CALLS"
-  FAKE_JAVA_SPEC_VERSION=25 STACKTEST_JAVA_RELEASE=21 install_stacktest >"$TEST_TEMP/install.output" 2>&1
+  install_stacktest >"$TEST_TEMP/install.output" 2>&1
   grep -q -- "appbase-stacktest -am install" "$MVN_CALLS" || fail "install route did not invoke Maven"
-  grep -q -- "-Djdk.version=21" "$MVN_CALLS" || fail "install route lost Java release override"
   test ! -s "$JAVA_CALLS" || fail "install route incorrectly invoked the runtime guard"
 }
 
 # Preserve the original nounset regression while exercising the real guarded chokepoint.
 test_EXTRA_run_green_under_nounset() {
-  export FAKE_JAVA_SPEC_VERSION=21 FAKE_MVN_HOLD=1
+  export FAKE_JAVA_SPEC_VERSION=25 FAKE_MVN_HOLD=1
   run_green nounset-regression
   unset FAKE_MVN_HOLD FAKE_JAVA_SPEC_VERSION
   test -f "$TEST_TEMP/stacktest-live/nounset-regression.log"
   grep -q -- "Server ready" "$TEST_TEMP/stacktest-live/nounset-regression.log"
 }
 
-test_AC3011_1_rejects_non_21_before_maven
-test_AC3011_2_accepts_21_at_shared_runtime_chokepoint
-test_AC3011_3_preserves_install_route
+test_AC3011_1_rejects_non_25_before_maven
+test_AC3011_2_accepts_25_at_shared_runtime_chokepoint
+test_EXTRA_install_route_has_no_runtime_guard
 test_EXTRA_run_green_under_nounset
 
-echo "stacktest-live-runner-test: PASS Java 21 runtime guard and install preservation"
+echo "stacktest-live-runner-test: PASS Java 25 runtime guard and install preservation"
