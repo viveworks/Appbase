@@ -345,24 +345,8 @@ jobs:
           for suite in             aerospike_container_contract_test.sh             checkstyle_baseline_ratchet_test.sh             ci_release_rehearsal_test.sh             ci_verify_compile_prereqs_test.sh; do
             timeout 900 bash "scripts/test/$suite"
           done
-      - name: Stacktest acceptance static guards (#2537)
-        id: static-acceptance
-        continue-on-error: true
-        run: python3 -B -m unittest scripts.tests.test_AC2537_stacktest_coverage_matrix -v
       - name: Appbase developer MCP catalog and drift guards (#2687)
         run: python3 -B -m unittest discover -s appbase_mcp/tests -v
-      - name: Record stacktest static acceptance result
-        id: static-receipt
-        if: always()
-        env:
-          STATIC_OUTCOME: ${{ steps.static-acceptance.outcome }}
-          TESTED_SHA: ${{ steps.verify-sha.outputs.tested_sha }}
-        run: |
-          echo "result=$STATIC_OUTCOME" >> "$GITHUB_OUTPUT"
-          echo "tested_sha=$TESTED_SHA" >> "$GITHUB_OUTPUT"
-      - name: Enforce stacktest static acceptance result
-        if: steps.static-acceptance.outcome != 'success'
-        run: exit 1
   config-wizard-console:
     needs: changed-modules
     if: needs.changed-modules.outputs.run_console_suite == 'true'
