@@ -68,12 +68,13 @@
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-jaxrs2-jakarta</artifactId>
         </dependency>
-        <!-- Swagger's Jakarta branch requests 3.0.1, while Hibernate and Jersey
-             require 4.0.0. Select the upper bound for this servlet API graph. -->
+        <!-- Swagger's Jakarta branch requests 3.0.1, Hibernate and Jersey request
+             4.0.0, and the root dependencyManagement now pins 4.0.2. Select that
+             upper bound explicitly for this servlet API graph. -->
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>4.0.0</version>
+            <version>4.0.2</version>
         </dependency>
         <!-- Swagger's legacy annotation introspection still loads javax JAXB on JDK 11+. -->
         <dependency>
