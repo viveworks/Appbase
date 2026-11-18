@@ -74,6 +74,15 @@
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-jaxrs2-jakarta</artifactId>
         </dependency>
+        <!-- Swagger's Jakarta branch requests 3.0.1, Hibernate and Jersey request
+             4.0.0, and the root dependencyManagement pins 4.0.2. Select that upper
+             bound explicitly for this module's API graph (same conflict and fix as
+             appbase-bootstrap-servlet). -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.2</version>
+        </dependency>
         <!-- Swagger's model resolver probes legacy javax JAXB annotations as well as Jakarta ones. -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
