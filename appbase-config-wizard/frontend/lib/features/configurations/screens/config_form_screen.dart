@@ -71,7 +71,21 @@ class _ConfigFormScreenState extends ConsumerState<ConfigFormScreen> {
       appBar: AppBar(
         title: Text(widget.summary.simpleName),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          // Flutter Web's accessibility tree renders a button's accessible name
+          // as DOM text content, not the `aria-label` HTML attribute (see
+          // engine lib/web_ui/.../semantics/label_and_value.dart: button/link/
+          // heading roles prefer `domText` unless the node has semantics
+          // children, in which case `aria-label` is used instead). Wrapping the
+          // icon in its own `Semantics(container: true, ...)` boundary gives
+          // this button a semantics child, which flips its own label — the
+          // `tooltip` below — onto `aria-label` on web, while remaining the
+          // normal spoken label everywhere else.
+          icon: Semantics(
+            container: true,
+            label: 'Back',
+            child: const Icon(Icons.arrow_back),
+          ),
+          tooltip: 'Back',
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: const [],
