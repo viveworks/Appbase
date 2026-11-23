@@ -1,0 +1,8 @@
+{
+  "sharded": false,
+  "tables": {
+    "stacktest_product": {},
+    "stacktest_customer_seq": { "type": "sequence" },
+    "stacktest_order_seq": { "type": "sequence" }
+  }
+}

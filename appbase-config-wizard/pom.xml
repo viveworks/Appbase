@@ -1,0 +1,601 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+  Copyright 2019 The original author or authors of Appbase
+
+  This project includes software developed by the author or authors of
+  Appbase (https://example.invalid/scratch-rehearsal).
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>appbase-config-wizard</artifactId>
+    <name>Appbase Config Wizard</name>
+    <description>Interactive CLI + web tool for building valid YAML configuration files for Appbase services</description>
+
+    <dependencies>
+        <!-- Appbase runtime — config classes from all modules on fat-JAR classpath -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-bootstrap-core</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-bootstrap-servlet-jetty</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <!-- Classpath scan -->
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+        </dependency>
+        <!-- Console -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+        </dependency>
+        <!-- Web: Jersey HK2 injection provider and Jackson JSON support -->
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+        </dependency>
+        <!-- OpenAPI / Swagger UI -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-jaxrs2-jakarta</artifactId>
+        </dependency>
+        <!-- Swagger's Jakarta branch requests 3.0.1, Hibernate and Jersey request
+             4.0.0, and the root dependencyManagement pins 4.0.2. Select that upper
+             bound explicitly for this module's API graph (same conflict and fix as
+             appbase-bootstrap-servlet). -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.2</version>
+        </dependency>
+        <!-- Swagger's model resolver probes legacy javax JAXB annotations as well as Jakarta ones. -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>swagger-ui</artifactId>
+        </dependency>
+        <!-- Jackson JSR-310 module: java.time.Duration, Instant, etc. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <!-- Jersey Test Framework for in-process HTTP contract tests -->
+        <dependency>
+            <groupId>org.glassfish.jersey.test-framework</groupId>
+            <artifactId>jersey-test-framework-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+            <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- OSGi manifest -->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>${archive.addClasspath}</addClasspath>
+                            <addDefaultImplementationEntries>${archive.addDefaultImplementationEntries}</addDefaultImplementationEntries>
+                            <packageName>com.viveworks.appbase.configwizard</packageName>
+                        </manifest>
+                    </archive>
+                    <instructions>
+                        <Export-Package>com.viveworks.appbase.configwizard.*</Export-Package>
+                        <Import-Package>!.,*</Import-Package>
+                        <Include-Resource>{maven-resources},static=target/classes/static,META-INF/lgpl/sources=target/classes/META-INF/lgpl/sources</Include-Resource>
+                    </instructions>
+                </configuration>
+            </plugin>
+
+            <!-- Flutter Web build pipeline -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>flutter-pub-get</id>
+                        <phase>generate-resources</phase>
+                        <goals><goal>exec</goal></goals>
+                        <configuration>
+                            <skip>${appbase-config-wizard.skipFrontend}</skip>
+                            <executable>flutter</executable>
+                            <!-- ⚠️ THE OFFLINE FLAG IS LOAD-BEARING IN A LANE, NOT AN OPTIMISATION (internal work item 1518).
+                                 pub.dev is not in the container's egress allowlist and deliberately
+                                 stays out (see development-environment/tinyproxy.filter). Modern pub queries
+                                 pub.dev/api/packages/PKG/advisories on EVERY `pub get`, BEFORE it
+                                 consults the lockfile, and treats the refusal as fatal — so the bare
+                                 command exits 69 behind the wall even though the image bakes this
+                                 package's whole closure into ~/.pub-cache. Resolving from that cache
+                                 exits 0. On a developer host with egress it behaves identically,
+                                 because the cache is warm there too.
+                                 (An XML comment may not contain a double hyphen, which is why the flag
+                                 is named in prose here rather than quoted.) -->
+                            <arguments>
+                                <argument>pub</argument>
+                                <argument>get</argument>
+                                <argument>--offline</argument>
+                            </arguments>
+                            <workingDirectory>${project.basedir}/frontend</workingDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>flutter-build-runner</id>
+                        <phase>generate-resources</phase>
+                        <goals><goal>exec</goal></goals>
+                        <configuration>
+                            <skip>${appbase-config-wizard.skipFrontend}</skip>
+                            <executable>dart</executable>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>build_runner</argument>
+                                <argument>build</argument>
+                            </arguments>
+                            <workingDirectory>${project.basedir}/frontend</workingDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>flutter-build-web</id>
+                        <phase>process-resources</phase>
+                        <goals><goal>exec</goal></goals>
+                        <configuration>
+                            <skip>${appbase-config-wizard.skipFrontend}</skip>
+                            <executable>flutter</executable>
+                            <!-- ⚠️ THE NO-PUB FLAG, FOR THE SAME REASON AS THE OFFLINE ONE ABOVE (internal work item 1518).
+                                 `flutter build` runs an implicit, NON-offline `pub get` first, so
+                                 without it the build exits 69 behind the wall regardless of what the
+                                 flutter-pub-get execution just did. Measured with no network at all:
+                                 bare exits 69; with the flag, 0, and build/web/main.dart.js is
+                                 produced. -->
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>web</argument>
+                                <argument>--no-pub</argument>
+                            </arguments>
+                            <workingDirectory>${project.basedir}/frontend</workingDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Copy Flutter web output into the JAR's classpath -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-flutter-web</id>
+                        <phase>prepare-package</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <skip>${appbase-config-wizard.skipFrontend}</skip>
+                            <outputDirectory>${project.build.outputDirectory}/static/web</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/frontend/build/web</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+              LGPL CORRESPONDING SOURCE. The Config Wizard is the repository's only shaded product
+              JAR. Keep the exact upstream source archives inside that JAR, adjacent to the complete
+              licence texts and relink guide in src/main/resources/META-INF/lgpl. Merely naming a
+              remote repository is not durable enough for a distributed binary, and copying the
+              ordinary dependency JARs would package object code rather than corresponding source.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>package-lgpl-sources</id>
+                        <!--
+                          Run before the bundle plugin snapshots target/classes into the module JAR.
+                          prepare-package is too late in this build: the dependency files reach
+                          target/classes, but are absent from the input JAR consumed by shade.
+                        -->
+                        <phase>process-resources</phase>
+                        <goals><goal>copy</goal></goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF/lgpl/sources</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.google.code.findbugs</groupId>
+                                    <artifactId>annotations</artifactId>
+                                    <version>3.0.1</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>annotations-3.0.1-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.google.code.findbugs</groupId>
+                                    <artifactId>annotations</artifactId>
+                                    <version>3.0.1</version>
+                                    <type>pom</type>
+                                    <destFileName>annotations-3.0.1.pom</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.github.spotbugs</groupId>
+                                    <artifactId>spotbugs-annotations</artifactId>
+                                    <version>4.10.3</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>spotbugs-annotations-4.10.3-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.github.spotbugs</groupId>
+                                    <artifactId>spotbugs-annotations</artifactId>
+                                    <version>4.10.3</version>
+                                    <type>pom</type>
+                                    <destFileName>spotbugs-annotations-4.10.3.pom</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>net.openhft</groupId>
+                                    <artifactId>affinity</artifactId>
+                                    <version>3.0.6</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>affinity-3.0.6-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>net.openhft</groupId>
+                                    <artifactId>affinity</artifactId>
+                                    <version>3.0.6</version>
+                                    <type>pom</type>
+                                    <destFileName>affinity-3.0.6.pom</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.hibernate.common</groupId>
+                                    <artifactId>hibernate-commons-annotations</artifactId>
+                                    <version>6.0.6.Final</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>hibernate-commons-annotations-6.0.6.Final-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.hibernate.common</groupId>
+                                    <artifactId>hibernate-commons-annotations</artifactId>
+                                    <version>6.0.6.Final</version>
+                                    <type>pom</type>
+                                    <destFileName>hibernate-commons-annotations-6.0.6.Final.pom</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-core</artifactId>
+                                    <version>6.5.3.Final</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>hibernate-core-6.5.3.Final-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-core</artifactId>
+                                    <version>6.5.3.Final</version>
+                                    <type>pom</type>
+                                    <destFileName>hibernate-core-6.5.3.Final.pom</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.mariadb.jdbc</groupId>
+                                    <artifactId>mariadb-java-client</artifactId>
+                                    <version>2.7.4</version>
+                                    <classifier>sources</classifier>
+                                    <type>jar</type>
+                                    <destFileName>mariadb-java-client-2.7.4-sources.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.mariadb.jdbc</groupId>
+                                    <artifactId>mariadb-java-client</artifactId>
+                                    <version>2.7.4</version>
+                                    <type>pom</type>
+                                    <destFileName>mariadb-java-client-2.7.4.pom</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Fat JAR — primary artifact (not -shaded classifier) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration combine.self="override">
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.viveworks.appbase.configwizard.ConfigWizardApp</mainClass>
+                                </transformer>
+                                <!-- Merge META-INF/services for Jersey SPI -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <!-- Merge Jackson module registrations -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/jackson-module-registration</resource>
+                                </transformer>
+                                <!--
+                                  ATTRIBUTION (internal work item 396). This fat JAR is the ONE artifact in the repo that
+                                  actually bundles third-party code: the library modules ship THIN jars and
+                                  their consumers resolve dependencies themselves, so nothing else here
+                                  redistributes anything. Apache-2.0 §4(d) asks that a distributed work
+                                  carry the attribution notices of the Apache-2.0 works inside it — which
+                                  applies to this jar and to nothing else we build.
+
+                                  Without these two transformers, shade keeps only the FIRST META-INF/LICENSE
+                                  and META-INF/NOTICE it encounters and silently discards the rest, so the
+                                  fat jar would ship one arbitrary dependency's notice as though it covered
+                                  all of them. The aggregating transformers merge them instead.
+                                -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+                                    <projectName>Appbase Config Wizard</projectName>
+                                    <!--
+                                      organizationName/inceptionYear are NOT optional here. The transformer
+                                      DEFAULTS the organisation to "The Apache Software Foundation", which
+                                      produced a header reading "Appbase Config Wizard / Copyright 2006-2026
+                                      The Apache Software Foundation" — attributing OUR work to the ASF, in
+                                      the one artifact whose whole purpose is correct attribution. Caught by
+                                      reading the generated NOTICE, not the configuration.
+                                    -->
+                                    <organizationName>The original author or authors of Appbase</organizationName>
+                                    <organizationURL>https://example.invalid/scratch-rehearsal</organizationURL>
+                                    <inceptionYear>2019</inceptionYear>
+                                </transformer>
+                            </transformers>
+                            <filters>
+                                <!-- Drop signature files to avoid JAR verification failures -->
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!--
+          appbase-config-wizard-it-profile
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          Runs the appbase-config-wizard integration test suite:
+            • Console tests via pexpect / pytest
+            • Web UI tests via Playwright / TypeScript
+
+          Lifecycle:
+            pre-integration-test  — install Python deps, npm ci, start web server
+            integration-test      — run pytest + playwright
+            post-integration-test — kill web server
+
+          Activation:
+            mvn verify -P appbase-config-wizard-it-profile
+          or include in build.sh dev / release lines.
+        -->
+        <profile>
+            <id>appbase-config-wizard-it-profile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+
+                            <!-- =========================================================
+                                 PRE-INTEGRATION-TEST: install Python deps
+                                 ========================================================= -->
+                            <execution>
+                                <id>it-pip-install</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <!-- GUARDED: install only where the deps are NOT already present.
+                                     In the devcontainer they are BAKED into /opt/py-venv at image build
+                                     (internal work item 1356 half 3): this step cannot succeed in a lane, because the S05
+                                     egress wall does not allowlist PyPI (403 Filtered), and `pip3` there
+                                     resolves to the venv's own pip, where a user-scoped install is invalid outright
+                                     ("User site-packages are not visible in this virtualenv") — and the
+                                     venv is read-only. It also MUST NOT succeed: it installs the FLOORS
+                                     unhashed into ~/.local, which precedes the venv and would shadow the
+                                     pinned, hash-verified closure with a live resolution.
+                                     On a laptop with network and no baked venv, the fallback still runs. -->
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>-c</argument>
+                                        <argument>python3 -c 'import pexpect, pytest, yaml' 2&gt;/dev/null &amp;&amp; exit 0; pip3 install -r test/console/requirements.txt --quiet --user</argument>
+                                    </arguments>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                </configuration>
+                            </execution>
+
+                            <!-- =========================================================
+                                 PRE-INTEGRATION-TEST: npm ci (Playwright deps)
+                                 ========================================================= -->
+                            <execution>
+                                <id>it-npm-ci</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>npm</executable>
+                                    <arguments>
+                                        <argument>ci</argument>
+                                        <argument>--prefix</argument>
+                                        <argument>test/web</argument>
+                                    </arguments>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                </configuration>
+                            </execution>
+
+                            <!-- =========================================================
+                                 PRE-INTEGRATION-TEST: install Playwright browsers
+                                 ========================================================= -->
+                            <execution>
+                                <id>it-playwright-install</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <!-- GUARDED for the same reason: the chromium bundle is baked into the
+                                     image at PLAYWRIGHT_BROWSERS_PATH under profile full, and a lane
+                                     cannot reach playwright's CDN. Non-empty bundle -> nothing to do. -->
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>-c</argument>
+                                        <argument>[ -n "$(ls -A "${PLAYWRIGHT_BROWSERS_PATH:-/nonexistent}" 2&gt;/dev/null)" ] &amp;&amp; exit 0; npx --prefix test/web playwright install --with-deps chromium</argument>
+                                    </arguments>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                </configuration>
+                            </execution>
+
+                            <!-- =========================================================
+                                 PRE-INTEGRATION-TEST: start web server
+                                 ========================================================= -->
+                            <execution>
+                                <id>it-start-web-server</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>test/start-web.sh</argument>
+                                        <!-- The real build output, from Maven's own finalName property rather than a
+                                             guessed or hardcoded jar name: correct under any project version. -->
+                                        <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
+                                    </arguments>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                </configuration>
+                            </execution>
+
+                            <!-- =========================================================
+                                 INTEGRATION-TEST: run console tests via pytest
+                                 ========================================================= -->
+                            <execution>
+                                <id>it-pytest-console</id>
+                                <phase>integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>python3</executable>
+                                    <arguments>
+                                        <argument>-m</argument>
+                                        <argument>pytest</argument>
+                                        <argument>test/console/</argument>
+                                        <argument>-v</argument>
+                                        <argument>--tb=short</argument>
+                                    </arguments>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                    <environmentVariables>
+                                        <!-- Same real build output as it-start-web-server, via the same Maven
+                                             property; conftest.py already honors this override. -->
+                                        <CONFIG_WIZARD_JAR>${project.build.directory}/${project.build.finalName}.jar</CONFIG_WIZARD_JAR>
+                                    </environmentVariables>
+                                </configuration>
+                            </execution>
+
+                            <!-- =========================================================
+                                 INTEGRATION-TEST: run web UI tests via Playwright
+                                 ========================================================= -->
+                            <execution>
+                                <id>it-playwright-test</id>
+                                <phase>integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>-c</argument>
+                                        <!-- CI=1 makes playwright.config.ts forbidOnly active for this build run, so a committed
+                                             test.only() fails the run. Only this exec sets it; a developer's npm test is unchanged. -->
+                                        <argument>port="$(cat .config-wizard-test.port)" &amp;&amp; [[ "$port" =~ ^[0-9]+$ ]] &amp;&amp; url="http://localhost:${port}" &amp;&amp; printf 'Playwright port bytes: ' &amp;&amp; printf '%s' "$port" | od -An -tx1 &amp;&amp; printf 'Playwright CONFIG_WIZARD_URL=%q\n' "$url" &amp;&amp; CI=1 CONFIG_WIZARD_URL="$url" npx --prefix test/web playwright test --config test/web/playwright.config.ts --reporter=list</argument>
+                                    </arguments>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                </configuration>
+                            </execution>
+
+                            <!-- =========================================================
+                                 POST-INTEGRATION-TEST: stop web server
+                                 ========================================================= -->
+                            <execution>
+                                <id>it-stop-web-server</id>
+                                <phase>post-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>test/stop-web.sh</argument>
+                                    </arguments>
+                                    <workingDirectory>${project.basedir}</workingDirectory>
+                                    <!-- Always run teardown even if tests failed -->
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                        <successCode>1</successCode>
+                                    </successCodes>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

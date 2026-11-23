@@ -1,0 +1,106 @@
+/*
+ * Copyright 2019 The original author or authors of Appbase
+ *
+ * This project includes software developed by the author or authors of
+ * Appbase (https://example.invalid/scratch-rehearsal).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.viveworks.appbase.bootstrap.reactornetty.endpoint;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
+
+/**
+ * @author Navaneeth Mysore G
+ * @author Claude
+ * @since 1.0.0
+ */
+class OffloadPolicyTest {
+
+    @Test
+    void ofStoresTheGivenMaxPageSizeAndTimeout() {
+        final OffloadPolicy policy = OffloadPolicy.of(500, Duration.ofSeconds(15));
+
+        Assertions.assertEquals(500, policy.maxPageSize());
+    }
+
+    @Test
+    void ofStoresTheGivenTimeout() {
+        final Duration timeout = Duration.ofSeconds(15);
+
+        final OffloadPolicy policy = OffloadPolicy.of(500, timeout);
+
+        Assertions.assertEquals(timeout, policy.timeout());
+    }
+
+    @Test
+    void ofRejectsAZeroMaxPageSize() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> OffloadPolicy.of(0, Duration.ofSeconds(1)));
+    }
+
+    @Test
+    void ofRejectsANegativeMaxPageSize() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> OffloadPolicy.of(-1, Duration.ofSeconds(1)));
+    }
+
+    @Test
+    void ofRejectsANullTimeout() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> OffloadPolicy.of(500, null));
+    }
+
+    @Test
+    void ofRejectsAZeroTimeout() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> OffloadPolicy.of(500, Duration.ZERO));
+    }
+
+    @Test
+    void ofRejectsANegativeTimeout() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> OffloadPolicy.of(500, Duration.ofSeconds(-1)));
+    }
+
+    @Test
+    void twoPoliciesWithTheSameValuesAreEqual() {
+        final OffloadPolicy first = OffloadPolicy.of(500, Duration.ofSeconds(15));
+        final OffloadPolicy second = OffloadPolicy.of(500, Duration.ofSeconds(15));
+
+        Assertions.assertEquals(first, second);
+    }
+
+    @Test
+    void twoPoliciesWithTheSameValuesHaveTheSameHashCode() {
+        final OffloadPolicy first = OffloadPolicy.of(500, Duration.ofSeconds(15));
+        final OffloadPolicy second = OffloadPolicy.of(500, Duration.ofSeconds(15));
+
+        Assertions.assertEquals(first.hashCode(), second.hashCode());
+    }
+
+    @Test
+    void twoPoliciesWithDifferentMaxPageSizeAreNotEqual() {
+        final OffloadPolicy first = OffloadPolicy.of(500, Duration.ofSeconds(15));
+        final OffloadPolicy second = OffloadPolicy.of(600, Duration.ofSeconds(15));
+
+        Assertions.assertNotEquals(first, second);
+    }
+
+    @Test
+    void twoPoliciesWithDifferentTimeoutAreNotEqual() {
+        final OffloadPolicy first = OffloadPolicy.of(500, Duration.ofSeconds(15));
+        final OffloadPolicy second = OffloadPolicy.of(500, Duration.ofSeconds(30));
+
+        Assertions.assertNotEquals(first, second);
+    }
+}

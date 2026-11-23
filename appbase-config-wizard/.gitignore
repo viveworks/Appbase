@@ -1,0 +1,17 @@
+# Flutter build artefacts
+frontend/build/
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+
+# Wizard runtime files
+.wizard-web.pid
+.wizard-web.log
+
+# Test runtime files
+.config-wizard-test.pid
+.config-wizard-test.port
+
+# Allow bin/ shell scripts (overrides root .gitignore which ignores 'bin')
+!bin/
+!bin/*.sh

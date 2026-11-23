@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase-service</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <artifactId>appbase-service-user-session-aerospike</artifactId>
+    <packaging>jar</packaging>
+    <name>Appbase Service User Session Aerospike</name>
+    <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+    <scm>
+        <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+    </scm>
+    <distributionManagement>
+        <site>
+            <id>${project.artifactId}</id>
+            <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+        </site>
+    </distributionManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-user</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-aerospike</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor.tools</groupId>
+            <artifactId>blockhound</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Test-only (internal work item 503): appbase-core.yaml for ClientCoreTestHelper, from the core test-jar -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-core</artifactId>
+            <version>${appbase.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!--
+                      BlockHound (ReactiveUserSessionStoreBlockHoundTest) rewrites JDK internals to
+                      detect blocking calls on non-blocking threads. On JDK 13+ that needs
+                      AllowRedefinitionToAddDeleteMethods; on JDK 21+ the dynamic agent load warns
+                      without EnableDynamicAgentLoading. @{argLine} preserves the JaCoCo agent the root
+                      pom appends. Mirrors appbase-bootstrap-reactor-netty and the R2DBC account twin.
+                      The non-BlockHound tests in this module await reads from the main thread, which
+                      BlockHound does not guard, so a single shared configuration is safe here.
+                    -->
+                    <argLine>@{argLine} -XX:+AllowRedefinitionToAddDeleteMethods -XX:+EnableDynamicAgentLoading</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <packageName>com.viveworks.appbase.service.user.session.store</packageName>
+                        </manifest>
+                    </archive>
+                    <instructions>
+                        <Export-Package>com.viveworks.appbase.service.user.session.store.*</Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

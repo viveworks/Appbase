@@ -1,0 +1,169 @@
+# Copyright 2019 The original author or authors of Appbase
+#
+# This project includes software developed by the author or authors of
+# Appbase (https://example.invalid/scratch-rehearsal).
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+autoStart: true
+defaultDefaultKafkaConsumerClientIntegrationServiceConfiguration:
+  clusterIdValueConfiguration:
+    clusterId: "primary"
+  keyDeserializerType: "org.apache.kafka.common.serialization.StringDeserializer"
+  valueDeserializerType: "org.apache.kafka.common.serialization.StringDeserializer"
+  bootstrapServerConfigurations:
+    - host: "localhost"
+      port: 9092
+  groupId: "appbase-kafka-unit-test-group-id"
+  subscriptionTopics:
+    - "appbase-reactive-kafka-it"
+  fetchMinDataSizeConfiguration:
+    enabled: true
+    dataSize: 1
+    unit: "BYTES"
+  heartbeatIntervalConfiguration:
+    enabled: true
+    time: 3
+    timeUnit: "SECONDS"
+  maxPartitionFetchSizeConfiguration:
+    enabled: true
+    dataSize: 1
+    unit: "MEGABYTES"
+  sessionTimeoutConfiguration:
+    enabled: true
+    timeout: 10
+    timeoutTimeUnit: "SECONDS"
+  allowAutoCreateTopics: true
+  # EARLIEST, not LATEST (internal work item 2536 L-04, measured 2026-10-08): ReactiveKafkaAccessorIT's round-trip test
+  # subscribes the consumer and produces a record from a `.then()` callback that runs as soon as the
+  # reactive subscription call returns -- it does NOT wait for the consumer's own async join-group /
+  # sync-group / reset-to-LATEST sequence to finish first (that takes real time: a cold single-node
+  # KRaft cluster's first consumer-group join measured ~4s here, including a few NOT_COORDINATOR
+  # retries). With LATEST, the producer's send can land before the consumer resolves "latest" to a
+  # concrete offset, so the consumer starts reading AFTER the one message the test ever produces and
+  # waits forever (a reliable 30s StepVerifier timeout, not a flake -- the producer path has no
+  # group-join machinery at all, so it reliably wins the race). EARLIEST reads from the beginning of
+  # the topic regardless of that ordering, so the test is correct independent of which client finishes
+  # its async setup first. Test-scope file only; no other test in this module asserts on this value.
+  autoOffsetReset: "EARLIEST"
+  clientDnsLookup: "USE_ALL_DNS_IPS"
+  connectionsMaxIdleConfiguration:
+    enabled: true
+    time: 9
+    timeUnit: "MINUTES"
+  defaultApiTimeoutConfiguration:
+    enabled: true
+    timeout: 1
+    timeoutTimeUnit: "MINUTES"
+  enableAutoCommit: true
+  excludeInternalTopics: true
+  fetchMaxDataSizeConfiguration:
+    enabled: true
+    dataSize: 50
+    unit: "MEGABYTES"
+  isolationLevel: "READ_UNCOMMITTED"
+  maxPollIntervalConfiguration:
+    enabled: true
+    time: 5
+    timeUnit: "MINUTES"
+  maxPollRecords: 500
+  partitionAssignmentStrategyTypes:
+    - "org.apache.kafka.clients.consumer.RangeAssignor"
+  receiveBufferSizeConfiguration:
+    enabled: true
+    dataSize: 64
+    unit: "KILOBYTES"
+  requestTimeoutConfiguration:
+    enabled: true
+    timeout: 30
+    timeoutTimeUnit: "SECONDS"
+  sendBufferSizeConfiguration:
+    enabled: true
+    dataSize: 128
+    unit: "KILOBYTES"
+  autoCommitIntervalConfiguration:
+    enabled: true
+    time: 1
+    timeUnit: "SECONDS"
+  checkCrcs: true
+  fetchMaxWaitConfiguration:
+    enabled: true
+    time: 500
+    timeUnit: "MILLISECONDS"
+  interceptorTypes: []
+  metadataMaxAgeConfiguration:
+    enabled: true
+    time: 5
+    timeUnit: "MINUTES"
+  metricsReporterTypes: []
+  metricsNumSamples: 2
+  metricsRecordingLevel: "INFO"
+  metricsSampleWindowConfiguration:
+    enabled: true
+    time: 30
+    timeUnit: "SECONDS"
+  reconnectBackoffMaxConfiguration:
+    enabled: true
+    time: 1
+    timeUnit: "SECONDS"
+  reconnectBackoffConfiguration:
+    enabled: true
+    time: 50
+    timeUnit: "MILLISECONDS"
+  retryBackoffConfiguration:
+    enabled: true
+    time: 100
+    timeUnit: "MILLISECONDS"
+  clientId: "Navaneeths-MacBook-Pro.local"
+  clientRack: null
+  groupInstanceId: null
+  closeDuration: "PT2S"
+keyedDefaultKafkaConsumerClientIntegrationServiceConfigurations: null
+globalEnableRegisterNotFoundAppbaseClientIntegrationServices: true
+disabledRegisterNotFoundAppbaseClientIntegrationServices: null
+checkKeyedAppbaseClientIntegrationServicesSanity: false
+appbaseClientPoolManagerInjectedTypeConfiguration: null
+customAppbaseClientPoolManagerConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.manager.DefaultAppbaseClientPoolManagerConfiguration"
+  unhealthyAppbaseClientIntegrationServiceManagementDisabled: false
+  clientPoolCheckerTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 0
+    interval: 30
+    timeUnit: "SECONDS"
+  clientIntegrationServiceRepairTaskSchedulableConfiguration:
+    enabled: true
+    initialDelay: 60
+    interval: 30
+    timeUnit: "SECONDS"
+  useMediatorSharedScheduler: true
+  customScheduledExecutorServiceConfiguration: null
+  repairDisabledAppbaseClientKeyConfigurations: null
+  repairDisabledAppbaseClientIntegrationServiceTypeNames: null
+  enableGlobalMaxRepairAttemptsCheck: true
+  globalMaxRepairAttempts: 3
+  maxRepairAttemptsByAppbaseClientKeyConfigurations: null
+  maxRepairAttemptsByAppbaseClientIntegrationServiceTypeNameMap: null
+  globalDisableUnregisterUnhealthyIrreparableAppbaseClientIntegrationServices: false
+  disableUnregisterUnhealthyIrreparableByAppbaseClientKeyConfigurations: null
+  disableUnregisterUnhealthyIrreparableByAppbaseClientIntegrationServiceTypeNameMap: null
+  repairListenerImplObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+  unhealthyClientIntegrationServiceEntryObjectPoolConfiguration:
+    enabled: true
+    objectPoolCapacity: 4096
+appbaseClientPoolInjectedTypeConfiguration: null
+customAppbaseClientPoolConfiguration:
+  type: "com.viveworks.appbase.client.core.pool.DefaultAppbaseClientPoolConfiguration"
+  repairUnhealthyServices: true

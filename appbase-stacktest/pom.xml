@@ -1,0 +1,277 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+  Copyright 2019 The original author or authors of Appbase
+
+  This project includes software developed by the author or authors of
+  Appbase (https://example.invalid/scratch-rehearsal).
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>appbase-stacktest</artifactId>
+    <name>Appbase Stack Test</name>
+    <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+    <scm>
+        <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+    </scm>
+    <distributionManagement>
+        <site>
+            <id>${project.artifactId}</id>
+            <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+        </site>
+    </distributionManagement>
+
+    <properties>
+        <!--
+          Its tests exercise real infra dependencies (Aerospike, etc.), so they're
+          skipped in quick-profile/develop-profile and only run in staging-profile/
+          release-profile (see root pom.xml's appbase-stacktest.skipTests default
+          and its override in those two profiles).
+        -->
+        <skipTests>${appbase-stacktest.skipTests}</skipTests>
+    </properties>
+
+    <dependencies>
+        <!-- Appbase Dependencies -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-bootstrap-core</artifactId>
+            <version>${appbase.version}</version>
+            <exclusions>
+                <!-- from appbase-client-spark > spark-core -->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-bootstrap-servlet-jetty</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-bootstrap-servlet-undertow</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-bootstrap-servlet-tomcat</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <!-- Native reactive showcase arm: exercised by ReactiveShowcaseStackTest. -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-bootstrap-reactor-netty</artifactId>
+            <version>${appbase.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- The servlet OAuthFilter under cross-container verification (N09, internal work item 1199): registered as an
+             instance on each raw embedded container (Jetty/Undertow/Tomcat) by the cross-container IT.
+             Test scope — only OAuthCrossContainerTest consumes it (filter + its SPI defaults:
+             Sha256TokenKeyHasher, CaffeineTokenCache). -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web-oauth</artifactId>
+            <version>${appbase.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- The four OIDC provider modules whose public entry point is an OAuthConfiguration factory
+             (T1330, internal work item 1330): OAuthProviderWebPathStackTest builds each provider's filter from its OWN
+             XOAuthDefaults.configuration(...) and drives it over a real embedded container with an
+             offline stub validator. This proves provider-configuration/filter integration; the
+             provider unit tests separately pin shipped discovery constants and crypto behaviour.
+             GitHub is the opaque-token exception: GitHubOAuthWebPathStackTest exercises its dedicated
+             GitHubOAuthFilter with an offline /user transport. -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web-oauth-apple</artifactId>
+            <version>${appbase.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web-oauth-google</artifactId>
+            <version>${appbase.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web-oauth-github</artifactId>
+            <version>${appbase.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web-oauth-microsoft</artifactId>
+            <version>${appbase.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web-oauth-okta</artifactId>
+            <version>${appbase.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- The reactive OAuth twin (T1330, internal work item 1330): OAuthTwinParityStackTest registers it as an
+             AppbaseServiceFilter on the shipped ReactorNettyAppbaseWebServer and asserts it agrees with
+             the servlet OAuthFilter request-for-request over the wire. -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web-oauth-reactive</artifactId>
+            <version>${appbase.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Test helpers from service and client modules -->
+        <!-- Note: appbase-service-user/appbase-service-core test helpers are in main src
+             (AppbaseServiceTestHelper / AppbaseServiceCoreTestHelper) — no test-jar needed -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-core</artifactId>
+            <version>${appbase.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-aerospike</artifactId>
+            <version>${appbase.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-firebase</artifactId>
+            <version>${appbase.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-jdbc</artifactId>
+            <version>${appbase.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-jdbi</artifactId>
+            <version>${appbase.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-redis</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-kafka</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <!-- Gated live account tests use JDBI 3.23.0's generated SQL lexers, which need
+             ANTLR 4.9.2. Leave the release-managed 4.13.0 graph unchanged otherwise. -->
+        <profile>
+            <id>live-jdbi-antlr-compatibility</id>
+            <activation>
+                <property>
+                    <name>AerospikeClientServiceTests.enabled</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.antlr</groupId>
+                    <artifactId>antlr4-runtime</artifactId>
+                    <version>4.9.2</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <!-- Infrastructure-free internal work item 1329 regressions and the offline internal work item 1330 OAuth arms belong
+                         in ordinary test/quick gates even while external-service stack tests remain skipped. -->
+                    <execution>
+                        <id>status-regressions-fast</id>
+                        <phase>test</phase>
+                        <goals><goal>test</goal></goals>
+                        <configuration>
+                            <skipTests>false</skipTests>
+                            <includes>
+                                <include>**/UnsentRequestSweepTest.java</include>
+                                <include>**/HttpHelperConnectionReleaseTest.java</include>
+                                <include>**/StatusEndpointRouteContractTest.java</include>
+                                <include>**/GitHubOAuthWebPathStackTest.java</include>
+                                <include>**/OAuthProviderWebPathStackTest.java</include>
+                                <include>**/OAuthTwinParityStackTest.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>
+                                ${archive.addClasspath}
+                            </addClasspath>
+                            <addDefaultImplementationEntries>
+                                ${archive.addDefaultImplementationEntries}
+                            </addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>
+                                ${archive.addDefaultSpecificationEntries}
+                            </addDefaultSpecificationEntries>
+                            <useUniqueVersions>
+                                ${archive.useUniqueVersions}
+                            </useUniqueVersions>
+                            <packageName>com.viveworks.appbase.stacktest</packageName>
+                        </manifest>
+                    </archive>
+                    <instructions>
+                        <Export-Package>com.viveworks.appbase.stacktest</Export-Package>
+                        <Import-Package>!.,*</Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

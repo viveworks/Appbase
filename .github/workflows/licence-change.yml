@@ -1,0 +1,60 @@
+# Fork-safe public pull-request licence policy using GitHub's trusted dependency graph.
+name: Licence change
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  dependency-review:
+    # GitHub's dependency-review-action requires the Dependency graph, which on a PRIVATE repo
+    # needs GitHub Advanced Security (a licensed org feature) -- it is free/automatic only once
+    # the repo is actually public. Owner ruling: skip this job while private (the owner's own
+    # dependency analysis stands in for now) rather than leave it red forever or need a manual
+    # re-enable later. This resumes on the next applicable `pull_request` run once the repo is
+    # public -- NOT the instant visibility flips: a check that already completed (even as
+    # `skipped`) while private does not get a new run just because visibility later changes.
+    # The separate publication-sweep workflow is the durable mechanism that closes that gap.
+    if: ${{ github.event_name == 'pull_request' && !github.event.repository.private }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Review dependency licence changes
+        id: review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          vulnerability-check: false
+          license-check: true
+          allow-licenses: >-
+            Apache-2.0, BSD-2-Clause, BSD-3-Clause, CC0-1.0, CDDL-1.0, CDDL-1.1,
+            EPL-1.0, EPL-2.0, ISC, LicenseRef-Public-Domain, MIT, MIT-0, MPL-1.1,
+            MPL-2.0, W3C
+      - name: Fail closed on missing or unresolved licence metadata
+        if: always()
+        env:
+          INVALID_LICENSE_CHANGES: ${{ steps.review.outputs.invalid-license-changes }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          raw = os.environ.get('INVALID_LICENSE_CHANGES', '')
+          if not raw.strip():
+              raise SystemExit('dependency review produced no invalid-license-changes output')
+          try:
+              changes = json.loads(raw)
+          except json.JSONDecodeError as error:
+              raise SystemExit(f'invalid-license-changes is malformed JSON: {error}')
+          required = ('forbidden', 'unresolved', 'unlicensed')
+          if not isinstance(changes, dict) or any(
+                  key not in changes or not isinstance(changes[key], list) for key in required):
+              raise SystemExit('invalid-license-changes has an unexpected schema')
+          unknown = changes['unresolved'] + changes['unlicensed']
+          if unknown:
+              raise SystemExit('dependency licences unresolved or unlicensed: ' + repr(unknown))
+          if changes['forbidden']:
+              raise SystemExit('dependency review reported forbidden licences')
+          print('dependency licence metadata resolved and policy-compliant')
+          PY
+

@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+  Copyright 2019 The original author or authors of Appbase
+
+  This project includes software developed by the author or authors of
+  Appbase (https://example.invalid/scratch-rehearsal).
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase-bootstrap</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>appbase-bootstrap-servlet-tomcat</artifactId>
+    <name>Appbase Bootstrap Tomcat</name>
+    <description>Tomcat embedded servlet-container implementation of AppbaseWebServer</description>
+    <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+    <scm><url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url></scm>
+    <distributionManagement>
+        <site><id>${project.artifactId}</id>
+            <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url></site>
+    </distributionManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-bootstrap-servlet</artifactId>
+            <version>${appbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <archive><manifest>
+                        <addClasspath>${archive.addClasspath}</addClasspath>
+                        <addDefaultImplementationEntries>${archive.addDefaultImplementationEntries}</addDefaultImplementationEntries>
+                        <addDefaultSpecificationEntries>${archive.addDefaultSpecificationEntries}</addDefaultSpecificationEntries>
+                        <useUniqueVersions>${archive.useUniqueVersions}</useUniqueVersions>
+                        <packageName>com.viveworks.appbase.bootstrap.tomcat</packageName>
+                    </manifest></archive>
+                    <instructions>
+                        <Export-Package>com.viveworks.appbase.bootstrap.tomcat.*</Export-Package>
+                        <Import-Package>!.,*</Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!--
+            Opts this module into the failsafe IT execution defined in the parent's
+            develop-profile/staging-profile/release-profile pluginManagement (version
+            + executions). Since Maven merges same-id profiles across POMs in the
+            reactor, declaring one profile per id here causes failsafe to run
+            *IT.java tests during the verify phase whenever any of those 3 profiles
+            is active; quick-profile never runs them.
+        -->
+        <profile>
+            <id>develop-profile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>staging-profile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>release-profile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

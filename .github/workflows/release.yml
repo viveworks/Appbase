@@ -1,0 +1,75 @@
+# Release (manual, owner-gated) (internal work item 1432, AC13, N06 of internal work item 1009's public-repository export gate).
+#
+# Proves the OWNER-GATING MECHANISM, not a working Maven-Central publish -- that is a separate,
+# larger, not-yet-started gap (see the publish step below).
+#
+# `environment: release` is THE WALL (same reasoning as Setup-Guide.md Part 1's branch-protection
+# wall): GitHub pauses a job that carries `environment: release` until a required reviewer approves
+# the run, and that approval step happens server-side -- a non-owner dispatching this workflow
+# cannot get past it no matter what the YAML says. The owner-only console steps that make this a
+# real wall (creating the `release` environment, naming the owner as its required reviewer, and
+# scoping the secrets below to it rather than to the repository) are public-repository settings
+# described by the operator contract in RELEASING.md. They cannot be performed from this workflow.
+#
+# `workflow_dispatch` only, with a literal confirmation phrase -- a release is a deliberate act,
+# never a side effect of a push or a label.
+#
+# 🔴 THE PUBLISH STEP FAILS LOUDLY TODAY, ON PURPOSE. `pom.xml`'s own release-profile comment states
+# plainly there is no distributionManagement/GPG/Sonatype wiring yet, and the Sonatype namespace and
+# GPG key themselves do not exist yet either. Those prerequisites require human-operated namespace
+# and signing-key setup plus the fail-closed staging procedure documented in RELEASING.md. They are
+# separate release-infrastructure work, out of scope for this workflow to silently absorb.
+# Wiring this step to merely no-op or to claim success without a real deploy would misrepresent that
+# gap exactly the way a green build everyone learns to scroll past does -- so it refuses instead,
+# with a named reason, whether or not the environment secrets
+# below have been filled in. Replace this step, not its exit code, once those prerequisites land.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type RELEASE to run this (a deliberate act, never a side effect)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: owner-approved release (environment-gated)
+    runs-on: ubuntu-24.04
+    environment: release
+    timeout-minutes: 60
+    steps:
+      - name: Require the literal confirmation phrase
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "RELEASE" ]; then
+            echo "::error::confirm input must be the literal word RELEASE" >&2
+            exit 1
+          fi
+
+      - name: Check out the dispatched ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: build.sh --mode release (release-profile build, no deploy)
+        run: ./build.sh --mode release
+
+      - name: Publish to Sonatype staging (dropped in rehearsal) — NOT YET WIRED
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_TOKEN: ${{ secrets.SONATYPE_TOKEN }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "::error::release publish is not wired yet -- pom.xml has no distributionManagement/" >&2
+          echo "::error::GPG/Sonatype config, namespace, and signing key are not ready." >&2
+          echo "::error::Fails loudly rather than silently skipping; see RELEASING.md." >&2
+          echo "::error::Do not fill the secrets above until the documented prerequisites land." >&2
+          exit 1

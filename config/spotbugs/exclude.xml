@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SpotBugs exclude (suppression) filter for the Appbase reactor.
+
+  Introduced by N03 (internal work item 1205) of P03·E01 (internal work item 1132), the SpotBugs + find-sec-bugs +
+  sb-contrib analyzer gate. Referenced from the spotbugs-maven-plugin
+  <configuration> in the root pom via
+  ${maven.multiModuleProjectDirectory}/config/spotbugs/exclude.xml.
+
+  DISCIPLINE (spec §"suppression file with a recorded reason per entry"):
+    * This file exists BEFORE the gate arms so a genuine false positive has a
+      home that is reviewed, not invented under release pressure.
+    * EVERY <Match> MUST carry a comment giving the recorded reason: what the
+      finding is, why it is a false positive (or accepted risk), and the S##
+      sub-task / issue where that verdict was established.
+    * A suppression with no reason is a Lens-6 defect. When in doubt, fix the
+      code rather than suppress the finding.
+    * Match by the narrowest key that still holds (Bug pattern + Class, or
+      Class + Method). A blanket bug-pattern-wide exclusion is permitted ONLY
+      when EVERY finding of that pattern across the whole reactor has been
+      enumerated and individually classified as a non-defect, and that
+      classification is recorded. The lone such entry is
+      EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS below (all 128 occurrences —
+      machine-recounted 2026-09-12 — classified under N03 internal work item 1205 / S01 internal work item 1437).
+      The per-occurrence enumeration is RETAINED as reviewable, reproducible
+      tracked artifacts alongside this file: config/spotbugs/exs-inventory.tsv
+      (machine ground truth), classify-exs-inventory.awk (deterministic
+      classifier), exs-inventory-classified.tsv (the per-row classification), and
+      EXS-suppression-inventory.md (the classification scheme + per-surface
+      rationale + recount recipe). Any other new entry uses a narrow key.
+
+  Format reference: https://spotbugs.readthedocs.io/en/stable/filter.html
+
+  S01 (internal work item 1437) introduced one entry: the EXS detector-disable below, whose full
+  per-occurrence classification is recorded with it. S02 (internal work item 1438) fixes the genuine
+  findings in code (162 LSC literal-string swaps, plus the RC reference-comparison,
+  RV ignored-return, MS mutable-static and DE dropped-exception fixes) and adds ONE
+  further, narrowly-keyed entry: the jasync NP_NONNULL_PARAM_VIOLATION pair, suppressed
+  as an accepted risk routed to internal work item 1135 under the D-B rule (reason recorded with it).
+
+  @author Navaneeth Mysore G
+  @author Claude
+-->
+<FindBugsFilter>
+
+    <!--
+      ================================================================
+      EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS  (sb-contrib, category STYLE, rank 15)
+      Detector NOT enforced. Recorded reason (N03 internal work item 1205 / S01 internal work item 1437):
+      ================================================================
+      This detector flags any method that converts a checked exception to an
+      unchecked one without the method being "constrained" to do so. A machine-
+      counted full-reactor run (spotbugs:spotbugs, threshold=Low, effort=Max, this
+      EXS entry un-excluded, 2026-09-12) produced 128 occurrences across 26 report
+      modules — the authoritative count. (An earlier ledger draft's "219, 179
+      itemized" figure was an unreconciled estimate whose claim and breakdown did not
+      sum; the per-occurrence machine TSV that grounds the 128 below is RETAINED as
+      a tracked artifact next to this file — config/spotbugs/exs-inventory.tsv
+      (machine ground truth) → exs-inventory-classified.tsv (per-row classification,
+      regenerable via classify-exs-inventory.awk), documented in
+      EXS-suppression-inventory.md.) Every occurrence is a deliberate, idiomatic
+      checked->unchecked conversion at a boundary whose invocation contract does not
+      carry the checked type. Machine-derived breakdown (each axis sums to 128):
+
+        By method kind:
+          39  constructors (<init>) — boundary/service constructors invoked through
+              the platform's service-construction path: for 36 of the 39 the uniform
+              super(...) chain into AbstractAppbase*Service; for the other 3 the
+              equivalent factory-instantiation path in classes that implement their
+              service interface directly (DefaultExceptionAccessor <init> x1,
+              DefaultLuceneService <init> x2). NONE of these paths declares or handles
+              a checked exception; construction failures are wrapped as the platform's
+              unchecked AppbaseRuntimeException. NOTE: a Java constructor CAN legally
+              declare `throws` on a checked exception — the softening is a deliberate
+              DESIGN CONTRACT (the construction/DI surface declares none), NOT a
+              language limitation. Earlier versions of this comment wrongly said
+              constructors "cannot propagate a checked exception" (corrected 2026-09-12)
+              and then that ALL 39 use the super(...) chain (corrected in the round-2
+              re-review — the super-chain holds for 36, the invariant for all 39 is
+              that the construction surface declares no checked type).
+          89  framework-invoked methods — JAX-RS resource methods in the web-service
+              layer, plus configuration / registry / lifecycle service methods and
+              codec/util methods, invoked by a runtime that maps the runtime exception
+              (e.g. to an HTTP status) or that implement an interface whose signature
+              declares no checked type.
+        By module layer:
+          71  web-service layer   (com.viveworks.appbase.service.web)
+          28  client integration services (…client.service.*)
+          17  core                (util 9 / service 6 / bootstrap 2)
+          11  client core / cloud / util
+           1  service util
+
+      "Fixing" any of these would break the boundary contract or force `throws Throwable`
+      (strictly worse code). None are defects. The genuine findings this task DID fix
+      (correctness, mutable-static, dropped-exception, and the LSC literal-string set)
+      are handled in code under S02 (internal work item 1438), not suppressed. This entry disables only
+      the one style detector that disagrees with the framework's exception architecture.
+    -->
+    <Match>
+        <Bug pattern="EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS"/>
+    </Match>
+
+    <!--
+      ================================================================
+      NP_NONNULL_PARAM_VIOLATION  (core, rank 6) — NARROW key: this one class + method.
+      One finding remains (eventLoopGroup); routed to internal work item 1135. Recorded reason (N03 internal work item 1205 / S02 internal work item 1438):
+      ================================================================
+      DefaultJasyncClientIntegrationService.connectionPoolConfiguration() constructs jasync-sql's
+      `new ConnectionPoolConfiguration(...)`, whose Kotlin `eventLoopGroup` and `byteBufAllocator`
+      params are @NotNull. VERIFIED against the dependency itself (decompiled jasync-common-1.2.3:
+      the constructor calls `Intrinsics.checkNotNullParameter` on both), so passing null is a
+      **deterministic construction-time NPE** — NOT a live-backend tolerance question, and it
+      throws before any socket/thread/backend I/O. connectionPoolConfiguration() runs from
+      initImpl() → super.init() at construction, so any instantiation NPEs today. (An earlier
+      version of this reason mischaracterised it as a live-backend property; corrected after the
+      internal work item 1438 review decompiled the jar.)
+
+      Split by null, because the two are not the same risk:
+        * `byteBufAllocator` — FIXED IN CODE (S02): `ByteBufAllocator.DEFAULT`, netty's stateless
+          shared allocator. No lifecycle, no backend behaviour to verify — D-B does not apply, so it
+          is fixed here, not deferred. This finding no longer fires.
+        * `eventLoopGroup` — still null, still one live NP finding, and this suppression covers it.
+          A correct non-null value is a *managed* netty EventLoopGroup with create + shutdown
+          ownership tied to the connection lifecycle — genuinely backend/lifecycle work that belongs
+          to the task that opens jasync connections against a running database.
+
+      Therefore: `eventLoopGroup` ROUTED to P04·E01 internal work item 1135 (owns the jasync backend + IT), which must
+      supply and lifecycle-manage a real EventLoopGroup and record the verdict. Until then the jasync
+      service is NOT instantiable — a pre-existing defect this PR documents rather than introduces.
+      Narrow key (class + method), so no other NP_NONNULL_PARAM_VIOLATION in the reactor is affected.
+    -->
+    <Match>
+        <Class name="com.viveworks.appbase.client.service.jasync.DefaultJasyncClientIntegrationService"/>
+        <Method name="connectionPoolConfiguration"/>
+        <Bug pattern="NP_NONNULL_PARAM_VIOLATION"/>
+    </Match>
+
+</FindBugsFilter>

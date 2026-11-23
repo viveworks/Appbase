@@ -1,0 +1,170 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase-service</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <artifactId>appbase-service-user-account-r2dbc</artifactId>
+    <packaging>jar</packaging>
+    <name>Appbase Service User Account R2DBC</name>
+    <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+    <scm>
+        <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+    </scm>
+    <distributionManagement>
+        <site>
+            <id>${project.artifactId}</id>
+            <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+        </site>
+    </distributionManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-user</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-client-r2dbc</artifactId>
+        </dependency>
+
+        <!-- Test-only: in-memory R2DBC driver + reactor-test, backing
+             R2dbcReactiveUserAccountStoreTest against a real embedded H2 engine (no external
+             infra required, so the test runs unconditionally in CI). -->
+        <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Test-only: MariaDB wire driver for the gated R2dbcUserAccountStoreMariaDbIT. The client
+             module declares r2dbc-mariadb optional, so it is not transitive here. -->
+        <dependency>
+            <groupId>org.mariadb</groupId>
+            <artifactId>r2dbc-mariadb</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor.tools</groupId>
+            <artifactId>blockhound</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <executions>
+                    <!--
+                      BlockHound.install() rewrites JDK internals and is JVM-global. Keep the harness
+                      out of the module's default shared fork so its JDK 25 instrumentation cannot
+                      terminate Reactor workers needed by later tests in that fork.
+                    -->
+                    <execution>
+                        <id>default-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*BlockHoundTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <!--
+                      Run every BlockHound harness in its own Surefire execution/fork, matching
+                      appbase-core, so BlockHound installs before Reactor creates scheduler workers.
+                      On JDK 13+ instrumentation needs
+                      AllowRedefinitionToAddDeleteMethods; on JDK 21+ EnableDynamicAgentLoading avoids
+                      the dynamic-agent warning. @{argLine} preserves the root JaCoCo agent.
+                    -->
+                    <execution>
+                        <id>blockhound-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/*BlockHoundTest.java</include>
+                            </includes>
+                            <argLine>@{argLine} -XX:+AllowRedefinitionToAddDeleteMethods -XX:+EnableDynamicAgentLoading</argLine>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <packageName>com.viveworks.appbase.service.user.account.store</packageName>
+                        </manifest>
+                    </archive>
+                    <instructions>
+                        <Export-Package>com.viveworks.appbase.service.user.account.store.*</Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!--
+            Opts this module into the failsafe IT execution defined in the parent's
+            develop-profile/staging-profile/release-profile pluginManagement (version
+            + executions). quick-profile never runs them.
+
+            P-051 E1135 N05 (internal work item 1295). R2dbcUserAccountStoreMariaDbIT is additionally gated behind
+            @EnabledIfEnvironmentVariable(named = "APPBASE_MARIADB_IT", matches = "1"), so an active
+            profile alone does NOT reach for a live MariaDB; the explicit opt-in plus a running
+            backend does.
+        -->
+        <profile>
+            <id>develop-profile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>staging-profile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>release-profile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

@@ -1,0 +1,96 @@
+# Copyright 2019 The original author or authors of Appbase
+#
+# This project includes software developed by the author or authors of
+# Appbase (https://example.invalid/scratch-rehearsal).
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+defaultMetricServiceConfiguration:
+  enableJvmAndSystemMetrics: true
+defaultMediatorServiceConfiguration:
+  ignoredMessageTypeSet:
+  objectPoolCapacity: 256
+  removedMessageQueueCapacity: 128
+  appbaseRuntimeExceptionQueueCapacity: 128
+  defaultMessageQueuesConfiguration:
+    messageQueueType: "BOUND"
+    boundMessageQueueCapacity: 256
+    removeOldMessages: true
+    expiredMessageThresholdMillis: 300000
+    messageQueuesCleanerInitialDelayMillis: 5000
+    messageQueuesCleanerIntervalMillis: 10000
+defaultConfigurationServiceConfiguration:
+  enableSchedulableConfigurationAccessor: true
+  configurationAccessorSchedulableConfiguration:
+    initialDelay: 0
+    interval: 60
+    timeUnit: SECONDS
+defaultServiceRegistryConfiguration:
+  enablePolling: true
+  registerAsConfigurationListener: true
+  pollingSchedulableConfiguration:
+    initialDelay: 0
+    interval: 1000
+    timeUnit: "MILLISECONDS"
+defaultExceptionServiceConfiguration:
+  defaultExceptionAccessorConfiguration:
+    exceptionStoreConfigurations:
+      - type: "com.viveworks.appbase.core.service.exception.store.jpa.JpaExceptionStoreConfiguration"
+        enabled: true
+        discriminator: "discriminator"
+        idColumnName: "id"
+        discriminatorColumnName: "discriminator"
+        messageColumnName: "message"
+        throwableTypeNameColumnName: "throwableTypeName"
+        stackTraceHashColumnName: "stackTraceHash"
+        throwableMessageColumnName: "throwableMessage"
+        stackTraceColumnName: "stackTrace"
+        sourceTypeNameColumnName: "sourceTypeName"
+        threadNameColumnName: "threadName"
+        timestampColumnName: "timestamp"
+        stackTraceSerializationMaxLength: 2048
+        entityManagerConfiguration:
+          persistenceUnitName: "testAppbasePersistenceUnit"
+  defaultExpiredMessageCleanerConfiguration:
+    enabled: true
+    removeBeforeTimePeriod: 1
+    removeBeforeTimePeriodUnit: "SECONDS"
+    schedulableConfiguration:
+      initialDelay: 0
+      interval: 1
+      timeUnit: "SECONDS"
+defaultJmxServiceConfiguration:
+  enabled: true
+  excludedMxBeanRegistrations: []
+defaultTracerServiceConfiguration:
+  serviceName: "AppbaseService"
+  tags: null
+  use128BitTraceId: true
+  expandExceptionLogs: true
+  jaegerPropagationConfiguration:
+    jaegerPropagationTypes:
+      - "W3C_TRACE_CONTEXT"
+    baggagePrefix: "baggage-"
+  jaegerSamplerConfiguration:
+    type: "com.viveworks.appbase.core.service.tracer.configuration.sampler.ConstSamplerConfiguration"
+    decision: true
+  jaegerReporterConfigurations:
+    - type: "com.viveworks.appbase.core.service.tracer.configuration.reporter.LoggingReporterConfiguration"
+      enabled: true
+defaultReactiveServiceConfiguration:
+  enabled: true
+  schedulerConfigurations:
+    - id: "Appbase-Reactor-MediatorExecutorServiceScheduler"
+      defaultScheduler: true
+      executorName: "appbase-reactor-scheduler-mediator-executor"
+      type: "com.viveworks.appbase.core.service.reactive.reactor.scheduler.configuration.MediatorExecutorServiceSchedulerConfiguration"

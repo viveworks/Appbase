@@ -1,0 +1,71 @@
+{
+  "requestedURL": "http://127.0.0.1:52816/restapi/",
+  "startedAt": "2026-10-01T14:39:13.243Z",
+  "source_sha": "b3d7294ff2df0e69b7d5fc9611a549160f88f3a6",
+  "url": "http://127.0.0.1:52816/restapi/",
+  "groups": [
+    "default"
+  ],
+  "images": [
+    {
+      "file": "overview.png",
+      "kind": "overview",
+      "clip": {
+        "x": 0,
+        "y": 0,
+        "width": 1265,
+        "height": 8800
+      },
+      "width": 1265,
+      "height": 8800,
+      "bytes": 1683182,
+      "sha256": "3ee4e5dca2a10f2d65f4173ecfac836f766dbd169aefe133ab888071adaef024"
+    },
+    {
+      "file": "group-001-default.png",
+      "kind": "group",
+      "group": "default",
+      "operationCount": 119,
+      "clip": {
+        "x": 28,
+        "y": 263,
+        "width": 1224,
+        "height": 6783
+      },
+      "width": 1224,
+      "height": 6783,
+      "bytes": 1527593,
+      "sha256": "b2af8397159e14356d9d60e62545d439ff3ee2ce0d8b1c878bda2ef30e7dffcc"
+    }
+  ],
+  "browser": {
+    "Browser": "Chrome/154.0.8037.92",
+    "Protocol-Version": "1.3"
+  },
+  "viewport": {
+    "width": 1280,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "status": "complete",
+  "actualURL": "http://127.0.0.1:52816/restapi/",
+  "title": "Appbase Core REST API - real core resources, test-only OpenAPI harness",
+  "finishedAt": "2026-10-01T14:39:20.533Z",
+  "captured_at": "2026-10-01T14:39:20.533Z",
+  "browserErrors": [],
+  "label": "Real Appbase core JAX-RS resources, served through a test-only OpenAPI harness because no core-service main code (appbase-core, appbase-service-*) registers an OpenApiResource (internal work item 2548; the configuration wizard's own web server does). Operations are not invoked in the Swagger UI.",
+  "harness": "appbase-stacktest CoreSwaggerCaptureStackTest (opt-in, test-only OpenApiResource)",
+  "resources": {
+    "title": "Appbase Core REST API",
+    "resourceClasses": 10,
+    "paths": 97,
+    "operations": 119
+  },
+  "try_it_out": "disabled",
+  "swagger_ui_webjar": {
+    "name": "swagger-ui-5.9.0.jar",
+    "version": "5.9.0",
+    "sha256": "1d86ca9c3774a4311dedb6f5f33c69f6e336c18a6d5cddb2dcdfa72312480b23"
+  },
+  "runner": "scripts/docs/capture-core-swagger-run.py"
+}

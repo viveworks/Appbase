@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.viveworks.appbase</groupId>
+        <artifactId>appbase-service</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <artifactId>appbase-service-web-oauth-reactive</artifactId>
+    <packaging>jar</packaging>
+    <name>Appbase Service Web OAuth Reactive</name>
+    <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+    <scm>
+        <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+    </scm>
+    <distributionManagement>
+        <site>
+            <id>${project.artifactId}</id>
+            <url>https://example.invalid/scratch-rehearsal/tree/develop/Java/${project.artifactId}</url>
+        </site>
+    </distributionManagement>
+
+    <dependencies>
+        <!-- The validation core and SPIs (TokenValidator, TokenCache, ValidatedToken, OAuthConfiguration,
+             TokenKeyHasher). The reactive filter reuses them unchanged; only the filter shell differs. -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web-oauth</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- The transport-neutral request/response exchange (AppbaseServiceExchange); NettyWebExchange is
+             its reactor-netty implementation. The filter reads the Authorization header, sets the status
+             and attaches the validated token through this seam, so it needs no reactor-netty dependency. -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Reactor Core supplies the non-blocking return type (Mono); the blocking SPI calls are offloaded
+             off the event loop. Version is managed centrally (as in appbase-core / appbase-service-web). -->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- BlockHound proves the filter's blocking SPI work (validate, cache get/put) never runs on a
+             non-blocking scheduler thread: it is offloaded to boundedElastic (S02, spec §4.5/§10.6).
+             Version is managed centrally by the root pom (blockhound.version); test scope only. -->
+        <dependency>
+            <groupId>io.projectreactor.tools</groupId>
+            <artifactId>blockhound</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!--
+                      BlockHound rewrites JDK internals to detect blocking calls on non-blocking
+                      threads. On JDK 13+ that needs AllowRedefinitionToAddDeleteMethods; on JDK 21+
+                      the dynamic agent load warns without EnableDynamicAgentLoading. @{argLine}
+                      preserves the JaCoCo agent that the root pom appends. The argLine flags match the
+                      reactor-netty and appbase-core BlockHound modules.
+
+                      Placement mirrors reactor-netty specifically: one shared default-test execution,
+                      NOT appbase-core's isolated blockhound-test execution. BlockHound.install() is
+                      JVM-global and stays armed for the module's fork (surefire reuseForks default),
+                      but the only other test here, ReactiveOAuthFilterTest, drives the filter through
+                      StepVerifier on the calling (main) thread — which BlockHound does not instrument —
+                      and the filter offloads its blocking SPI work to boundedElastic, which BlockHound's
+                      Reactor integration exempts. So no sibling test blocks on an instrumented thread and
+                      a single shared configuration is safe; appbase-core needs its isolated execution
+                      only because its order-sensitive 350+-test suite shares one fork.
+                    -->
+                    <argLine>@{argLine} -XX:+AllowRedefinitionToAddDeleteMethods -XX:+EnableDynamicAgentLoading</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>ban-spring-security-keycloak</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <searchTransitive>true</searchTransitive>
+                                    <excludes>
+                                        <exclude>org.springframework.security:*</exclude>
+                                        <exclude>org.keycloak:*</exclude>
+                                    </excludes>
+                                    <message>appbase-service-web-oauth-reactive is the reactive twin of appbase-service-web-oauth: it validates tokens locally with the same Nimbus core, so it too takes no hard dependency on Spring Security or Keycloak (P-020).</message>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <packageName>com.viveworks.appbase.service.web.oauth.reactive</packageName>
+                        </manifest>
+                    </archive>
+                    <instructions>
+                        <Export-Package>com.viveworks.appbase.service.web.oauth.reactive.*</Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

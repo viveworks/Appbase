@@ -1,0 +1,8 @@
+# Fixture for the P-050 N02 spike (internal work item 921): does the YAML load path interpolate ${VAR} in a VALUE?
+#
+# Read by YamlEnvSubstitutionSpikeTest. The value below is deliberately the exact shape a config file
+# would use if substitution were supported, so the test observes the real question rather than a proxy.
+spikeNode:
+  interpolated: "${APPBASE_SPIKE_HOST}"
+  withDefault: "${APPBASE_SPIKE_HOST:-fallback}"
+  literal: "localhost"

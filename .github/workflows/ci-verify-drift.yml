@@ -1,0 +1,47 @@
+# Public ci-verify drift guard (internal work item 2655).
+#
+# This public repository has no private integration-branch inventory. This fail-closed guard runs
+# only when ci-verify.yml itself changes and
+# pins the touched-scope contract that makes the full workflow affordable.
+name: ci-verify-drift
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/ci-verify.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  scope-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out the exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify public touched-scope contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/ci-verify.yml
+          test -s "$workflow"
+          for job in changed-modules maven-compile api-inventory maven-unit-tests offline-shell-suites config-wizard-console emulator stacktest live-l04-kafka-zookeeper release-profile-rehearsal live-l10-config-wizard-playwright summary; do
+            grep -qE "^  ${job}:$" "$workflow" || { echo "missing ci-verify job: $job" >&2; exit 1; }
+          done
+          grep -Fq "needs.changed-modules.outputs.run_unit_tests == 'true'" "$workflow"
+          grep -Fq "needs.changed-modules.outputs.run_hosted_tiers == 'true'" "$workflow"
+          grep -Fq "needs.changed-modules.outputs.run_shell_suites == 'true'" "$workflow"
+          grep -Fq "needs.changed-modules.outputs.run_console_suite == 'true'" "$workflow"
+          grep -Fq "needs.changed-modules.outputs.run_emulator == 'true'" "$workflow"
+          grep -Fq "needs.changed-modules.outputs.run_stacktest == 'true'" "$workflow"
+          grep -Fq "github.event.inputs.run_l04_kafka_zookeeper == 'true'" "$workflow"
+          grep -Fq "github.event.inputs.run_l10_config_wizard_playwright == 'true'" "$workflow"
+          if grep -Eqi 'checkpointsched|live-l04-kafka-mutation-control|epic-close-|live-l2536-|epic1137-(stacktest-f1|live-adapter)' "$workflow"; then
+            echo 'private campaign surface leaked into public ci-verify' >&2
+            exit 1
+          fi

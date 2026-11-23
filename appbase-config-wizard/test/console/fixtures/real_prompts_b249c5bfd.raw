@@ -1,0 +1,121 @@
+[36;1m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[36;1m    Appbase Config Wizard[0m
+[36;1m  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+
+[11m[36;1mqq[10m Main Menu [11mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[10m[0m
+  [1] Configurations
+  [E] Exit
+[11m[36;1mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[10m[0m
+Choice: 
+
+[11m[36;1mqq[10m Configurations [11mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[10m[0m
+  [1] Create new YAML configuration
+  [2] Import YAML configurations from directory
+  [B] Back to main menu
+[11m[36;1mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[10m[0m
+Choice: 
+
+[36;1m  Available configurations (79 shown):[0m
+
+[36;1m  Available configurations (79 shown):[0m
+    1. [33m[AuthorizationServiceExceptionConfiguration][0m [1mAuthorizationServiceExceptionConfiguration[0m
+    2. [33m[DefaultAppbaseClientCoreConfiguration][0m [1mDefaultAppbaseClientCoreConfiguration[0m
+    3. [33m[DefaultAppbaseClientCoreSharedResourcesConfiguration][0m [1mDefaultAppbaseClientCoreSharedResourcesConfiguration[0m
+    4. [33m[DefaultAuthorizationServiceConfiguration][0m [1mDefaultAuthorizationServiceConfiguration[0m
+    5. [33m[DefaultHealthCheckServiceConfiguration][0m [1mDefaultHealthCheckServiceConfiguration[0m
+    6. [33m[DefaultIdServiceConfiguration][0m [1mDefaultIdServiceConfiguration[0m
+    7. [33m[DefaultPasswordServiceConfiguration][0m [1mDefaultPasswordServiceConfiguration[0m
+    8. [33m[DefaultSupportMessageServiceConfiguration][0m [1mDefaultSupportMessageServiceConfiguration[0m
+    9. [33m[StaticClusterServiceConfiguration][0m [1mStaticClusterServiceConfiguration[0m
+   10. [33m[account][0m [1mDefaultFirebaseAuthServiceConfiguration[0m
+   11. [33m[account][0m [1mDefaultUserAccountServiceConfiguration[0m
+   12. [33m[account][0m [1mIdpUserTokenCheckFilterConfiguration[0m
+   13. [33m[account][0m [1mJdbiUserAccountStoreConfiguration[0m
+   14. [33m[account][0m [1mR2dbcReactiveUserAccountStoreConfiguration[0m
+   15. [33m[account][0m [1mUserAccountServiceExceptionConfiguration[0m
+   16. [33m[aerospike][0m [1mDefaultAerospikeClientIntegrationServiceConfiguration[0m
+   17. [33m[aerospike][0m [1mDefaultAerospikeClientServiceConfiguration[0m
+   18. [33m[aws][0m [1mDefaultAwsSdkAsyncHttpClientIntegrationServiceConfiguration[0m
+   19. [33m[aws][0m [1mDefaultAwsSdkAsyncHttpClientServiceConfiguration[0m
+   20. [33m[aws][0m [1mDefaultAwsSdkHttpClientIntegrationServiceConfiguration[0m
+   21. [33m[aws][0m [1mDefaultAwsSdkHttpClientServiceConfiguration[0m
+   22. [33m[aws][0m [1mDefaultS3ClientsIntegrationServiceConfiguration[0m
+   23. [33m[aws][0m [1mDefaultS3ClientsServiceConfiguration[0m
+   24. [33m[cassandra][0m [1mDefaultCassandraClientIntegrationServiceConfiguration[0m
+   25. [33m[cassandra][0m [1mDefaultCassandraClientServiceConfiguration[0m
+   26. [33m[clamav][0m [1mDefaultClamAVClientIntegrationServiceConfiguration[0m
+   27. [33m[clamav][0m [1mDefaultClamAVClientServiceConfiguration[0m
+   28. [33m[clamav][0m [1mDefaultClamAVClientSharedResourcesConfiguration[0m
+   29. [33m[configuration][0m [1mDefaultConfigurationServiceConfiguration[0m
+   30. [33m[disruptor][0m [1mDefaultDisruptorServiceConfiguration[0m
+   31. [33m[druid][0m [1mDefaultDruidSqlClientIntegrationServiceConfiguration[0m
+   32. [33m[druid][0m [1mDefaultDruidSqlClientServiceConfiguration[0m
+   33. [33m[druid][0m [1mDefaultDruidSqlClientSharedResourcesConfiguration[0m
+   34. [33m[elasticsearch][0m [1mDefaultElasticsearchLowLevelRestClientIntegrationServiceConfiguration[0m
+   35. [33m[elasticsearch][0m [1mDefaultElasticsearchLowLevelRestClientServiceConfiguration[0m
+   36. [33m[exception][0m [1mDefaultExceptionServiceConfiguration[0m
+   37. [33m[filter][0m [1mAppbaseFilterConfig[0m
+   38. [33m[firebase][0m [1mDefaultFirebaseAppClientIntegrationServiceConfiguration[0m
+   39. [33m[firebase][0m [1mDefaultFirebaseAppClientServiceConfiguration[0m
+   40. [33m[firebase][0m [1mDefaultFirebaseAuthClientIntegrationServiceConfiguration[0m
+   41. [33m[firebase][0m [1mDefaultFirebaseAuthClientServiceConfiguration[0m
+   42. [33m[jasync][0m [1mDefaultJasyncClientIntegrationServiceConfiguration[0m
+   43. [33m[jasync][0m [1mDefaultJasyncClientServiceConfiguration[0m
+   44. [33m[jdbc][0m [1mDefaultJdbcClientIntegrationServiceConfiguration[0m
+   45. [33m[jdbc][0m [1mDefaultJdbcClientServiceConfiguration[0m
+   46. [33m[jdbi][0m [1mDefaultJdbiClientIntegrationServiceConfiguration[0m
+   47. [33m[jdbi][0m [1mDefaultJdbiClientServiceConfiguration[0m
+   48. [33m[jmx][0m [1mDefaultJmxServiceConfiguration[0m
+   49. [33m[jpa][0m [1mDefaultJpaClientIntegrationServiceConfiguration[0m
+   50. [33m[jpa][0m [1mDefaultJpaClientServiceConfiguration[0m
+   51. [33m[kafka][0m [1mDefaultKafkaConsumerClientIntegrationServiceConfiguration[0m
+   52. [33m[kafka][0m [1mDefaultKafkaConsumerClientServiceConfiguration[0m
+   53. [33m[kafka][0m [1mDefaultKafkaProducerClientIntegrationServiceConfiguration[0m
+   54. [33m[kafka][0m [1mDefaultKafkaProducerClientServiceConfiguration[0m
+   55. [33m[mediator][0m [1mDefaultMediatorServiceConfiguration[0m
+   56. [33m[metric][0m [1mDefaultMetricServiceConfiguration[0m
+   57. [33m[metric][0m [1mJmxMeterRegistryConfiguration[0m
+   58. [33m[r2dbc][0m [1mDefaultR2dbcClientIntegrationServiceConfiguration[0m
+   59. [33m[r2dbc][0m [1mDefaultR2dbcClientServiceConfiguration[0m
+   60. [33m[reactive][0m [1mDefaultReactiveOperationConfiguration[0m
+   61. [33m[reactive][0m [1mDefaultReactorServiceConfiguration[0m
+   62. [33m[redis][0m [1mDefaultRedisClientIntegrationServiceConfiguration[0m
+   63. [33m[redis][0m [1mDefaultRedisClientServiceConfiguration[0m
+   64. [33m[registry][0m [1mDefaultServiceRegistryConfiguration[0m
+   65. [33m[session][0m [1mDefaultUserSessionStoreConfiguration[0m
+   66. [33m[session][0m [1mUserSessionExpiredExceptionConfiguration[0m
+   67. [33m[session][0m [1mUserSessionFilterConfiguration[0m
+   68. [33m[session][0m [1mUserSessionNotFoundExceptionConfiguration[0m
+   69. [33m[smtp][0m [1mDefaultSmtpClientIntegrationServiceConfiguration[0m
+   70. [33m[smtp][0m [1mDefaultSmtpClientServiceConfiguration[0m
+   71. [33m[spark][0m [1mDefaultSparkClientIntegrationServiceConfiguration[0m
+   72. [33m[spark][0m [1mDefaultSparkClientServiceConfiguration[0m
+   73. [33m[store][0m [1mJdbiSupportMessageStoreConfiguration[0m
+   74. [33m[tracer][0m [1mDefaultTracerServiceConfiguration[0m
+   75. [33m[validation][0m [1mDefaultValidationServiceConfiguration[0m
+   76. [33m[vitess][0m [1mDefaultVitessGrpcClientIntegrationServiceConfiguration[0m
+   77. [33m[vitess][0m [1mDefaultVitessGrpcClientServiceConfiguration[0m
+   78. [33m[zookeeper][0m [1mDefaultZooKeeperClientIntegrationServiceConfiguration[0m
+   79. [33m[zookeeper][0m [1mDefaultZooKeeperClientServiceConfiguration[0m
+
+[?2004hFilter [Enter=select highlighted, number=pick, q=quit]: ZooKeeperClientIntegrationService
+[?2004l
+[36;1m  Available configurations (1 shown):[0m
+
+[36;1m  Available configurations (1 shown):[0m
+    1. [33m[zookeeper][0m [1mDefaultZooKeeperClientIntegrationServiceConfiguration[0m
+
+[?2004hFilter [Enter=select highlighted, number=pick, q=quit]: 1
+[?2004l[?2004h  clusterIdValueKeyConfiguration (ClusterIdValueConfiguration) — use defaults? [y]: 
+[?2004l[36;1m  hostPortConfigurations (Set<HostPortConfiguration>)[0m
+[33m  Tip: value type is complex — enter values as JSON.[0m
+[33m       Example for List/Set value:  ["READ","WRITE"][0m
+[?2004h  Use defaults and skip? [y]: 
+[?2004l[?2004h  disableBlockUntilConnected (bool) [false]: 
+[?2004l[?2004h  blockUntilConnectedTimeoutConfiguration (TimeoutConfiguration) — use defaults? [y]: 
+[?2004l[?2004h  connectionTimeoutConfiguration (TimeoutConfiguration) — use defaults? [y]: 
+[?2004l[?2004h  sessionTimeoutConfiguration (TimeoutConfiguration) — use defaults? [y]: 
+[?2004l[?2004h  maxCloseWaitTimeoutConfiguration (TimeoutConfiguration) — use defaults? [y]: 
+[?2004l[?2004h  waitForShutdownTimeoutConfiguration (TimeoutConfiguration) — use defaults? [y]: 
+[?2004l[?2004h  retryPolicyConfiguration (RetryPolicyConfiguration) — use defaults? [y]: 

@@ -1,0 +1,146 @@
+/*
+ * Copyright 2019 The original author or authors of Appbase
+ *
+ * This project includes software developed by the author or authors of
+ * Appbase (https://example.invalid/scratch-rehearsal).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.viveworks.appbase.client.service.cassandra.configuration;
+
+import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.viveworks.appbase.core.AppbaseRuntimeException;
+import com.viveworks.appbase.core.util.AppbaseUtil;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import javax.annotation.concurrent.Immutable;
+import java.util.Objects;
+
+/**
+ * Configuration for {@link DriverConfigLoader}.
+ *
+ * @author Navaneeth Mysore G
+ * @since 1.0.0
+ */
+@Immutable
+@JsonDeserialize(builder = DriverConfigLoaderConfiguration.Builder.class)
+public final class DriverConfigLoaderConfiguration {
+    private final String resourceBaseName;
+    private final String filename;
+    private final String url;
+
+    private DriverConfigLoaderConfiguration(final Builder builder) {
+        AppbaseUtil.notNull(builder, "builder");
+
+        if (builder.resourceBaseName == null && builder.filename == null && builder.url == null) {
+            throw new AppbaseRuntimeException(
+                    "One of builder.resourceBaseName, builder.filename or builder.url must not be null");
+        }
+
+        resourceBaseName = builder.resourceBaseName;
+        filename = builder.filename;
+        url = builder.url;
+    }
+
+    /**
+     * Get the builder used to build this object.
+     *
+     * @return Builder for this object
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public String getResourceBaseName() {
+        return resourceBaseName;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final DriverConfigLoaderConfiguration that = (DriverConfigLoaderConfiguration) o;
+        return Objects.equals(resourceBaseName, that.resourceBaseName) &&
+                Objects.equals(filename, that.filename) &&
+                Objects.equals(url, that.url);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(resourceBaseName, filename, url);
+    }
+
+    @Override
+    public String toString() {
+        return "DriverConfigLoaderConfiguration{" +
+                "resourceBaseName='" + resourceBaseName + '\'' +
+                ", filename='" + filename + '\'' +
+                ", url='" + url + '\'' +
+                '}';
+    }
+
+    /**
+     * Builder for {@link DriverConfigLoaderConfiguration}.
+     *
+     * @author Navaneeth Mysore G
+     * @since 1.0.0
+     */
+    // CheckStyle: Builder start
+    @JsonPOJOBuilder(withPrefix = "")
+    @SuppressFBWarnings("FCBL_FIELD_COULD_BE_LOCAL")
+    public static final class Builder {
+        private String resourceBaseName;
+        private String filename;
+        private String url;
+
+        private Builder() {
+        }
+
+        public Builder resourceBaseName(final String resourceBaseName) {
+            this.resourceBaseName = resourceBaseName;
+            return this;
+        }
+
+        public Builder filename(final String filename) {
+            this.filename = filename;
+            return this;
+        }
+
+        public Builder url(final String url) {
+            this.url = url;
+            return this;
+        }
+
+        public DriverConfigLoaderConfiguration build() {
+            return new DriverConfigLoaderConfiguration(this);
+        }
+    }
+    // CheckStyle: Builder end
+}

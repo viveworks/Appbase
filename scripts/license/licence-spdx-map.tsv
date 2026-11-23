@@ -1,0 +1,113 @@
+# licence-spdx-map.tsv — declared licence string -> SPDX identifier + Apache-2.0 compatibility class.
+#
+# READ THIS BEFORE TRUSTING A ROW. The key is the licence NAME A DEPENDENCY'S POM DECLARES, verbatim.
+# That is metadata, not the licence itself: a POM can be stale, thin, or simply wrong about the
+# project it describes. This file therefore records a DERIVATION with its reasoning in the note
+# column; it records no legal advice, no clearance and nobody's acceptance.
+#
+# CLASSES
+#   COMPATIBLE    permissive, or Apache-2.0 itself. Redistributable inside an Apache-2.0 work with
+#                 attribution. (Broadly the ASF's "Category A".)
+#   CONDITIONS    weak copyleft / file-level copyleft. Generally redistributable in BINARY form with
+#                 attribution and without relicensing the combined work, but conditions attach and
+#                 the source form is not Apache-2.0. (Broadly "Category B".)
+#   CONTESTED     genuinely disputed, or dependent on how the dependency is linked and distributed.
+#                 NOT a verdict — a question for the owner. LGPL and GPL-with-linking-exception are
+#                 here because reasonable readings differ, not because a reading has been chosen.
+#   INCOMPATIBLE  strong copyleft with no linking exception, or non-commercial/proprietary terms.
+#   UNRESOLVED    the POM declares nothing usable. This is the "we do not know" value and it must
+#                 never be confused with COMPATIBLE.
+#
+# ⚠️ ADDING A ROW IS A RULING. licence-report.sh REFUSES to generate a report containing a declared
+#    string that is not in this file, precisely so that a new dependency cannot slip in with a blank
+#    verdict. Do not add a row to silence the refusal; add it because you decided what it means.
+#
+# declared	spdx	class	note
+3-Clause BSD License	BSD-3-Clause	COMPATIBLE	permissive
+ASL, version 2	Apache-2.0	COMPATIBLE	same licence as this project
+Apache 2	Apache-2.0	COMPATIBLE	same licence as this project
+Apache 2.0	Apache-2.0	COMPATIBLE	same licence as this project
+Apache 2.0 License	Apache-2.0	COMPATIBLE	same licence as this project
+Apache License	Apache-2.0	COMPATIBLE	version omitted in the POM name; the POM's licence URL is apache.org/licenses/LICENSE-2.0
+Apache License 2	Apache-2.0	COMPATIBLE	same licence as this project
+Apache License 2.0	Apache-2.0	COMPATIBLE	same licence as this project
+Apache License V2.0	Apache-2.0	COMPATIBLE	same licence as this project
+Apache License Version 2	Apache-2.0	COMPATIBLE	same licence as this project
+Apache License Version 2.0	Apache-2.0	COMPATIBLE	same licence as this project
+Apache License, 2.0	Apache-2.0	COMPATIBLE	same licence as this project
+Apache License, Version 2.0	Apache-2.0	COMPATIBLE	same licence as this project
+Apache License, version 2.0	Apache-2.0	COMPATIBLE	same licence as this project
+Apache Software License - Version 2.0	Apache-2.0	COMPATIBLE	same licence as this project
+Apache Version 2.0	Apache-2.0	COMPATIBLE	same licence as this project
+Apache-2.0	Apache-2.0	COMPATIBLE	same licence as this project
+BSD	NOASSERTION	UNRESOLVED	bare name does not establish the 2- versus 3-clause SPDX identity; require artifact-specific evidence
+BSD 2-Clause	BSD-2-Clause	COMPATIBLE	permissive
+BSD 2-Clause License	BSD-2-Clause	COMPATIBLE	permissive
+BSD 3-clause	BSD-3-Clause	COMPATIBLE	permissive
+BSD License 3	BSD-3-Clause	COMPATIBLE	permissive
+BSD New license	BSD-3-Clause	COMPATIBLE	permissive
+BSD-2-Clause	BSD-2-Clause	COMPATIBLE	permissive
+BSD-3-Clause	BSD-3-Clause	COMPATIBLE	permissive
+Bouncy Castle Licence	MIT	COMPATIBLE	the Bouncy Castle licence is the MIT licence text verbatim; POM URL bouncycastle.org/licence.html
+CC0	CC0-1.0	COMPATIBLE	public-domain dedication
+CDDL + GPLv2 with classpath exception	CDDL-1.1 OR GPL-2.0-only WITH Classpath-exception-2.0	CONDITIONS	a choice; the CDDL option is file-level copyleft and redistributable in binary form
+CDDL/GPLv2+CE	CDDL-1.1 OR GPL-2.0-only WITH Classpath-exception-2.0	CONDITIONS	a choice; the CDDL option is file-level copyleft and redistributable in binary form
+CDDL 1.1	CDDL-1.1	CONDITIONS	file-level copyleft; binary redistribution permitted with attribution
+COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0	CDDL-1.0	CONDITIONS	file-level copyleft; binary redistribution permitted with attribution
+EDL 1.0	BSD-3-Clause	COMPATIBLE	the Eclipse Distribution License 1.0 is the 3-clause BSD text
+EPL 1.0	EPL-1.0	CONDITIONS	weak copyleft; binary redistribution permitted, source form is not Apache-2.0
+EPL 2.0	EPL-2.0	CONDITIONS	weak copyleft; binary redistribution permitted, source form is not Apache-2.0
+EPL-2.0	EPL-2.0	CONDITIONS	weak copyleft; binary redistribution permitted, source form is not Apache-2.0
+Eclipse Distribution License - v 1.0	BSD-3-Clause	COMPATIBLE	the Eclipse Distribution License 1.0 is the 3-clause BSD text
+Eclipse Distribution License v. 1.0	BSD-3-Clause	COMPATIBLE	the Eclipse Distribution License 1.0 is the 3-clause BSD text
+Eclipse Public License - Version 1.0	EPL-1.0	CONDITIONS	weak copyleft; binary redistribution permitted, source form is not Apache-2.0
+Eclipse Public License - Version 2.0	EPL-2.0	CONDITIONS	weak copyleft; binary redistribution permitted, source form is not Apache-2.0
+Eclipse Public License - v 1.0	EPL-1.0	CONDITIONS	weak copyleft; binary redistribution permitted, source form is not Apache-2.0
+Eclipse Public License - v 2.0	EPL-2.0	CONDITIONS	weak copyleft; binary redistribution permitted, source form is not Apache-2.0
+Eclipse Public License v. 2.0	EPL-2.0	CONDITIONS	weak copyleft; binary redistribution permitted, source form is not Apache-2.0
+Eclipse Public License v2.0	EPL-2.0	CONDITIONS	weak copyleft; binary redistribution permitted, source form is not Apache-2.0
+GNU General Lesser Public License (LGPL) version 3.0	LGPL-3.0-only	CONTESTED	LGPL; compatibility turns on linking and on whether the dependency is modified. Owner's ruling.
+GNU General Public Library	NOASSERTION	UNRESOLVED	name establishes neither version nor exception; require artifact-specific evidence
+GNU General Public License Version 2	GPL-2.0-only	INCOMPATIBLE	bare GPL with no linking exception stated
+GNU General Public License, version 2 (GPL2), with the classpath exception	GPL-2.0-only WITH Classpath-exception-2.0	CONTESTED	the exception is written to permit linking; the ASF nonetheless lists GPL as Category X. Owner's ruling.
+GNU General Public License, version 2 with the GNU Classpath Exception	GPL-2.0-only WITH Classpath-exception-2.0	CONTESTED	the exception is written to permit linking; the ASF nonetheless lists GPL as Category X. Owner's ruling.
+GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1	LGPL-2.1-only	CONTESTED	LGPL; compatibility turns on linking and on whether the dependency is modified. Owner's ruling.
+GNU Lesser General Public License	NOASSERTION	UNRESOLVED	name establishes neither version nor later-version permission; require artifact-specific evidence
+GNU Lesser General Public License (LGPL), Version 2.1	LGPL-2.1-only	CONTESTED	LGPL; compatibility turns on linking and on whether the dependency is modified. Owner's ruling.
+GNU Lesser General Public License Version 2.1	LGPL-2.1-only	CONTESTED	LGPL; compatibility turns on linking and on whether the dependency is modified. Owner's ruling.
+GNU Lesser Public License	NOASSERTION	UNRESOLVED	version and later-version permission are not stated; require artifact-specific evidence
+GNU Library General Public License v2.1 or later	LGPL-2.1-or-later	CONTESTED	LGPL; compatibility turns on linking and on whether the dependency is modified. Owner's ruling.
+GPL-2.0-with-classpath-exception	GPL-2.0-only WITH Classpath-exception-2.0	CONTESTED	the exception is written to permit linking; the ASF nonetheless lists GPL as Category X. Owner's ruling.
+GPL2 w/ CPE	GPL-2.0-only WITH Classpath-exception-2.0	CONTESTED	the exception is written to permit linking; the ASF nonetheless lists GPL as Category X. Owner's ruling.
+Go License	BSD-3-Clause	COMPATIBLE	the Go project licence is the 3-clause BSD text; POM URL golang.org/LICENSE
+ISC	ISC	COMPATIBLE	permissive
+LGPL 2.1	LGPL-2.1-only	CONTESTED	LGPL; compatibility turns on linking and on whether the dependency is modified. Owner's ruling.
+LGPL, version 2.1	LGPL-2.1-only	CONTESTED	LGPL; compatibility turns on linking and on whether the dependency is modified. Owner's ruling.
+LGPL-2.1	LGPL-2.1-only	CONTESTED	LGPL; compatibility turns on linking and on whether the dependency is modified. Owner's ruling.
+MIT	MIT	COMPATIBLE	permissive
+MIT License	MIT	COMPATIBLE	permissive
+MIT license	MIT	COMPATIBLE	permissive
+MIT-0	MIT-0	COMPATIBLE	permissive, no attribution required
+MPL 1.1	MPL-1.1	CONDITIONS	file-level copyleft; binary redistribution permitted with attribution
+MPL 2.0	MPL-2.0	CONDITIONS	file-level copyleft; binary redistribution permitted with attribution
+Modified BSD	BSD-3-Clause	COMPATIBLE	permissive
+New BSD License	BSD-3-Clause	COMPATIBLE	permissive
+New BSD license	BSD-3-Clause	COMPATIBLE	permissive
+Public Domain	LicenseRef-Public-Domain	COMPATIBLE	no rights reserved; no SPDX identifier exists for a bare public-domain assertion
+Public Domain, per Creative Commons CC0	CC0-1.0	COMPATIBLE	public-domain dedication
+The 2-Clause BSD License	BSD-2-Clause	COMPATIBLE	permissive
+The Apache License, Version 2.0	Apache-2.0	COMPATIBLE	same licence as this project
+The Apache Software License, Version 2.0	Apache-2.0	COMPATIBLE	same licence as this project
+The Apache Software License, version 2.0	Apache-2.0	COMPATIBLE	same licence as this project
+The BSD 3-Clause License	BSD-3-Clause	COMPATIBLE	permissive
+The BSD License	NOASSERTION	UNRESOLVED	bare name does not establish the 2- versus 3-clause SPDX identity; require artifact-specific evidence
+The GNU General Public License	NOASSERTION	UNRESOLVED	bare name and generic URL establish neither exact version nor later-version permission; use artifact-specific evidence
+The GNU General Public License (GPL), Version 2, With Classpath Exception	GPL-2.0-only WITH Classpath-exception-2.0	CONTESTED	the exception is written to permit linking; the ASF nonetheless lists GPL as Category X. Owner's ruling.
+The MIT License	MIT	COMPATIBLE	permissive
+The MIT License (MIT)	MIT	COMPATIBLE	permissive
+The New BSD License	BSD-3-Clause	COMPATIBLE	permissive
+Unknown license	NOASSERTION	UNRESOLVED	the POM declares no licence and inherits none. NOT a finding of "permissive" — a finding of "not stated".
+W3C license	W3C	COMPATIBLE	permissive
+http://asm.ow2.org/license.html	BSD-3-Clause	COMPATIBLE	the POM gives a URL in place of a name; the ASM licence at that URL is the 3-clause BSD text
+http://www.apache.org/licenses/LICENSE-2.0.txt	Apache-2.0	COMPATIBLE	the POM gives a URL in place of a name
+jQuery license	MIT	COMPATIBLE	jQuery is MIT-licensed

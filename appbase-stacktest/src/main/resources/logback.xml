@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration scan="true" scanPeriod="60 seconds">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %d{HH:mm:ss.SSS} %X{traceId} [%t] %-5level %logger{36} = %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
+    <logger name="com.viveworks.appbase.stacktest" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    <!-- Keep the failing hosted create-index request observable without enabling global Apache
+         wire logging, which could expose unrelated backend credentials. This logger emits the
+         exact URL and serialized JSON body constructed by DefaultElasticsearchRestClient. -->
+    <logger name="com.viveworks.appbase.client.service.elasticsearch.restclient.api.DefaultElasticsearchRestClient"
+            level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    <logger name="net.openhft.affinity.LockInventory" level="OFF" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
