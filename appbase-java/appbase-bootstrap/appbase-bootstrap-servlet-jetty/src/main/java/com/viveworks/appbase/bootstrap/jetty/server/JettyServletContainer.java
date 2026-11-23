@@ -108,8 +108,6 @@ import java.util.function.Consumer;
  */
 public final class JettyServletContainer implements AppbaseWebServer {
 
-    static final int DEFAULT_PORT = 8080;
-
     /**
      * Jersey {@link org.glassfish.jersey.server.ServerProperties} key that enables
      * pretty-printed OpenAPI JSON output.
@@ -117,15 +115,18 @@ public final class JettyServletContainer implements AppbaseWebServer {
      */
     public static final String OPENAPI_PRETTY_PRINT = "openApi.configuration.prettyPrint";
 
+    static final int DEFAULT_PORT = 8080;
+
     private final Server server;
     private final AppbaseServices appbaseServices;
     private final int port;
 
     private JettyServletContainer(final Server server, final AppbaseServices appbaseServices,
-                                   final int port) {
-        this.server          = server;
+                                   final int port)
+    {
+        this.server = server;
         this.appbaseServices = appbaseServices;
-        this.port            = port;
+        this.port = port;
     }
 
     /**
@@ -134,11 +135,12 @@ public final class JettyServletContainer implements AppbaseWebServer {
      * @throws AppbaseRuntimeException if the server fails to start
      */
     @Override
+    @SuppressWarnings("checkstyle:IllegalCatch")
     public void start() {
         try {
             server.start();
-        } catch (Exception e) {
-            throw new AppbaseRuntimeException("Failed to start JettyServletContainer", e);
+        } catch (final Exception exception) {
+            throw new AppbaseRuntimeException("Failed to start JettyServletContainer", exception);
         }
     }
 
@@ -148,11 +150,12 @@ public final class JettyServletContainer implements AppbaseWebServer {
      * @throws AppbaseRuntimeException if the server fails to stop
      */
     @Override
+    @SuppressWarnings("checkstyle:IllegalCatch")
     public void stop() {
         try {
             server.stop();
-        } catch (Exception e) {
-            throw new AppbaseRuntimeException("Failed to stop JettyServletContainer", e);
+        } catch (final Exception exception) {
+            throw new AppbaseRuntimeException("Failed to stop JettyServletContainer", exception);
         } finally {
             appbaseServices.shutdown();
         }
@@ -197,23 +200,36 @@ public final class JettyServletContainer implements AppbaseWebServer {
     public void join() {
         try {
             server.join();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new AppbaseRuntimeException("JettyServletContainer.join() interrupted", e);
+            throw new AppbaseRuntimeException(
+                "JettyServletContainer.join() interrupted", exception);
         }
     }
 
-    /** Returns the underlying Jetty {@link Server} instance. */
+    /**
+     * Returns the underlying Jetty {@link Server} instance.
+     *
+     * @return the underlying Jetty server
+     */
     public Server getServer() {
         return server;
     }
 
-    /** Returns the {@link AppbaseServices} container backing this server. */
+    /**
+     * Returns the {@link AppbaseServices} container backing this server.
+     *
+     * @return the backing Appbase services container
+     */
     public AppbaseServices getAppbaseServices() {
         return appbaseServices;
     }
 
-    /** Returns a new builder. */
+    /**
+     * Returns a new builder.
+     *
+     * @return a new builder
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -227,20 +243,21 @@ public final class JettyServletContainer implements AppbaseWebServer {
      */
     public static final class Builder {
 
+        private final List<Handler> additionalHandlers = new ArrayList<>();
+        private final List<Consumer<ServletContextHandler>> servletContextCustomizers =
+            new ArrayList<>();
         @Nullable private AppbaseServices appbaseServices;
-        @Nullable private Server          customServer;
-        @Nullable private Integer         port;
-        @Nullable private ResourceConfig  resourceConfig;
-        private boolean registerDefaultMXBeans   = false;
+        @Nullable private Server customServer;
+        @Nullable private Integer port;
+        @Nullable private ResourceConfig resourceConfig;
+        private boolean registerDefaultMXBeans;
         // null = "don't register"; non-null (even empty) = "register, with these excludes/overrides"
-        @Nullable private Set<Class<?>>         coreServletExcludes      = null;
-        @Nullable private Map<Class<?>, String> coreServletPathOverrides = null;
+        @Nullable private Set<Class<?>> coreServletExcludes;
+        @Nullable private Map<Class<?>, String> coreServletPathOverrides;
         private boolean coreOpenApi;
-        @Nullable private Set<Class<?>>         serviceFilterExcludes    = null;
-        @Nullable private Set<Class<?>>         serviceServletExcludes      = null;
-        @Nullable private Map<Class<?>, String> serviceServletPathOverrides = null;
-        private final List<Handler>                       additionalHandlers          = new ArrayList<>();
-        private final List<Consumer<ServletContextHandler>> servletContextCustomizers = new ArrayList<>();
+        @Nullable private Set<Class<?>> serviceFilterExcludes;
+        @Nullable private Set<Class<?>> serviceServletExcludes;
+        @Nullable private Map<Class<?>, String> serviceServletPathOverrides;
 
         /**
          * Sets the Appbase services container. Required before calling {@link #build()}.
@@ -336,9 +353,12 @@ public final class JettyServletContainer implements AppbaseWebServer {
          * @return this builder
          */
         public Builder withAppbaseCoreServlets(final Set<Class<?>> excludes,
-                                                final Map<Class<?>, String> pathOverrides) {
-            this.coreServletExcludes      = Collections.unmodifiableSet(new HashSet<>(Objects.requireNonNull(excludes, "excludes")));
-            this.coreServletPathOverrides = Collections.unmodifiableMap(new HashMap<>(Objects.requireNonNull(pathOverrides, "pathOverrides")));
+                                                final Map<Class<?>, String> pathOverrides)
+        {
+            this.coreServletExcludes = Collections.unmodifiableSet(
+                new HashSet<>(Objects.requireNonNull(excludes, "excludes")));
+            this.coreServletPathOverrides = Collections.unmodifiableMap(
+                new HashMap<>(Objects.requireNonNull(pathOverrides, "pathOverrides")));
             return this;
         }
 
@@ -370,7 +390,8 @@ public final class JettyServletContainer implements AppbaseWebServer {
          * @return this builder
          */
         public Builder withAppbaseServiceFilters(final Set<Class<?>> excludes) {
-            this.serviceFilterExcludes = Collections.unmodifiableSet(new HashSet<>(Objects.requireNonNull(excludes, "excludes")));
+            this.serviceFilterExcludes = Collections.unmodifiableSet(
+                new HashSet<>(Objects.requireNonNull(excludes, "excludes")));
             return this;
         }
 
@@ -403,9 +424,12 @@ public final class JettyServletContainer implements AppbaseWebServer {
          * @return this builder
          */
         public Builder withAppbaseServiceServlets(final Set<Class<?>> excludes,
-                                                   final Map<Class<?>, String> pathOverrides) {
-            this.serviceServletExcludes      = Collections.unmodifiableSet(new HashSet<>(Objects.requireNonNull(excludes, "excludes")));
-            this.serviceServletPathOverrides = Collections.unmodifiableMap(new HashMap<>(Objects.requireNonNull(pathOverrides, "pathOverrides")));
+                                                   final Map<Class<?>, String> pathOverrides)
+        {
+            this.serviceServletExcludes = Collections.unmodifiableSet(
+                new HashSet<>(Objects.requireNonNull(excludes, "excludes")));
+            this.serviceServletPathOverrides = Collections.unmodifiableMap(
+                new HashMap<>(Objects.requireNonNull(pathOverrides, "pathOverrides")));
             return this;
         }
 
@@ -427,7 +451,8 @@ public final class JettyServletContainer implements AppbaseWebServer {
          */
         public Builder withSwaggerUI(final String contextPath,
                                      final String classpathBaseResource,
-                                     final String welcomeFile) {
+                                     final String welcomeFile)
+        {
             final ContextHandler ctxHandler =
                 new ContextHandler(Objects.requireNonNull(contextPath, "contextPath"));
             final ResourceHandler resourceHandler = new ResourceHandler();
@@ -435,7 +460,7 @@ public final class JettyServletContainer implements AppbaseWebServer {
                 Resource.newClassPathResource(
                     Objects.requireNonNull(classpathBaseResource, "classpathBaseResource")));
             resourceHandler.setWelcomeFiles(
-                new String[] { Objects.requireNonNull(welcomeFile, "welcomeFile") });
+                new String[] {Objects.requireNonNull(welcomeFile, "welcomeFile")});
             ctxHandler.setHandler(resourceHandler);
             additionalHandlers.add(ctxHandler);
             return this;
@@ -489,9 +514,9 @@ public final class JettyServletContainer implements AppbaseWebServer {
 
             final int resolvedPort = customServer != null ? -1 : (port != null ? port : DEFAULT_PORT);
 
-            final Server jettyServer = customServer != null
-                ? customServer
-                : new Server(resolvedPort);
+            final Server jettyServer = customServer != null ?
+                customServer :
+                new Server(resolvedPort);
 
             final ResourceConfig rc = resourceConfig != null ? resourceConfig : new ResourceConfig();
             if (coreServletExcludes != null && coreOpenApi) {
@@ -540,6 +565,7 @@ public final class JettyServletContainer implements AppbaseWebServer {
      * @param appbaseCore the core Appbase instance to register beans on
      * @throws AppbaseRuntimeException if any MXBean registration fails
      */
+    @SuppressWarnings("checkstyle:InnerTypeLast")
     public static void registerMXBeans(final AppbaseCore appbaseCore) {
         final LogService logService = appbaseCore.getLogService();
         final ConfigurationService configurationService = appbaseCore.getConfigurationService();
@@ -556,8 +582,9 @@ public final class JettyServletContainer implements AppbaseWebServer {
                     logService, appbaseCore.getExceptionService(),
                     DefaultExceptionServiceConfiguration.class, configurationService));
             }
-            if (!jmxService.isMXBeanRegistered(JmxLogServiceMXBean.class)
-                    && logService.getLogAccessor() != null) {
+            if (!jmxService.isMXBeanRegistered(JmxLogServiceMXBean.class) &&
+                    logService.getLogAccessor() != null)
+            {
                 jmxService.registerMXBean(new JmxLogService(
                     logService, logService,
                     DefaultLogServiceConfiguration.class, configurationService));

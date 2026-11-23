@@ -191,8 +191,10 @@
         <opentracing.version>0.33.0</opentracing.version>
         <jaeger.version>1.6.0</jaeger.version>
         <jakarta-validation.version>3.0.2</jakarta-validation.version>
-        <!-- Enforcer requireUpperBoundDependencies (internal work item 2412): jersey-bean-validation
-             3.1.11 needs 8.0.2.Final, one patch above what was pinned here. -->
+        <!-- Bumped from 8.0.1.Final alongside the jersey.version 3.1.11 bump: Jersey's own
+             jersey-bean-validation module at that version transitively wants 8.0.2.Final,
+             and RequireUpperBoundDeps correctly rejects a managed version lower than a
+             naturally-resolved transitive one. 8.0.2.Final is a same-minor patch release. -->
         <hibernate-validator.version>8.0.2.Final</hibernate-validator.version>
         <expressly.version>5.0.0</expressly.version>
         <h2.version>2.2.224</h2.version>
@@ -215,9 +217,7 @@
         <jersey.version>3.1.11</jersey.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
         <jaxb-api.version>2.3.1</jaxb-api.version>
-        <!-- Enforcer requireUpperBoundDependencies (internal work item 2412): the jakarta.xml.bind-api
-             bump to 4.0.2 (same work item, above) transitively needs 2.1.3 here, one minor above
-             what was pinned. -->
+        <jakarta.xml.bind-api.version>4.0.2</jakarta.xml.bind-api.version>
         <jakarta.activation-api.version>2.1.3</jakarta.activation-api.version>
         <swagger.version>2.2.55</swagger.version>
         <swagger-ui.version>5.9.0</swagger-ui.version>
@@ -985,14 +985,15 @@
                 <artifactId>jaxb-api</artifactId>
                 <version>${jaxb-api.version}</version>
             </dependency>
-            <!-- Enforcer requireUpperBoundDependencies (internal work item 2412): jersey-media-json-jackson
-                 3.1.11 needs 4.0.2; hibernate-core 6.5.3.Final, swagger-core and swagger-integration-jakarta
-                 2.2.55 each pull their own, lower transitive versions (4.0.0, 2.3.3, 3.0.1 respectively).
-                 Pinning to the highest required version, not previously managed at all. -->
+            <!-- Not previously managed, so nearest-wins let different jersey.version-3.1.11
+                 transitive paths disagree: hibernate-core wants 4.0.0, jersey-media-json-jackson
+                 4.0.2, swagger-core 2.3.3, swagger-integration-jakarta 3.0.1, the jaxb-runtime
+                 chain 4.0.0. RequireUpperBoundDeps needs the managed version to be the highest
+                 of these. -->
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>
                 <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>4.0.2</version>
+                <version>${jakarta.xml.bind-api.version}</version>
             </dependency>
 
             <!-- Swagger -->

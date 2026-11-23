@@ -290,7 +290,7 @@ public abstract class AbstractAppbaseSyncServlet extends HttpServlet {
         AppbaseUtil.notNull(httpServletResponse, "httpServletResponse");
 
         final Timer.Context timer = headTimer.time();
-        try {
+        try (AutoCloseable traceIdScope = preserveAmbientTraceId()) {
             if (!isHeadSupported()) {
                 sendMethodNotAllowed(headNotAllowedCounter, httpServletResponse);
                 return;
@@ -339,7 +339,7 @@ public abstract class AbstractAppbaseSyncServlet extends HttpServlet {
         AppbaseUtil.notNull(httpServletResponse, "httpServletResponse");
 
         final Timer.Context timer = getTimer.time();
-        try {
+        try (AutoCloseable traceIdScope = preserveAmbientTraceId()) {
             if (!isGetSupported()) {
                 sendMethodNotAllowed(getNotAllowedCounter, httpServletResponse);
                 return;
@@ -386,7 +386,7 @@ public abstract class AbstractAppbaseSyncServlet extends HttpServlet {
         AppbaseUtil.notNull(httpServletResponse, "httpServletResponse");
 
         final Timer.Context timer = postTimer.time();
-        try {
+        try (AutoCloseable traceIdScope = preserveAmbientTraceId()) {
             if (!isPostSupported()) {
                 sendMethodNotAllowed(postNotAllowedCounter, httpServletResponse);
                 return;
@@ -434,7 +434,7 @@ public abstract class AbstractAppbaseSyncServlet extends HttpServlet {
         AppbaseUtil.notNull(httpServletResponse, "httpServletResponse");
 
         final Timer.Context timer = putTimer.time();
-        try {
+        try (AutoCloseable traceIdScope = preserveAmbientTraceId()) {
             if (!isPutSupported()) {
                 sendMethodNotAllowed(putNotAllowedCounter, httpServletResponse);
                 return;
@@ -498,7 +498,7 @@ public abstract class AbstractAppbaseSyncServlet extends HttpServlet {
         AppbaseUtil.notNull(httpServletResponse, "httpServletResponse");
 
         final Timer.Context timer = deleteTimer.time();
-        try {
+        try (AutoCloseable traceIdScope = preserveAmbientTraceId()) {
             if (!isDeleteSupported()) {
                 sendMethodNotAllowed(deleteNotAllowedCounter, httpServletResponse);
                 return;
@@ -557,7 +557,7 @@ public abstract class AbstractAppbaseSyncServlet extends HttpServlet {
         AppbaseUtil.notNull(httpServletResponse, "httpServletResponse");
 
         final Timer.Context timer = getTimer.time();
-        try {
+        try (AutoCloseable traceIdScope = preserveAmbientTraceId()) {
             final String traceId = traceId(httpServletRequest, httpServletResponse);
             final FileDownloadInfo fileDownloadInfo = fileDownloadInfo(
                     httpServletRequest, httpServletResponse, traceId);
@@ -625,7 +625,7 @@ public abstract class AbstractAppbaseSyncServlet extends HttpServlet {
         AppbaseUtil.notNull(httpServletResponse, "httpServletResponse");
 
         final Timer.Context timer = postTimer.time();
-        try {
+        try (AutoCloseable traceIdScope = preserveAmbientTraceId()) {
             final String traceId = traceId(httpServletRequest, httpServletResponse);
             final Path uploadDestinationFile = uploadDestinationFile(traceId, httpServletRequest, httpServletResponse);
             AppbaseServiceUtil.createTemporaryFile(uploadDestinationFile);
@@ -675,6 +675,29 @@ public abstract class AbstractAppbaseSyncServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Snapshots the current thread's ambient MDC trace-id value and returns a resource that
+     * restores exactly that snapshot when closed -- putting it back if one was present, removing
+     * it if it was absent. A handler wraps its whole request-processing body in a
+     * try-with-resources against this so that, regardless of whether {@code traceId()} ends up
+     * generating and {@code MDC.put}ting a fresh value for THIS request, the ambient state this
+     * handler observed on entry (an outer {@code TraceIdServletFilter}'s own value, or nothing)
+     * is exactly what remains once the handler returns -- never a value this handler never set,
+     * and never nothing when an outer owner's value was there before this handler ran at all
+     * (the early-return-before-{@code traceId()} case).
+     */
+    private AutoCloseable preserveAmbientTraceId() {
+        final String traceIdKey = traceIdKey();
+        final String priorTraceId = MDC.get(traceIdKey);
+        return () -> {
+            if (priorTraceId != null) {
+                MDC.put(traceIdKey, priorTraceId);
+            } else {
+                MDC.remove(traceIdKey);
+            }
+        };
+    }
+
     protected String traceId(
             final HttpServletRequest httpServletRequest,
             final HttpServletResponse httpServletResponse)
@@ -684,36 +707,32 @@ public abstract class AbstractAppbaseSyncServlet extends HttpServlet {
 
         final String traceIdKey = traceIdKey();
 
+        // Only the request attribute identifies a value already resolved for THIS request (set
+        // by TraceIdServletFilter before it called the servlet, or by an earlier call within the
+        // same request). Ambient thread-local MDC is deliberately never consulted here: it is
+        // thread-scoped, not request-scoped, and on a reused servlet-container worker thread it
+        // can carry a stale value left by an unrelated earlier request -- that stale value must
+        // never be allowed to outrank this request's own explicit cookie/header/parameter.
         String traceId = (String) httpServletRequest.getAttribute(traceIdKey);
-        if (AppbaseUtil.isNotBlank(traceId)) {
-            return traceId;
+        if (AppbaseUtil.isBlank(traceId)) {
+            traceId = AppbaseServiceUtil.cookie(traceIdKey, httpServletRequest);
+        }
+        if (AppbaseUtil.isBlank(traceId)) {
+            traceId = AppbaseServiceUtil.header(traceIdKey, httpServletRequest);
+        }
+        if (AppbaseUtil.isBlank(traceId)) {
+            traceId = AppbaseServiceUtil.parameter(traceIdKey, httpServletRequest);
+        }
+        if (AppbaseUtil.isBlank(traceId)) {
+            traceId = generateTraceId();
         }
 
-        traceId = MDC.get(traceIdKey);
-        if (AppbaseUtil.isNotBlank(traceId)) {
-            return traceId;
-        }
-
-        traceId = AppbaseServiceUtil.cookie(traceIdKey, httpServletRequest);
-        if (AppbaseUtil.isNotBlank(traceId)) {
-            return traceId;
-        }
-
-        traceId = AppbaseServiceUtil.header(traceIdKey, httpServletRequest);
-        if (AppbaseUtil.isNotBlank(traceId)) {
-            return traceId;
-        }
-
-        traceId = AppbaseServiceUtil.parameter(traceIdKey, httpServletRequest);
-        if (AppbaseUtil.isNotBlank(traceId)) {
-            return traceId;
-        }
-
-        traceId = generateTraceId();
-        if (AppbaseUtil.isNotBlank(traceId)) {
-            MDC.put(traceIdKey, traceId);
-        }
-
+        // Bind the resolved CURRENT-request trace id into MDC for this handler's own scope,
+        // regardless of which source resolved it -- not only when freshly generated -- so any
+        // logging during this request's processing observes the right value.
+        // preserveAmbientTraceId() restores whatever was ambient on entry once the handler
+        // returns, so this binding never outlives the request that established it.
+        MDC.put(traceIdKey, traceId);
         httpServletResponse.setHeader(traceIdKey, traceId);
         return traceId;
     }

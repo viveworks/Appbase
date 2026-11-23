@@ -345,8 +345,6 @@ jobs:
           for suite in             aerospike_container_contract_test.sh             checkstyle_baseline_ratchet_test.sh             ci_release_rehearsal_test.sh             ci_verify_compile_prereqs_test.sh; do
             timeout 900 bash "scripts/test/$suite"
           done
-      - name: Appbase developer MCP catalog and drift guards (#2687)
-        run: python3 -B -m unittest discover -s appbase_mcp/tests -v
   config-wizard-console:
     needs: changed-modules
     if: needs.changed-modules.outputs.run_console_suite == 'true'

@@ -16,6 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.viveworks.appbase.bootstrap.tomcat.server;
 
 import com.viveworks.appbase.bootstrap.servlet.AppbaseCoreOpenApiRegistrar;
@@ -66,10 +67,11 @@ public final class TomcatServletContainer implements AppbaseWebServer {
 
     private TomcatServletContainer(final Tomcat tomcat,
                                    final AppbaseServices appbaseServices,
-                                   final int port) {
-        this.tomcat          = tomcat;
+                                   final int port)
+    {
+        this.tomcat = tomcat;
         this.appbaseServices = appbaseServices;
-        this.port            = port;
+        this.port = port;
     }
 
     /**
@@ -82,8 +84,9 @@ public final class TomcatServletContainer implements AppbaseWebServer {
         try {
             tomcat.start();
             started = true;
-        } catch (LifecycleException e) {
-            throw new AppbaseRuntimeException("Failed to start TomcatServletContainer", e);
+        } catch (final LifecycleException exception) {
+            throw new AppbaseRuntimeException(
+                "Failed to start TomcatServletContainer", exception);
         }
     }
 
@@ -99,8 +102,9 @@ public final class TomcatServletContainer implements AppbaseWebServer {
         try {
             tomcat.stop();
             tomcat.destroy();
-        } catch (LifecycleException e) {
-            throw new AppbaseRuntimeException("Failed to stop TomcatServletContainer", e);
+        } catch (final LifecycleException exception) {
+            throw new AppbaseRuntimeException(
+                "Failed to stop TomcatServletContainer", exception);
         } finally {
             started = false;
             appbaseServices.shutdown();
@@ -151,8 +155,8 @@ public final class TomcatServletContainer implements AppbaseWebServer {
     public static final class Builder {
 
         @Nullable private AppbaseServices appbaseServices;
-        @Nullable private ResourceConfig  resourceConfig;
-        private int    port = DEFAULT_PORT;
+        @Nullable private ResourceConfig resourceConfig;
+        private int port = DEFAULT_PORT;
         private String host = DEFAULT_HOST;
         private boolean coreServlets;
         private boolean coreOpenApi;

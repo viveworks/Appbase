@@ -54,10 +54,12 @@ public class TraceIdServletFilter extends AbstractAppbaseServletFilter {
     {
         final String traceIdKey = AppbaseServiceUtil.traceIdKey(appbaseCore);
 
-        String traceId = MDC.get(traceIdKey);
-        if (AppbaseUtil.isBlank(traceId)) {
-            traceId = AppbaseServiceUtil.cookie(traceIdKey, request);
-        }
+        // Ambient thread-local MDC is deliberately never consulted as a source here (parity with
+        // AbstractAppbaseSyncServlet#traceId(), internal work item 2633/L-1291): on a reused servlet-container
+        // worker thread it can carry a stale value left behind by an unrelated earlier request,
+        // and that stale value must never be allowed to outrank this request's own explicit
+        // cookie/header/parameter.
+        String traceId = AppbaseServiceUtil.cookie(traceIdKey, request);
 
         if (AppbaseUtil.isBlank(traceId)) {
             traceId = AppbaseServiceUtil.header(traceIdKey, request);

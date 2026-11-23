@@ -180,17 +180,18 @@ class OAuthCrossContainerTest {
                 server.setHandler(context);
                 server.start();
                 int port = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
+                awaitRouteReady("http://localhost:" + port + "/");
                 return handle(port, server::stop);
             }
         },
         UNDERTOW {
             @Override
-            ServerHandle start(Filter oauthFilter, HttpServlet downstream) throws Exception {
+            ServerHandle start(final Filter oauthFilter, final HttpServlet downstream) throws Exception {
                 // Unique deployment name + undeploy on close: start() runs once per test method against
                 // the JVM-static Servlets.defaultContainer(), so a fixed name would re-register the same
                 // context path across runs and leak the prior deployment. Mirrors the production
                 // UndertowServletContainer, which uses a per-instance name and undeploys in stop().
-                DeploymentInfo info = Servlets.deployment()
+                final DeploymentInfo info = Servlets.deployment()
                         .setClassLoader(OAuthCrossContainerTest.class.getClassLoader())
                         .setContextPath("/")
                         .setDeploymentName("oauth-cross-container-it-" + System.nanoTime())
@@ -199,14 +200,15 @@ class OAuthCrossContainerTest {
                         .addFilter(Servlets.filter("oauth", oauthFilter.getClass(),
                                 new ImmediateInstanceFactory<>(oauthFilter)))
                         .addFilterUrlMapping("oauth", "/*", DispatcherType.REQUEST);
-                DeploymentManager manager = Servlets.defaultContainer().addDeployment(info);
+                final DeploymentManager manager = Servlets.defaultContainer().addDeployment(info);
                 manager.deploy();
-                Undertow server = Undertow.builder()
+                final Undertow server = Undertow.builder()
                         .addHttpListener(0, "localhost")
                         .setHandler(manager.start())
                         .build();
                 server.start();
-                int port = ((InetSocketAddress) server.getListenerInfo().get(0).getAddress()).getPort();
+                final int port = ((InetSocketAddress) server.getListenerInfo().get(0).getAddress()).getPort();
+                awaitRouteReady("http://localhost:" + port + "/");
                 return handle(port, () -> {
                     server.stop();
                     manager.undeploy();
@@ -215,27 +217,28 @@ class OAuthCrossContainerTest {
         },
         TOMCAT {
             @Override
-            ServerHandle start(Filter oauthFilter, HttpServlet downstream) throws Exception {
+            ServerHandle start(final Filter oauthFilter, final HttpServlet downstream) throws Exception {
                 // Reuse the shared temp dir rather than minting a per-run directory: the production
                 // TomcatServletContainer does the same, so there is nothing to leak or clean up.
-                String baseDir = System.getProperty("java.io.tmpdir");
-                Tomcat tomcat = new Tomcat();
+                final String baseDir = System.getProperty("java.io.tmpdir");
+                final Tomcat tomcat = new Tomcat();
                 tomcat.setBaseDir(baseDir);
                 tomcat.setPort(0);
                 tomcat.getConnector();
-                Context context = tomcat.addContext("", baseDir);
+                final Context context = tomcat.addContext("", baseDir);
                 Tomcat.addServlet(context, "echo", downstream);
                 context.addServletMappingDecoded("/*", "echo");
-                FilterDef filterDef = new FilterDef();
+                final FilterDef filterDef = new FilterDef();
                 filterDef.setFilterName("oauth");
                 filterDef.setFilter(oauthFilter);
                 context.addFilterDef(filterDef);
-                FilterMap filterMap = new FilterMap();
+                final FilterMap filterMap = new FilterMap();
                 filterMap.setFilterName("oauth");
                 filterMap.addURLPattern("/*");
                 context.addFilterMap(filterMap);
                 tomcat.start();
-                int port = tomcat.getConnector().getLocalPort();
+                final int port = tomcat.getConnector().getLocalPort();
+                awaitRouteReady("http://localhost:" + port + "/");
                 return handle(port, () -> {
                     tomcat.stop();
                     tomcat.destroy();
@@ -245,8 +248,36 @@ class OAuthCrossContainerTest {
 
         abstract ServerHandle start(Filter oauthFilter, HttpServlet downstream) throws Exception;
 
-        private static ServerHandle handle(int port, Stopper stopper) {
-            String baseUrl = "http://localhost:" + port + "/";
+        /**
+         * Polls {@code baseUrl} with a bare GET (no {@code Authorization} header) until it gets any
+         * response OTHER than a 404, or a short deadline elapses. Each container's {@code start()} call
+         * can return to the caller before its acceptor has the context fully wired into routing under
+         * CPU contention; until then a request gets that container's own "no handler matched" 404
+         * rather than reaching the filter chain at all -- observed on both JETTY and TOMCAT, so this is
+         * applied to all three containers rather than just the one caught first. A bare GET with no
+         * token always reaches a live filter and gets 401 (never 200), so "not 404" here only proves the
+         * route exists -- it does not predict, let alone guarantee, any later assertion in the calling
+         * test.
+         */
+        private static void awaitRouteReady(final String baseUrl) throws Exception {
+            final HttpClient client = HttpClient.newHttpClient();
+            final HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl)).GET().build();
+            final long deadline = System.nanoTime() + Duration.ofSeconds(2).toNanos();
+            while (System.nanoTime() < deadline) {
+                try {
+                    final int status = client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+                    if (status != HttpServletResponse.SC_NOT_FOUND) {
+                        return;
+                    }
+                } catch (IOException ignored) {
+                    // Connection refused/reset while the acceptor is still coming up -- keep polling.
+                }
+                Thread.sleep(10);
+            }
+        }
+
+        private static ServerHandle handle(final int port, final Stopper stopper) {
+            final String baseUrl = "http://localhost:" + port + "/";
             return new ServerHandle() {
                 @Override
                 public String baseUrl() {

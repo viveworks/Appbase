@@ -16,6 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.viveworks.appbase.bootstrap.undertow.server;
 
 import com.viveworks.appbase.bootstrap.servlet.AppbaseCoreOpenApiRegistrar;
@@ -68,11 +69,12 @@ public final class UndertowServletContainer implements AppbaseWebServer {
     private boolean started;
 
     private UndertowServletContainer(final Undertow server, final DeploymentManager manager,
-                                     final AppbaseServices appbaseServices, final int port) {
-        this.server          = server;
-        this.manager         = manager;
+                                     final AppbaseServices appbaseServices, final int port)
+    {
+        this.server = server;
+        this.manager = manager;
         this.appbaseServices = appbaseServices;
-        this.port            = port;
+        this.port = port;
     }
 
     /**
@@ -81,12 +83,14 @@ public final class UndertowServletContainer implements AppbaseWebServer {
      * @throws AppbaseRuntimeException if the server fails to start
      */
     @Override
+    @SuppressWarnings("checkstyle:IllegalCatch")
     public void start() {
         try {
             server.start();
             started = true;
-        } catch (Exception e) {
-            throw new AppbaseRuntimeException("Failed to start UndertowServletContainer", e);
+        } catch (final Exception exception) {
+            throw new AppbaseRuntimeException(
+                "Failed to start UndertowServletContainer", exception);
         }
     }
 
@@ -98,16 +102,18 @@ public final class UndertowServletContainer implements AppbaseWebServer {
      * @throws AppbaseRuntimeException if the server fails to stop
      */
     @Override
+    @SuppressWarnings("checkstyle:IllegalCatch")
     public void stop() {
         try {
             server.stop();
-        } catch (Exception e) {
-            throw new AppbaseRuntimeException("Failed to stop UndertowServletContainer", e);
+        } catch (final Exception exception) {
+            throw new AppbaseRuntimeException(
+                "Failed to stop UndertowServletContainer", exception);
         } finally {
             started = false;
             try {
                 manager.undeploy();
-            } catch (Exception e) {
+            } catch (final Exception cleanupException) {
                 // secondary failure — log but don't mask primary exception
             }
             appbaseServices.shutdown();
@@ -158,8 +164,8 @@ public final class UndertowServletContainer implements AppbaseWebServer {
     public static final class Builder {
 
         @Nullable private AppbaseServices appbaseServices;
-        @Nullable private ResourceConfig  resourceConfig;
-        private int    port = DEFAULT_PORT;
+        @Nullable private ResourceConfig resourceConfig;
+        private int port = DEFAULT_PORT;
         private String host = DEFAULT_HOST;
         private boolean coreServlets;
         private boolean coreOpenApi;
@@ -271,6 +277,7 @@ public final class UndertowServletContainer implements AppbaseWebServer {
          *                                  future-Jersey compatibility cannot be inspected safely
          * @throws AppbaseRuntimeException  if deployment or Undertow construction fails
          */
+        @SuppressWarnings("checkstyle:IllegalCatch")
         public UndertowServletContainer build() {
             Objects.requireNonNull(appbaseServices,
                 "appbaseServices required — call from(AppbaseServices) before build()");
@@ -317,8 +324,9 @@ public final class UndertowServletContainer implements AppbaseWebServer {
                     .setHandler(manager.start())
                     .build();
                 return new UndertowServletContainer(undertow, manager, appbaseServices, port);
-            } catch (Exception e) {
-                throw new AppbaseRuntimeException("Failed to build UndertowServletContainer", e);
+            } catch (final Exception exception) {
+                throw new AppbaseRuntimeException(
+                    "Failed to build UndertowServletContainer", exception);
             }
         }
     }

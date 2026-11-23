@@ -12,7 +12,7 @@ License at http://www.apache.org/licenses/LICENSE-2.0
 THIRD-PARTY DEPENDENCIES
 ================================================================================
 
-This product redistributes the 471 third-party works listed below, on a compile or
+This product redistributes the 475 third-party works listed below, on a compile or
 runtime path. Test- and provided-scope dependencies are excluded: they are not
 redistributed, so Apache-2.0 section 4(d) attribution does not attach to them.
 
@@ -578,6 +578,10 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       Apache License 2.0
   * jdbi3 SqlObject (org.jdbi:jdbi3-sqlobject:3.28.0)
       Apache License 2.0
+  * jersey-container-jetty-http (org.glassfish.jersey.containers:jersey-container-jetty-http:3.1.11)
+      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
+  * jersey-container-jetty-servlet (org.glassfish.jersey.containers:jersey-container-jetty-servlet:3.1.11)
+      Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
   * jersey-container-servlet (org.glassfish.jersey.containers:jersey-container-servlet:3.1.11)
       Apache License, 2.0 or BSD 2-Clause or EDL 1.0 or EPL 2.0 or GPL2 w/ CPE or MIT license or Modified BSD or Public Domain or W3C license or jQuery license
   * jersey-container-servlet-core (org.glassfish.jersey.containers:jersey-container-servlet-core:3.1.11)
@@ -611,6 +615,10 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
   * Jetty :: Servlet Handling (org.eclipse.jetty:jetty-servlet:11.0.26)
       Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
   * Jetty :: Utilities (org.eclipse.jetty:jetty-util:11.0.26)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
+  * Jetty :: Webapp Application Support (org.eclipse.jetty:jetty-webapp:11.0.26)
+      Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
+  * Jetty :: XML utilities (org.eclipse.jetty:jetty-xml:11.0.26)
       Apache Software License - Version 2.0 or Eclipse Public License - Version 2.0
   * Jetty SSLEngine (org.mortbay.jetty:jetty-sslengine:6.1.26)
       Apache License Version 2

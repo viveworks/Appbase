@@ -518,6 +518,9 @@
                                     <executable>bash</executable>
                                     <arguments>
                                         <argument>test/start-web.sh</argument>
+                                        <!-- The real build output, from Maven's own finalName property rather than a
+                                             guessed or hardcoded jar name: correct under any project version. -->
+                                        <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
                                     </arguments>
                                     <workingDirectory>${project.basedir}</workingDirectory>
                                 </configuration>
@@ -540,6 +543,11 @@
                                         <argument>--tb=short</argument>
                                     </arguments>
                                     <workingDirectory>${project.basedir}</workingDirectory>
+                                    <environmentVariables>
+                                        <!-- Same real build output as it-start-web-server, via the same Maven
+                                             property; conftest.py already honors this override. -->
+                                        <CONFIG_WIZARD_JAR>${project.build.directory}/${project.build.finalName}.jar</CONFIG_WIZARD_JAR>
+                                    </environmentVariables>
                                 </configuration>
                             </execution>
 

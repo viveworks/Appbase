@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# jersey_resource_config_compatibility_wiring_test.sh — structural regression test for #3015.
+# jersey_resource_config_compatibility_wiring_test.sh — structural regression test for internal work item 3015.
 # Proves every servlet builder validates ResourceConfig compatibility before constructing Jersey,
 # and proves deleting any one validator call makes the check fail.
 #

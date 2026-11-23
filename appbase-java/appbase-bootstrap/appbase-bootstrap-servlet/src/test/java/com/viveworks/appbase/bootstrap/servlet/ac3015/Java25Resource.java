@@ -25,6 +25,7 @@ import jakarta.ws.rs.Path;
  * Java 25 resource fixture discovered by Jersey package scanning.
  *
  * @author Navaneeth Mysore G
+ * @author Claude
  */
 @Path("/ac3015-java25")
 public final class Java25Resource {
