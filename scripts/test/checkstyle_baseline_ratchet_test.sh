@@ -69,7 +69,7 @@ root = ET.parse(sys.argv[1]).getroot()
 rows = [tuple(node.attrib.get(key, '') for key in ('files', 'checks', 'message', 'lines', 'columns'))
         for node in root.findall('suppress')]
 assert root.tag == 'suppressions'
-assert len(rows) == 8688, len(rows)
+assert len(rows) == 8686, len(rows)
 assert len(set(rows)) == len(rows)
 assert all(all(row) for row in rows)
 assert all(row[0].startswith('^') and row[0].endswith('$') and
@@ -91,7 +91,7 @@ assert all(row[1] == r'^com\.puppycrawl\.tools\.checkstyle\.checks\.naming\.Pack
 assert all("appbase_mcp\\.generator" in row[2] for row in reconciled)
 PY
 then
-  ok "production baseline has 8,688 identities including 2 exact MCP reconciliation rows"
+  ok "production baseline has 8,686 identities including 2 exact MCP reconciliation rows"
 else
   bad "production baseline structure/count/identity invariant failed"
 fi
@@ -209,7 +209,7 @@ else
   bad "adversarial baseline generation or XML parsing failed"
 fi
 
-# Produce a mutation with the SAME committed exact-head count (8,688, including the 2 pinned MCP
+# Produce a mutation with the SAME committed exact-head count (8,686, including the 2 pinned MCP
 # rows): replace one ClamAV identity with a unique, nonmatching identity. A count ratchet would
 # accept it; the exact event ratchet must expose the removed real event and fail.
 MUTATED="$WORK/same-count-replacement.xml"
@@ -229,10 +229,10 @@ first.set('message', first.attrib['message'][:-1] + r'MUTATED$')
 lines[indexes[0]] = '    ' + ET.tostring(first, encoding='unicode', short_empty_elements=True) + '\n'
 with open(output, 'w', encoding='utf-8') as stream:
     stream.writelines(lines)
-assert sum('<suppress ' in line for line in lines) == 8688
+assert sum('<suppress ' in line for line in lines) == 8686
 PY
 then
-  ok "mutation preserves 8,688 rows while replacing one exact identity"
+  ok "mutation preserves 8,686 rows while replacing one exact identity"
 else
   bad "could not construct same-count replacement mutation"
 fi
