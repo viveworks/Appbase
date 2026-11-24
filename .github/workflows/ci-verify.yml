@@ -25,6 +25,30 @@ on:
         required: false
         type: boolean
         default: false
+      run_l02_redis_bootstrap:
+        required: true
+        type: boolean
+        default: false
+      run_l03_redis_cassandra:
+        required: true
+        type: boolean
+        default: false
+      run_l04_kafka_mutation_control:
+        required: true
+        type: boolean
+        default: false
+      run_l09_config_wizard_console:
+        required: true
+        type: boolean
+        default: false
+      run_l12_supported_matrix:
+        required: true
+        type: boolean
+        default: false
+      run_l2536_backend_campaign:
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -414,6 +438,624 @@ jobs:
       - name: Require at least one executed console test
         if: steps.prompt-fix.outputs.ready == 'true'
         run: .github/scripts/require-test-count.py appbase-config-wizard/target/console-junit.xml
+  live-l12-supported-matrix:
+    # Complete runnable coverage, not pre-run PASS. This job never mutates the committed matrix;
+    # its exact-head receipt must be reviewed and committed before any status changes.
+    needs: changed-modules
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_l12_supported_matrix == 'true'
+    concurrency:
+      group: ci-verify-live-l12-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Restore the ~/.m2 repository cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+      - name: Run the complete L-12 matrix including ReactiveAerospikeAccessorIT
+        run: .github/scripts/epic1135-l12-supported-matrix.sh
+
+  live-l2536-backend-campaign:
+    # Rows with complete executable services and live ITs on current develop. L-12 is excluded:
+    # its 13-entry inventory is not represented by these five backend ITs. L-14 is a post-receipt
+    # committed-evidence hand-off and cannot honestly complete inside the run that creates receipts.
+    needs: changed-modules
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_l2536_backend_campaign == 'true'
+    concurrency:
+      group: ci-verify-live-l2536-backends-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Fail-closed backend workflow contract
+        env:
+          RUN_L2536_BACKEND_CAMPAIGN: ${{ github.event.inputs.run_l2536_backend_campaign }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$RUN_L2536_BACKEND_CAMPAIGN" = true
+          workflow=.github/workflows/ci-verify.yml
+          input="$(sed -n '/^      run_l2536_backend_campaign:/,/^      run_l12_supported_matrix:/p' "$workflow")"
+          job="$(sed -n '/^  live-l2536-backend-campaign:/,/^  live-l02-redis-bootstrap:/p' "$workflow")"
+          grep -Fq 'default: false' <<<"$input"
+          grep -Fq "github.event_name == 'workflow_dispatch'" <<<"$job"
+          grep -Fq '.github/scripts/epic1135-exit-campaign.sh' <<<"$job"
+          grep -Fq 'verify-named-test-report.py' .github/scripts/epic1135-exit-campaign.sh
+          grep -Fq 'wait-tcp-ready.sh' .github/scripts/epic1135-exit-campaign.sh
+          grep -Fq 'cleanup_strict' .github/scripts/epic1135-exit-campaign.sh
+          grep -Fq 'cat "$RECEIPT" >> "$GITHUB_STEP_SUMMARY"' .github/scripts/epic1135-exit-campaign.sh
+          ! grep -Eq '^[[:space:]]*uses:[[:space:]]*actions/(cache/save|upload-artifact)@' <<<"$job"
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Restore the ~/.m2 repository cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+      - name: Run L-00/L-01/L-05/L-06/L-07/L-08 with mutations and restored controls
+        env:
+          TESTED_SHA: ${{ steps.verify-sha.outputs.tested_sha }}
+        run: .github/scripts/epic1135-exit-campaign.sh
+
+  live-l02-redis-bootstrap:
+    # #2536 L-02 / epic row (#1294): prove RedisClientServiceIT resolves appbase-core.yaml
+    # through appbase-client-core's tests-classifier dependency while exercising a real Redis.
+    # Removing that dependency must make the same clean test invocation fail; restoring it must
+    # return GREEN. The service image matches the epic's canonical redis:7.4 contract.
+    needs: changed-modules
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_l02_redis_bootstrap == 'true'
+    concurrency:
+      group: ci-verify-live-l02-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    outputs:
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+    services:
+      redis:
+        image: redis:7.4
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 30
+    env:
+      MAVEN_ARGS: -B -ntp
+      REDIS_MODULE: appbase-java/appbase-client/appbase-client-redis
+      REDIS_POM: appbase-java/appbase-client/appbase-client-redis/pom.xml
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Restore the ~/.m2 repository cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+      - name: Require Redis readiness
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            if (exec 3<>/dev/tcp/localhost/6379) 2>/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo '::error::Redis 7.4 did not become ready within 30 seconds'
+          exit 1
+      - name: Install dependency closure (tests skipped — prep only, not evidence)
+        run: mvn -q -pl "$REDIS_MODULE" -am -P develop-profile -DskipTests=true install
+      - name: GREEN — live RedisClientServiceIT resolves config through the tests classifier
+        id: green
+        run: >-
+          mvn -pl "$REDIS_MODULE" -P develop-profile clean verify
+          -DRedisClientServiceTests.enabled=true
+          -Dit.test=RedisClientServiceIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+      - name: Remove the appbase-client-core tests-classifier dependency
+        run: |
+          set -euo pipefail
+          cp "$REDIS_POM" "$REDIS_POM.l02-orig"
+          python3 - "$REDIS_POM" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          path = Path(sys.argv[1])
+          source = path.read_text()
+          dependency = re.compile(r'(?ms)^        <dependency>\n.*?^        </dependency>\n')
+          targets = [
+              match for match in dependency.finditer(source)
+              if '<groupId>com.viveworks.appbase</groupId>' in match.group()
+              and '<artifactId>appbase-client-core</artifactId>' in match.group()
+              and '<classifier>tests</classifier>' in match.group()
+              and '<scope>test</scope>' in match.group()
+          ]
+          if len(targets) != 1:
+              raise SystemExit(
+                  f'expected exactly one appbase-client-core tests dependency, found {len(targets)}')
+          target = targets[0]
+          start = target.start()
+          preceding_comment = re.search(r'(?ms)^        <!-- Test-only:.*?-->\n\Z', source[:start])
+          if preceding_comment:
+              start = preceding_comment.start()
+          mutated = source[:start] + source[target.end():]
+          path.write_text(mutated)
+          PY
+          git diff -- "$REDIS_POM"
+      - name: RED — clean RedisClientServiceIT must fail without the tests classifier
+        id: red
+        continue-on-error: true
+        run: >-
+          mvn -pl "$REDIS_MODULE" -P develop-profile clean verify
+          -DRedisClientServiceTests.enabled=true
+          -Dit.test=RedisClientServiceIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+      - name: Enforce the classifier mutation actually failed
+        run: |
+          if [[ "${{ steps.red.outcome }}" != "failure" ]]; then
+            echo '::error::L-02 dependency-removal mutation passed — config bootstrap evidence is vacuous'
+            exit 1
+          fi
+      - name: Restore the tests-classifier dependency
+        if: always()
+        run: mv -f "$REDIS_POM.l02-orig" "$REDIS_POM"
+      - name: Restored GREEN — live RedisClientServiceIT passes again
+        id: restored
+        run: >-
+          mvn -pl "$REDIS_MODULE" -P develop-profile clean verify
+          -DRedisClientServiceTests.enabled=true
+          -Dit.test=RedisClientServiceIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+      - name: Require a clean tracked tree
+        run: git diff --exit-code -- "$REDIS_POM"
+      - name: Record L-02 receipt
+        if: always()
+        run: |
+          {
+            echo '## #2536 L-02 live campaign receipt (epic #1135, #1294)'
+            echo '```'
+            echo "head_sha=${{ needs.changed-modules.outputs.head_sha }}"
+            echo 'service: redis:7.4, health-checked with redis-cli PING'
+            echo 'suite: RedisClientServiceIT with RedisClientServiceTests.enabled=true'
+            echo "GREEN (tests classifier present): ${{ steps.green.outcome }}"
+            echo "RED (tests classifier removed): ${{ steps.red.outcome }}"
+            echo "restored GREEN: ${{ steps.restored.outcome }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  live-l03-redis-cassandra:
+    # Owner option C, 2026-10-11: split #1296. This job proves Redis/Cassandra only;
+    # ReactiveAerospikeAccessorIT is proved separately by the pinned lifecycle in L-12.
+    needs: changed-modules
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_l03_redis_cassandra == 'true'
+    concurrency:
+      group: ci-verify-live-l03-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    outputs:
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+    services:
+      redis:
+        image: redis:7.4
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 30
+      cassandra:
+        image: cassandra:4.1
+        ports:
+          - 9042:9042
+        options: >-
+          --health-cmd "cqlsh -e 'DESCRIBE CLUSTER'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 60
+    env:
+      MAVEN_ARGS: -B -ntp
+      DRIVER_MODULES: >-
+        appbase-java/appbase-client/appbase-client-redis,appbase-java/appbase-client/appbase-client-cassandra
+      REDIS_MODULE: appbase-java/appbase-client/appbase-client-redis
+      CASSANDRA_MODULE: appbase-java/appbase-client/appbase-client-cassandra
+      REDIS_CONFIG: appbase-java/appbase-client/appbase-client-redis/src/test/resources/appbase-client-redis.yaml
+      CASSANDRA_CONFIG: appbase-java/appbase-client/appbase-client-cassandra/src/test/resources/appbase-client-cassandra.yaml
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Restore the ~/.m2 repository cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+      - name: Require both backend ports
+        run: |
+          set -euo pipefail
+          wait_port() {
+            local port="$1" timeout="$2" waited=0
+            while ! (exec 3<>"/dev/tcp/localhost/$port") 2>/dev/null; do
+              if [ "$waited" -ge "$timeout" ]; then
+                echo "::error::localhost:$port did not accept a connection after ${timeout}s"
+                return 1
+              fi
+              sleep 2
+              waited=$((waited + 2))
+            done
+          }
+          wait_port 6379 30
+          wait_port 9042 180
+      - name: Install dependency closure (tests skipped — prep only, not evidence)
+        run: mvn -q -pl "$DRIVER_MODULES" -am -P develop-profile -DskipTests=true install
+      - name: GREEN — live Redis, reactive Redis, and reactive Cassandra ITs
+        id: green
+        run: >-
+          mvn -pl "$DRIVER_MODULES" -P develop-profile clean verify
+          -DRedisClientServiceTests.enabled=true
+          -DCassandraClientServiceTests.enabled=true
+          -Dit.test=RedisClientServiceIT,ReactiveRedisAccessorIT,ReactiveCassandraAccessorIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+      - name: Mutate Redis endpoint to a closed port
+        run: |
+          set -euo pipefail
+          cp "$REDIS_CONFIG" "$REDIS_CONFIG.l03-orig"
+          python3 - "$REDIS_CONFIG" <<'PY'
+          from pathlib import Path
+          import sys
+          path = Path(sys.argv[1])
+          source = path.read_text()
+          old, new = '    port: 6379', '    port: 1'
+          if source.count(old) != 1:
+              raise SystemExit(f'expected one Redis port target, found {source.count(old)}')
+          path.write_text(source.replace(old, new))
+          PY
+      - name: RED — both Redis ITs must fail against the closed endpoint
+        id: redis-red
+        continue-on-error: true
+        run: >-
+          mvn -pl "$REDIS_MODULE" -P develop-profile clean verify
+          -DRedisClientServiceTests.enabled=true
+          -Dit.test=RedisClientServiceIT,ReactiveRedisAccessorIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+      - name: Restore Redis config and enforce RED
+        if: always()
+        run: |
+          mv -f "$REDIS_CONFIG.l03-orig" "$REDIS_CONFIG"
+          if [[ "${{ steps.redis-red.outcome }}" != "failure" ]]; then
+            echo '::error::L-03 Redis endpoint mutation passed — Redis evidence is vacuous'
+            exit 1
+          fi
+      - name: Mutate Cassandra endpoint to a closed port
+        run: |
+          set -euo pipefail
+          cp "$CASSANDRA_CONFIG" "$CASSANDRA_CONFIG.l03-orig"
+          python3 - "$CASSANDRA_CONFIG" <<'PY'
+          from pathlib import Path
+          import sys
+          path = Path(sys.argv[1])
+          source = path.read_text()
+          old, new = '      port: 9042', '      port: 1'
+          if source.count(old) != 1:
+              raise SystemExit(f'expected one Cassandra port target, found {source.count(old)}')
+          path.write_text(source.replace(old, new))
+          PY
+      - name: RED — reactive Cassandra IT must fail against the closed endpoint
+        id: cassandra-red
+        continue-on-error: true
+        run: >-
+          mvn -pl "$CASSANDRA_MODULE" -P develop-profile clean verify
+          -DCassandraClientServiceTests.enabled=true
+          -Dit.test=ReactiveCassandraAccessorIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+      - name: Restore Cassandra config and enforce RED
+        if: always()
+        run: |
+          mv -f "$CASSANDRA_CONFIG.l03-orig" "$CASSANDRA_CONFIG"
+          if [[ "${{ steps.cassandra-red.outcome }}" != "failure" ]]; then
+            echo '::error::L-03 Cassandra endpoint mutation passed — Cassandra evidence is vacuous'
+            exit 1
+          fi
+      - name: Restored GREEN — all three live ITs pass again
+        id: restored
+        run: >-
+          mvn -pl "$DRIVER_MODULES" -P develop-profile clean verify
+          -DRedisClientServiceTests.enabled=true
+          -DCassandraClientServiceTests.enabled=true
+          -Dit.test=RedisClientServiceIT,ReactiveRedisAccessorIT,ReactiveCassandraAccessorIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+      - name: Require clean tracked configs
+        run: git diff --exit-code -- "$REDIS_CONFIG" "$CASSANDRA_CONFIG"
+      - name: Record L-03 split receipt
+        if: always()
+        run: |
+          {
+            echo '## #2536 L-03 split receipt (epic #1135, #1296)'
+            echo '```'
+            echo "head_sha=${{ needs.changed-modules.outputs.head_sha }}"
+            echo 'services: redis:7.4; cassandra:4.1'
+            echo 'covered: RedisClientServiceIT, ReactiveRedisAccessorIT, ReactiveCassandraAccessorIT'
+            echo 'not covered by L-03: ReactiveAerospikeAccessorIT — covered separately by the pinned L-12 lifecycle'
+            echo "GREEN (pre-mutation): ${{ steps.green.outcome }}"
+            echo "Redis closed-port RED: ${{ steps.redis-red.outcome }}"
+            echo "Cassandra closed-port RED: ${{ steps.cassandra-red.outcome }}"
+            echo "restored GREEN: ${{ steps.restored.outcome }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  live-l04-kafka-mutation-control:
+    # #2536 L-04 / #1137 F2: Kafka-only anti-vacuity evidence. The earlier
+    # combined Kafka+ZooKeeper mutation was RED because ZooKeeper failed, while Kafka consumed a
+    # record left by the preceding GREEN and stayed green. This bounded control stops only the live
+    # Kafka broker, requires ReactiveKafkaAccessorIT itself to report a failure/error, then restarts
+    # that same broker and requires the same IT to pass. Two live GREENs precede the outage;
+    # the IT uses a fresh expected record per invocation. It deliberately does not start ZooKeeper.
+    needs: changed-modules
+    outputs:
+      tested_sha: ${{ steps.verify-sha.outputs.tested_sha }}
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.run_l04_kafka_mutation_control == 'true'
+    concurrency:
+      group: ci-verify-live-l04-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      kafka:
+        image: apache/kafka:3.7.1
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_NODE_ID: 1
+          KAFKA_PROCESS_ROLES: broker,controller
+          KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+          KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+          KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+          KAFKA_LOG_CLEANER_DEDUPE_BUFFER_SIZE: 2097152
+    env:
+      MAVEN_ARGS: -B -ntp
+      KAFKA_IT_MODULE: appbase-java/appbase-client/appbase-client-kafka
+      KAFKA_IT_REPORT: >-
+        appbase-java/appbase-client/appbase-client-kafka/target/failsafe-reports/TEST-com.viveworks.appbase.client.service.kafka.reactive.ReactiveKafkaAccessorIT.xml
+    steps:
+      - name: Check out the exact head (§5.2)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.VERIFY_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify checked-out SHA
+        id: verify-sha
+        env:
+          EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
+        run: .github/scripts/verify-head.sh
+      - name: Set up Temurin JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Restore the ~/.m2 repository cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.m2/repository
+          key: setup-java-${{ runner.os }}-x64-maven-${{ hashFiles('**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties', '**/.mvn/extensions.xml') }}
+      - name: Self-test the Kafka F2 XML verifier before relying on it
+        run: python3 .github/scripts/test_epic1137_kafka_f2_report.py
+      - name: Wait for Kafka to accept connections
+        run: |
+          set -euo pipefail
+          waited=0
+          until (exec 3<>/dev/tcp/localhost/9092) 2>/dev/null; do
+            if [[ "$waited" -ge 90 ]]; then
+              echo '::error::localhost:9092 did not accept a connection after 90s'
+              exit 1
+            fi
+            sleep 1
+            waited=$((waited + 1))
+          done
+          echo "localhost:9092 accepting connections (after ${waited}s)"
+      - name: Install the Kafka dependency closure (tests skipped — prep only, not evidence)
+        run: mvn -q -pl "$KAFKA_IT_MODULE" -am -P develop-profile -DskipTests=true install
+      - name: GREEN 1 — Kafka IT must pass against the live broker
+        id: green1
+        run: |
+          rm -f "$KAFKA_IT_REPORT"
+          mvn -pl "$KAFKA_IT_MODULE" -P develop-profile \
+            -DKafkaClientServiceTests.enabled=true -Dit.test=ReactiveKafkaAccessorIT \
+            -Dfailsafe.failIfNoSpecifiedTests=true \
+            test-compile failsafe:integration-test failsafe:verify
+          python3 .github/scripts/epic1137-kafka-f2-report.py green-1 "$KAFKA_IT_REPORT"
+      - name: Capture GREEN 1 XML even if the IT failed
+        if: always() && steps.green1.outcome != 'skipped'
+        run: |
+          if [[ -f "$KAFKA_IT_REPORT" ]]; then cp "$KAFKA_IT_REPORT" "$RUNNER_TEMP/kafka-green-1.xml"; fi
+      - name: GREEN 2 — Kafka IT must independently pass again
+        id: green2
+        run: |
+          rm -f "$KAFKA_IT_REPORT"
+          mvn -pl "$KAFKA_IT_MODULE" -P develop-profile \
+            -DKafkaClientServiceTests.enabled=true -Dit.test=ReactiveKafkaAccessorIT \
+            -Dfailsafe.failIfNoSpecifiedTests=true \
+            test-compile failsafe:integration-test failsafe:verify
+          python3 .github/scripts/epic1137-kafka-f2-report.py green-2 "$KAFKA_IT_REPORT"
+      - name: Capture GREEN 2 XML even if the IT failed
+        if: always() && steps.green2.outcome != 'skipped'
+        run: |
+          if [[ -f "$KAFKA_IT_REPORT" ]]; then cp "$KAFKA_IT_REPORT" "$RUNNER_TEMP/kafka-green-2.xml"; fi
+      - name: Mutation — stop only the Kafka broker
+        id: mutate
+        run: |
+          set -euo pipefail
+          kafka_container="$(docker ps --filter ancestor=apache/kafka:3.7.1 --format '{{.ID}}')"
+          kafka_container_count="$(awk 'NF { count++ } END { print count + 0 }' <<< "$kafka_container")"
+          if [[ "$kafka_container_count" -ne 1 ]]; then
+            echo "::error::expected exactly one running apache/kafka:3.7.1 container; found $kafka_container_count"
+            exit 1
+          fi
+          docker stop "$kafka_container"
+          if (exec 3<>/dev/tcp/localhost/9092) 2>/dev/null; then
+            echo '::error::Kafka port 9092 still accepts connections after the mutation'
+            exit 1
+          fi
+          echo "container_id=$kafka_container" >> "$GITHUB_OUTPUT"
+      - name: RED — Kafka IT must reject the stopped broker
+        id: red
+        continue-on-error: true
+        run: |
+          rm -f "$KAFKA_IT_REPORT"
+          mvn -pl "$KAFKA_IT_MODULE" -P develop-profile \
+            -DKafkaClientServiceTests.enabled=true -Dit.test=ReactiveKafkaAccessorIT \
+            -Dfailsafe.failIfNoSpecifiedTests=true \
+            test-compile failsafe:integration-test failsafe:verify
+      - name: Capture RED XML even if verification rejects it
+        if: always() && steps.red.outcome != 'skipped'
+        run: |
+          if [[ -f "$KAFKA_IT_REPORT" ]]; then cp "$KAFKA_IT_REPORT" "$RUNNER_TEMP/kafka-red.xml"; fi
+      - name: Enforce Kafka-specific RED came from an executed IT
+        id: verifyred
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.red.outcome }}" != failure ]]; then
+            echo '::error::Kafka IT stayed green with its broker stopped — vacuous L-04 control'
+            exit 1
+          fi
+          python3 .github/scripts/epic1137-kafka-f2-report.py red "$KAFKA_IT_REPORT"
+      - name: Restore the Kafka broker and readiness-check it
+        run: |
+          set -euo pipefail
+          docker start "${{ steps.mutate.outputs.container_id }}"
+          waited=0
+          until (exec 3<>/dev/tcp/localhost/9092) 2>/dev/null; do
+            if [[ "$waited" -ge 90 ]]; then
+              echo '::error::restored Kafka did not accept a connection after 90s'
+              exit 1
+            fi
+            sleep 1
+            waited=$((waited + 1))
+          done
+          echo "restored Kafka accepting connections (after ${waited}s)"
+      - name: Restored GREEN — Kafka IT passes after broker restoration
+        id: restored
+        run: |
+          rm -f "$KAFKA_IT_REPORT"
+          mvn -pl "$KAFKA_IT_MODULE" -P develop-profile \
+            -DKafkaClientServiceTests.enabled=true -Dit.test=ReactiveKafkaAccessorIT \
+            -Dfailsafe.failIfNoSpecifiedTests=true \
+            test-compile failsafe:integration-test failsafe:verify
+      - name: Capture restored GREEN XML even if the IT failed
+        if: always() && steps.restored.outcome != 'skipped'
+        run: |
+          if [[ -f "$KAFKA_IT_REPORT" ]]; then cp "$KAFKA_IT_REPORT" "$RUNNER_TEMP/kafka-restored-green.xml"; fi
+      - name: Require an executed restored-GREEN Kafka IT
+        id: verifyrestored
+        run: |
+          python3 .github/scripts/epic1137-kafka-f2-report.py restored-green "$KAFKA_IT_REPORT"
+      - name: Stop the isolated Kafka service at job exit
+        if: always()
+        run: |
+          kafka_container="$(docker ps --filter ancestor=apache/kafka:3.7.1 --format '{{.ID}}')"
+          if [[ -n "$kafka_container" ]]; then
+            docker stop "$kafka_container"
+          fi
+      - name: Record the Kafka-specific L-04 / F2 mutation receipt
+        if: always()
+        run: |
+          {
+            echo '## #2536 L-04 / #1137 F2 Kafka-specific mutation-control receipt'
+            echo '```'
+            echo "head_sha=${{ needs.changed-modules.outputs.head_sha }}"
+            echo 'image: apache/kafka:3.7.1 (KRaft single-node, broker+controller)'
+            echo 'scope: ReactiveKafkaAccessorIT only; ZooKeeper and ordinary hosted tiers not run'
+            echo 'anti-vacuity: unique expected record per invocation; two pre-mutation live GREENs'
+            echo "GREEN 1: ${{ steps.green1.outcome }}"
+            echo "GREEN 2: ${{ steps.green2.outcome }}"
+            echo 'mutation: stop the only apache/kafka:3.7.1 service container and verify port 9092 is closed'
+            echo "RED (Kafka broker stopped): ${{ steps.red.outcome }}"
+            echo "RED report verification: ${{ steps.verifyred.outcome }}"
+            echo "restored GREEN: ${{ steps.restored.outcome }}"
+            echo "restored report verification: ${{ steps.verifyrestored.outcome }}"
+            echo 'No artifact upload: workflow_dispatch is restore-only by CI policy.'
+            for phase in green-1 green-2 red restored-green; do
+              report="$RUNNER_TEMP/kafka-$phase.xml"
+              if [[ -f "$report" ]]; then
+                echo "$phase XML: sha256=$(sha256sum "$report" | cut -d' ' -f1), bytes=$(wc -c < "$report")"
+              else
+                echo "$phase XML: absent"
+              fi
+            done
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+
   emulator:
     needs: changed-modules
     if: needs.changed-modules.outputs.run_emulator == 'true'
