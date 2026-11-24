@@ -38,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Proves Jersey package scanning accepts classes emitted for the project's Java 25 baseline.
  *
  * @author Navaneeth Mysore G
+ * @author Claude
  */
 final class Java25PackageScanningTest {
 
@@ -70,7 +71,8 @@ final class Java25PackageScanningTest {
         };
         logger.addHandler(handler);
         try {
-            final ResourceConfig config = new ResourceConfig().packages(getClass().getPackageName());
+            final ResourceConfig config =
+                new ResourceConfig().packages(getClass().getPackageName());
 
             assertTrue(config.getClasses().contains(Java25Resource.class));
             assertTrue(warnings.stream()

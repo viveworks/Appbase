@@ -38,6 +38,7 @@ import java.util.Objects;
  * unsupported future Java runtime; Java 25 and earlier never enter the reflective path.
  *
  * @author Navaneeth Mysore G
+ * @author Claude
  * @since 1.0.0
  */
 public final class JerseyResourceConfigCompatibility {

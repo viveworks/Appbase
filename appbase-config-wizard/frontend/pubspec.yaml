@@ -22,6 +22,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Real app-lifecycle browser automation for internal work item 2828 F1/F2.
+  integration_test:
+    sdk: flutter
   lints: ^5.1.1
   build_runner: ^2.15.1
   riverpod_generator: ^4.0.9

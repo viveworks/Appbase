@@ -8,19 +8,28 @@
 # Usage (from the module root):
 #   ./test/start-web.sh [JAR_PATH]
 #
-# If JAR_PATH is omitted, defaults to target/appbase-config-wizard-1.0.0.jar.
+# JAR_PATH is how Maven invokes this (${project.build.directory}/${project.build.finalName}.jar,
+# correct for any project version). Without it -- a manual, non-Maven run -- this falls back to the
+# largest appbase-config-wizard-*.jar under target/, excluding sources/shaded/javadoc; if none
+# exists, it fails with a clear error rather than guessing a version string.
 set -euo pipefail
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MODULE_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
 
-JAR="${1:-${MODULE_DIR}/target/appbase-config-wizard-1.0.0.jar}"
+DEFAULT_JAR="$(ls -S "${MODULE_DIR}"/target/appbase-config-wizard-*.jar 2>/dev/null | grep -v -- '-sources\.jar$\|-shaded\.jar$\|-javadoc\.jar$' | head -1 || true)"
+JAR="${1:-${DEFAULT_JAR}}"
 PORT_FILE="${MODULE_DIR}/.config-wizard-test.port"
 PID_FILE="${MODULE_DIR}/.config-wizard-test.pid"
 LOG_FILE="${MODULE_DIR}/.config-wizard-test.log"
 
-if [ ! -f "${JAR}" ]; then
-  echo "ERROR: JAR not found at: ${JAR}" >&2
+if [ -n "${1:-}" ] && [ ! -f "${JAR}" ]; then
+  echo "ERROR: JAR not found at the given path: ${JAR}" >&2
+  exit 1
+fi
+if [ -z "${JAR}" ]; then
+  echo "ERROR: no appbase-config-wizard-*.jar found under ${MODULE_DIR}/target/." >&2
+  echo "       Build it first (mvn package), or pass the exact path: ./test/start-web.sh JAR_PATH" >&2
   exit 1
 fi
 

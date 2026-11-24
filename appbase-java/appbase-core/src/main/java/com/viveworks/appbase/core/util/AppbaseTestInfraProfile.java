@@ -72,6 +72,7 @@ package com.viveworks.appbase.core.util;
  * reader the question has been answered.</i>
  *
  * @author Navaneeth Mysore G
+ * @author Claude
  * @since 1.0.0
  */
 public final class AppbaseTestInfraProfile {

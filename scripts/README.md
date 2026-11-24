@@ -49,6 +49,7 @@
 - `scripts/test/inventory_test.sh`
 - `scripts/test/javadoc_visibility_test.py`
 - `scripts/test/javadoc_visibility_test.sh`
+- `scripts/test/jersey_resource_config_compatibility_wiring_test.sh`
 - `scripts/test/readme_storefront_scan.py`
 - `scripts/test/readme_storefront_test.sh`
 - `scripts/test/release1-excluded-artifacts.txt`

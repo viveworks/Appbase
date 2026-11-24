@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Verifies the future-JDK guard distinguishes Jersey package scanning from explicit registration.
  *
  * @author Navaneeth Mysore G
+ * @author Claude
  */
 final class JerseyResourceConfigCompatibilityTest {
 

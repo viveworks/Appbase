@@ -212,7 +212,43 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
+            <artifactId>jersey-container-jetty-servlet</artifactId>
+            <!-- Jersey 3.1.11 changed this artifact's own default dependency from the
+                 classic org.eclipse.jetty:jetty-webapp (what 3.1.3 shipped and what this
+                 repo's jetty.version=11.0.26 pin targets) to the Jetty-12-only
+                 org.eclipse.jetty.ee10:jetty-ee10-webapp, which RequireUpperBoundDeps
+                 correctly rejects alongside the managed 11.x line. Excluding it and
+                 declaring the classic artifact explicitly below restores exactly what
+                 3.1.3 provided by default.
+
+                 jersey-container-jetty-servlet's own exported public
+                 org.glassfish.jersey.jetty.servlet.JettyWebContainerFactory directly
+                 references org.glassfish.jersey.jetty.internal.LocalizationMessages,
+                 which only jersey-container-jetty-http supplies, so that artifact must be
+                 KEPT, not excluded wholesale (an earlier attempt that excluded it broke
+                 this exported factory with a NoClassDefFoundError instead of Jersey's own
+                 intended ProcessingException). jersey-container-jetty-http's own jetty-security
+                 dependency still resolves, via ITS OWN unmanaged POM chain, to Jetty 12.0.22
+                 before our dependencyManagement applies — RequireUpperBoundDeps rejects that
+                 regardless of the final managed value. The classic org.eclipse.jetty:jetty-servlet
+                 dependency declared below already pulls the correct, managed
+                 org.eclipse.jetty:jetty-security:11.0.26 on its own path, so excluding it here
+                 only removes the redundant, over-high-resolving duplicate path, not the class
+                 itself. -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.ee10</groupId>
+                    <artifactId>jetty-ee10-webapp</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-security</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>

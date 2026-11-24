@@ -27,6 +27,8 @@ class _ConfigFormScreenState extends ConsumerState<ConfigFormScreen> {
   final Map<String, dynamic> _values = {};
   bool _building = false;
 
+  void _handleBack() => Navigator.of(context).pop();
+
   @override
   void initState() {
     super.initState();
@@ -70,9 +72,28 @@ class _ConfigFormScreenState extends ConsumerState<ConfigFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.summary.simpleName),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+        // Flutter Web's accessibility tree renders a button's accessible name
+        // as DOM text content, not the `aria-label` HTML attribute, UNLESS
+        // the semantics node genuinely has children (engine
+        // lib/web_ui/.../semantics/label_and_value.dart,
+        // LabelAndValue._getEffectiveRepresentation:
+        // `semanticsObject.hasChildren ? ariaLabel : preferredRepresentation`).
+        // An earlier version of this wrapper used `excludeSemantics: true`,
+        // which strips the IconButton's own semantics and leaves this node
+        // with zero children, so it fell through to domText instead —
+        // confirmed directly against the rendered semantics tree
+        // (`aria-label=null`) by test/web/tests/browser-back.spec.ts. Keeping
+        // the IconButton's own semantics as a real child (no exclusion) makes
+        // `hasChildren` true, so this label reaches `aria-label` on web.
+        leading: Semantics(
+          label: 'Back to configurations',
+          button: true,
+          onTap: _handleBack,
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            tooltip: 'Back to configurations',
+            onPressed: _handleBack,
+          ),
         ),
         actions: const [],
       ),
