@@ -433,6 +433,16 @@ jobs:
         # budget check below sums over.
         timeout-minutes: 35
         run: .github/scripts/stacktest-live-runner.sh install
+      - name: Select JDK 21 for the live StackTestMain gate
+        # stacktest-live-runner.sh's require_stacktest_java_runtime() fails closed unless the `java`
+        # on PATH reports java.specification.version=21 (internal work item 3011/3012); this job's main
+        # setup-java step above is pinned to 25 for the rest of the reactor, so the live gate needs its
+        # own JDK switched in immediately before it runs.
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        timeout-minutes: 5
+        with:
+          distribution: temurin
+          java-version: '21'
       - name: Live product gate
         # Vitess's readiness/outage-restoration path has a documented hang history (internal work item 2749/internal work item 2788).
         # Bounding this step below the job's own timeout is necessary but not sufficient on its own --
