@@ -69,13 +69,19 @@ test.describe('W2: Search filter narrows the list', () => {
       test.skip();
       return;
     }
-    await searchInput.fill('redis');
-    await page.waitForTimeout(1_000);
-
-    const countAfter = await countListItems(page);
-    // redis filter should show fewer items than unfiltered
-    expect(countAfter).toBeLessThan(countBefore);
-    expect(countAfter).toBeGreaterThan(0);
+    // Retried as one unit, not via Playwright test retries (retries stays 0 per
+    // playwright.config.ts). config_list_screen.dart's TextField.onChanged is synchronous and
+    // undebounced, but under 2-worker CanvasKit contention the input event itself can be
+    // dropped or delayed past a short fixed wait; a bare waitForTimeout() does not re-send it.
+    // Same mechanism and timeout as navaneeth-mysore/Appbase#3049's fix to
+    // filter-persistence.spec.ts and the matching fix in filter-coverage.spec.ts.
+    await expect(async () => {
+      await searchInput.fill('redis');
+      const countAfter = await countListItems(page);
+      // redis filter should show fewer items than unfiltered
+      expect(countAfter).toBeLessThan(countBefore);
+      expect(countAfter).toBeGreaterThan(0);
+    }).toPass({ timeout: 30_000 });
   });
 
   test('typing a nonexistent module shows no configs', async ({ page }) => {
