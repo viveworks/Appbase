@@ -399,7 +399,11 @@ jobs:
     needs: changed-modules
     if: needs.changed-modules.outputs.run_stacktest == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 170
+    # Sum of this job's own step timeouts below is 235m; 250m keeps the pre-existing ~15m job-level
+    # safety margin over that sum (the build-images bump to 90m is for build-druid.sh's Druid
+    # download, which is a ~630MB transfer throttled by archive.apache.org once a version drops off
+    # Apache's fast "current release" mirrors -- see that script's own comment for detail).
+    timeout-minutes: 250
     steps:
       - name: Check out the exact head
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -415,7 +419,7 @@ jobs:
           distribution: temurin
           java-version: '25'
       - name: Build local StackTest infrastructure images
-        timeout-minutes: 20
+        timeout-minutes: 90
         run: |
           bash appbase-java/appbase-client/appbase-client-aerospike/infra/docker/aerospike/build-aerospike.sh
           bash appbase-java/appbase-client/appbase-client-cloud/appbase-client-cloud-aws/appbase-client-cloud-aws-s3/infra/docker/s3/build-s3.sh
