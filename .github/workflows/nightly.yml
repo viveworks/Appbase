@@ -1,10 +1,21 @@
-# Generated public develop nightly. Do not edit after export.
+# Generated public develop nightly.
 name: Public nightly
 
-# Phase 1 (internal work item 2861): the schedule trigger is deliberately omitted here. It is added only by issue
-# 2904's own Phase-2 PR, not this one.
+# Phase 2 (#2904): adds the schedule trigger Phase 1 (internal work item 2861) deliberately omitted.
+# 07:00 UTC = 02:00/03:00 ET -- off-peak for the owner's own timezone, and not exact midnight UTC,
+# which avoids the shared-runner pile-up every other `0 0 * * *` nightly workflow on GitHub hits.
+#
+# KNOWN FRAGILITY, flagged rather than silently left: this file's own header used to say "Do not
+# edit after export" because scripts/export/project-public-ci.py's project_nightly() (private repo)
+# regenerates this exact file from scratch on every export run, and its template still hardcodes
+# the Phase-1, schedule-free `on:` block as of this PR. The next export that touches this file WILL
+# silently revert this change unless that exporter function is also updated to emit the schedule --
+# tracked as a required follow-up, not done in this PR (this PR is scoped to the org repo only, per
+# the task's own instruction; the exporter lives on the private repo and needs its own review).
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * *'
 
 permissions:
   contents: read
