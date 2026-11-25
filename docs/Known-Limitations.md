@@ -58,7 +58,7 @@ support-message service. No separate account bundle for Vitess is claimed for Re
   [`appbase-bootstrap-core`](../appbase-java/appbase-bootstrap/appbase-bootstrap-core/pom.xml)
   depends on the five retained excluded artifacts, and it carries
   factories for the deferred ClamAV, SMTP, Jasync and Spark clients. Since the owner's ruling on
-  PR internal work item 2504 (2026-09-27), those dependencies are `<optional>true</optional>`. They are on
+  internal work item 2504 (2026-09-27), those dependencies are `<optional>true</optional>`. They are on
   bootstrap-core's own build classpath, so those factories still compile, but they no longer reach a
   consumer of `appbase-bootstrap-core` or `appbase-bootstrap-reactor-netty`. The factories are
   registered only by explicit caller code (`AppbaseClientServices.builder().with(…)`), so a consumer
@@ -106,6 +106,11 @@ support-message service. No separate account bundle for Vitess is claimed for Re
   internal work item 1419).
 - **The brand is a placeholder** (internal work item 1415).
   The product name may still change.
+- **The config wizard's browser Back button does not step back through an open form.** Using your
+  browser's own Back button (not the app's in-app Back arrow) while a configuration form is open
+  does not return you to the configuration list the way normal web navigation would. **Workaround:
+  use the in-app Back arrow in the form's own toolbar instead of the browser's Back button.**
+  Deferred to Release 2.0.0 (internal work item 3026).
 
 ## Where the Release 2 work lives
 

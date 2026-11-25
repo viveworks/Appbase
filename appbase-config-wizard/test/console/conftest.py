@@ -4,6 +4,7 @@ Pytest fixtures for appbase-config-wizard console integration tests.
 Provides the `wizard` fixture that spawns the config-wizard JAR via pexpect,
 and the `wizard_with_output` fixture that spans it with an explicit -o flag.
 """
+import glob
 import os
 import re
 import signal
@@ -15,10 +16,27 @@ import pytest
 # JAR path resolution
 # ---------------------------------------------------------------------------
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_DEFAULT_JAR = os.path.join(_HERE, '..', '..', 'target',
-                             'appbase-config-wizard-1.0.0-SNAPSHOT.jar')
+_TARGET_DIR = os.path.join(_HERE, '..', '..', 'target')
 
-JAR = os.environ.get('CONFIG_WIZARD_JAR', _DEFAULT_JAR)
+# CONFIG_WIZARD_JAR is how Maven invokes this (${project.build.directory}/${project.build.finalName}.jar,
+# correct for any project version). Without it -- a manual, non-Maven run -- the project version
+# is not always the literal SNAPSHOT string this once hardcoded (a real release build is not), so
+# fall back to picking the built jar by size rather than guessing a filename: the real executable
+# artifact is far larger than the sources/shaded/javadoc jars sitting next to it, a signal that
+# holds regardless of what version string is in the filename.
+_JAR_CANDIDATES = [
+    path for path in glob.glob(os.path.join(_TARGET_DIR, 'appbase-config-wizard-*.jar'))
+    if not path.endswith(('-sources.jar', '-shaded.jar', '-javadoc.jar'))
+]
+_JAR_CANDIDATES.sort(key=os.path.getsize, reverse=True)
+_DEFAULT_JAR = _JAR_CANDIDATES[0] if _JAR_CANDIDATES else None
+
+_resolved_jar = os.environ.get('CONFIG_WIZARD_JAR', _DEFAULT_JAR)
+if not _resolved_jar or not os.path.isfile(_resolved_jar):
+    raise RuntimeError(
+        f"No appbase-config-wizard jar found (JAR={_resolved_jar!r}). Build it first "
+        f"(mvn package) under {_TARGET_DIR}, or set CONFIG_WIZARD_JAR to the exact path.")
+JAR: str = _resolved_jar
 
 # JVM flags required for JLine3 + unsafe-access suppression on JDK 25
 JVM_FLAGS = [

@@ -29,7 +29,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.viveworks.appbase</groupId>
     <artifactId>appbase</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
     <name>Appbase</name>
     <description>Root parent + aggregator — owns shared build config and builds all Appbase modules from a single invocation</description>
@@ -191,7 +191,11 @@
         <opentracing.version>0.33.0</opentracing.version>
         <jaeger.version>1.6.0</jaeger.version>
         <jakarta-validation.version>3.0.2</jakarta-validation.version>
-        <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
+        <!-- Bumped from 8.0.1.Final alongside the jersey.version 3.1.11 bump: Jersey's own
+             jersey-bean-validation module at that version transitively wants 8.0.2.Final,
+             and RequireUpperBoundDeps correctly rejects a managed version lower than a
+             naturally-resolved transitive one. 8.0.2.Final is a same-minor patch release. -->
+        <hibernate-validator.version>8.0.2.Final</hibernate-validator.version>
         <expressly.version>5.0.0</expressly.version>
         <h2.version>2.2.224</h2.version>
         <hibernate.version>6.5.3.Final</hibernate.version>
@@ -210,10 +214,11 @@
         <undertow.version>2.3.26.Final</undertow.version>
         <tomcat.embed.version>10.1.57</tomcat.embed.version>
         <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
-        <jersey.version>3.1.3</jersey.version>
+        <jersey.version>3.1.11</jersey.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
         <jaxb-api.version>2.3.1</jaxb-api.version>
-        <jakarta.activation-api.version>2.1.1</jakarta.activation-api.version>
+        <jakarta.xml.bind-api.version>4.0.2</jakarta.xml.bind-api.version>
+        <jakarta.activation-api.version>2.1.3</jakarta.activation-api.version>
         <swagger.version>2.2.55</swagger.version>
         <swagger-ui.version>5.9.0</swagger-ui.version>
         <commons-text.version>1.15.0</commons-text.version>
@@ -979,6 +984,16 @@
                 <groupId>javax.xml.bind</groupId>
                 <artifactId>jaxb-api</artifactId>
                 <version>${jaxb-api.version}</version>
+            </dependency>
+            <!-- Not previously managed, so nearest-wins let different jersey.version-3.1.11
+                 transitive paths disagree: hibernate-core wants 4.0.0, jersey-media-json-jackson
+                 4.0.2, swagger-core 2.3.3, swagger-integration-jakarta 3.0.1, the jaxb-runtime
+                 chain 4.0.0. RequireUpperBoundDeps needs the managed version to be the highest
+                 of these. -->
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jakarta.xml.bind-api.version}</version>
             </dependency>
 
             <!-- Swagger -->
@@ -2710,6 +2725,29 @@
                                 <failOnError>${build.failOnError}</failOnError>
                                 <keywords>true</keywords>
                                 <nohelp>true</nohelp>
+                                <!-- N09 (internal work item 2541): `outputDirectory` is the parameter the javadoc-report
+                                     mojos actually read when a goal (javadoc-no-fork/aggregate-no-fork)
+                                     is run directly from the command line. (There is no separate
+                                     `reportOutputDirectory` parameter on this goal to confuse it with —
+                                     checked via `mvn help:describe`; under `mvn site`, this same
+                                     `outputDirectory` parameter is ignored entirely and the location is
+                                     governed instead by the project-wide `project.reporting.outputDirectory`
+                                     property plus this mojo's own `apidocs/` subfolder convention, same
+                                     as every other site report — not overridden here, so `site`'s own
+                                     aggregate still lands at its ordinary target/site/apidocs/index.html,
+                                     matching this release-profile's existing convention of reading
+                                     site-generated output from its default location, e.g. the DOAP
+                                     enforcer check a few hundred lines below.) Anchor it at the repo
+                                     root's target/ so the CLI-direct release aggregate lands under
+                                     target/release-javadocs/ regardless of which reactor module ends up
+                                     executing the goal (the mojo always appends its own `apidocs/`
+                                     segment underneath whatever outputDirectory names, so the real file
+                                     is target/release-javadocs/apidocs/index.html — the exact path
+                                     docs/api-inventory/api-docs-link-matrix.json's two "source" fields
+                                     now name). The javadoc-jar packaging execution below pins its own
+                                     outputDirectory back to the per-module default so this redirect
+                                     never touches the real release artifact. -->
+                                <outputDirectory>${maven.multiModuleProjectDirectory}/target/release-javadocs</outputDirectory>
                                 <overview>javadoc-overview.html</overview>
                                 <serialwarn>true</serialwarn>
                                 <show>protected</show>
@@ -2771,6 +2809,15 @@
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-gpg-plugin</artifactId>
                             <version>3.2.8</version>
+                            <configuration>
+                                <!-- Owner-verified signing identity (internal work item 2412, 2026-11-07): the ed25519 key, NOT
+                                     the RSA4096 gmail-uid key that is also on the signing host. Pinning the
+                                     full fingerprint (not the short key ID) so a colliding short ID can never
+                                     select the wrong key. Public identifier only, no private key or
+                                     passphrase here or anywhere else. -->
+                                <keyname>2D95286150A4325C2A3539B7587AE0383B52B0FC</keyname>
+                                <useAgent>true</useAgent>
+                            </configuration>
                             <executions>
                                 <execution>
                                     <id>sign-artifacts</id>
@@ -2855,6 +2902,24 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                                <!-- N09 (internal work item 2541): pin this lifecycle-bound execution's `outputDirectory`
+                                     back to the normal per-module default, overriding the
+                                     pluginManagement-level `outputDirectory` redirect added for the
+                                     CLI-direct release aggregate goal above. Execution-level
+                                     configuration wins over the pluginManagement default for a
+                                     phase-bound execution, so the real per-module javadoc-jar artifact
+                                     this produces during package/install is unaffected by that redirect.
+                                     Deliberately NOT pinning `skip` here: the plugin's own `jar` goal
+                                     already declares `skip` as `${maven.javadoc.skip}` (default
+                                     `false`), which is the standard escape hatch
+                                     (`-Dmaven.javadoc.skip=true`) for suppressing javadoc generation
+                                     during package/install. A literal `<skip>false</skip>` override was
+                                     tried here and reverted (2026-11-11 review finding M1): it
+                                     hardcoded the value and silently broke that escape hatch, which is
+                                     a regression, not a safety pin. -->
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/reports</outputDirectory>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

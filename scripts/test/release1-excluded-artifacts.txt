@@ -1,4 +1,4 @@
-# Release-1 excluded artifacts — the ONE list (internal work item 2419, RA R3 on PR internal work item 2504).
+# Release-1 excluded artifacts — the ONE list (internal work item 2419, RA R3 on internal work item 2504).
 #
 # Release 1.0 Lean Requirements baseline (reconciled 2026-08-28), §4.2 (deferred adapters) and §4.3
 # (former empty POM-only shells, now removed), plus the owner's internal work item 1141 Q1 deferral: these must not appear in Release-1 publication claims. Read by

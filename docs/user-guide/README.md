@@ -9,7 +9,7 @@ says so wherever something you might expect is missing or broken.
 
 > **Before you start — four facts that shape every step**
 >
-> - **Appbase is built from source.** The version is `1.0.0-SNAPSHOT`. Appbase is not yet published to
+> - **Appbase is built from source.** The version is `1.0.0`. Appbase is not yet published to
 >   Maven Central. Build and `mvn install` it locally. Publication is planned
 >   for a later release.
 > - **The groupId is not final.** Every dependency snippet uses the placeholder `GROUP_ID_PENDING_2546`.
@@ -45,7 +45,7 @@ That page is not present before the publication commit.
 Existing documents this guide links instead of repeating:
 [OAuth primer](../OAuth-Primer.md) (concepts behind the OAuth modules),
 [authorization and path matching](../configuration/authorization-and-path-matching.md) (path-match
-rules for authorization, CORS, sessions and filters). Maintainer tooling (the control plane and orchestrator) is
+rules for authorization, CORS, sessions and filters). Internal maintainer tooling is
 **not covered here**.
 
 **Contents of this page**

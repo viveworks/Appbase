@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-24
 **Spec:** `docs/specs/P-013-service-module-split-spec.md`
-**Prereq:** P-012 merged ✅ (PR internal work item 204)
+**Prereq:** P-012 merged ✅ (internal work item 204)
 **Branch:** create from develop after Gate 0
 
 ---

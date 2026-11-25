@@ -80,7 +80,7 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
 
   - Each licence below is the one THAT DEPENDENCY'S OWN POM DECLARES, except for
     three exact-coordinate legacy overrides whose POMs omit usable metadata. Those
-    overrides, the five exact-coordinate LGPL-as-used notices, and their
+    overrides, the six exact-coordinate LGPL-as-used notices, and their
     upstream-artifact provenance are recorded in the N05 quality ledger. POM metadata is
     publisher metadata, not a reading of the licence text, and not a check
     against the upstream project. Where an entry reads "A or B" the dependency
@@ -110,25 +110,47 @@ HOW THIS LIST IS PRODUCED, AND WHAT IT DOES NOT SAY
       Upstream attribution: Copyright (c) 2000-2002 The Apache Software Foundation.
       This product includes software developed by the Apache Software Foundation
       (http://www.apache.org/).
+        <#elseif gav(project) == "com.google.code.findbugs:annotations:3.0.1">
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-2.1-or-later.
+      Corresponding source (embedded): META-INF/lgpl/sources/annotations-3.0.1-sources.jar
+      Upstream provenance:
+      https://repo1.maven.org/maven2/com/google/code/findbugs/annotations/3.0.1/annotations-3.0.1-sources.jar
         <#elseif gav(project) == "com.github.spotbugs:spotbugs-annotations:4.10.3">
-      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
-      LGPL-2.1-only. Corresponding source:
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-2.1-only.
+      Corresponding source (embedded): META-INF/lgpl/sources/spotbugs-annotations-4.10.3-sources.jar
+      Upstream provenance:
       https://repo1.maven.org/maven2/com/github/spotbugs/spotbugs-annotations/4.10.3/spotbugs-annotations-4.10.3-sources.jar
         <#elseif gav(project) == "net.openhft:affinity:3.0.6">
-      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
-      LGPL-3.0-only. Corresponding source:
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-3.0-only.
+      Corresponding source (embedded): META-INF/lgpl/sources/affinity-3.0.6-sources.jar
+      Upstream provenance:
       https://repo1.maven.org/maven2/net/openhft/affinity/3.0.6/affinity-3.0.6-sources.jar
         <#elseif gav(project) == "org.hibernate.common:hibernate-commons-annotations:6.0.6.Final">
-      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
-      LGPL-2.1-or-later. Corresponding source:
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-2.1-or-later.
+      Corresponding source (embedded): META-INF/lgpl/sources/hibernate-commons-annotations-6.0.6.Final-sources.jar
+      Upstream provenance:
       https://repo1.maven.org/maven2/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final-sources.jar
         <#elseif gav(project) == "org.hibernate.orm:hibernate-core:6.5.3.Final">
-      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
-      LGPL-2.1-or-later. Corresponding source:
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-2.1-or-later.
+      Corresponding source (embedded): META-INF/lgpl/sources/hibernate-core-6.5.3.Final-sources.jar
+      Upstream provenance:
       https://repo1.maven.org/maven2/org/hibernate/orm/hibernate-core/6.5.3.Final/hibernate-core-6.5.3.Final-sources.jar
         <#elseif gav(project) == "org.mariadb.jdbc:mariadb-java-client:2.7.4">
-      LGPL-as-used attribution: redistributed unmodified as a separate JAR under
-      LGPL-2.1-only. Corresponding source:
+      LGPL-as-used attribution: Appbase thin modules consume this component
+      unmodified as a replaceable Maven/classpath dependency; the Appbase Config
+      Wizard shaded JAR also embeds its unrelocated classes under LGPL-2.1-only.
+      Corresponding source (embedded): META-INF/lgpl/sources/mariadb-java-client-2.7.4-sources.jar
+      Upstream provenance:
       https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/2.7.4/mariadb-java-client-2.7.4-sources.jar
         </#if>
     </#list>

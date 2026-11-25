@@ -16,10 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.viveworks.appbase.bootstrap.undertow.server;
 
 import com.viveworks.appbase.bootstrap.servlet.AppbaseCoreOpenApiRegistrar;
 import com.viveworks.appbase.bootstrap.servlet.AppbaseServletRegistrar;
+import com.viveworks.appbase.bootstrap.servlet.JerseyResourceConfigCompatibility;
 import com.viveworks.appbase.bootstrap.server.AppbaseWebServer;
 import com.viveworks.appbase.bootstrap.service.AppbaseServices;
 import com.viveworks.appbase.core.AppbaseRuntimeException;
@@ -67,11 +69,12 @@ public final class UndertowServletContainer implements AppbaseWebServer {
     private boolean started;
 
     private UndertowServletContainer(final Undertow server, final DeploymentManager manager,
-                                     final AppbaseServices appbaseServices, final int port) {
-        this.server          = server;
-        this.manager         = manager;
+                                     final AppbaseServices appbaseServices, final int port)
+    {
+        this.server = server;
+        this.manager = manager;
         this.appbaseServices = appbaseServices;
-        this.port            = port;
+        this.port = port;
     }
 
     /**
@@ -80,12 +83,14 @@ public final class UndertowServletContainer implements AppbaseWebServer {
      * @throws AppbaseRuntimeException if the server fails to start
      */
     @Override
+    @SuppressWarnings("checkstyle:IllegalCatch")
     public void start() {
         try {
             server.start();
             started = true;
-        } catch (Exception e) {
-            throw new AppbaseRuntimeException("Failed to start UndertowServletContainer", e);
+        } catch (final Exception exception) {
+            throw new AppbaseRuntimeException(
+                "Failed to start UndertowServletContainer", exception);
         }
     }
 
@@ -97,16 +102,18 @@ public final class UndertowServletContainer implements AppbaseWebServer {
      * @throws AppbaseRuntimeException if the server fails to stop
      */
     @Override
+    @SuppressWarnings("checkstyle:IllegalCatch")
     public void stop() {
         try {
             server.stop();
-        } catch (Exception e) {
-            throw new AppbaseRuntimeException("Failed to stop UndertowServletContainer", e);
+        } catch (final Exception exception) {
+            throw new AppbaseRuntimeException(
+                "Failed to stop UndertowServletContainer", exception);
         } finally {
             started = false;
             try {
                 manager.undeploy();
-            } catch (Exception e) {
+            } catch (final Exception cleanupException) {
                 // secondary failure — log but don't mask primary exception
             }
             appbaseServices.shutdown();
@@ -157,8 +164,8 @@ public final class UndertowServletContainer implements AppbaseWebServer {
     public static final class Builder {
 
         @Nullable private AppbaseServices appbaseServices;
-        @Nullable private ResourceConfig  resourceConfig;
-        private int    port = DEFAULT_PORT;
+        @Nullable private ResourceConfig resourceConfig;
+        private int port = DEFAULT_PORT;
         private String host = DEFAULT_HOST;
         private boolean coreServlets;
         private boolean coreOpenApi;
@@ -201,6 +208,11 @@ public final class UndertowServletContainer implements AppbaseWebServer {
         /**
          * Sets the Jersey {@link ResourceConfig} for JAX-RS resource registration.
          * If not set, an empty {@link ResourceConfig} is used.
+         * Package scanning is supported through Java 25. On a later runtime, {@link #build()}
+         * reports {@code Jersey package scanning is supported through Java 25, but this server is
+         * running on Java N} and directs callers to use explicit
+         * {@link ResourceConfig#register(Class)}, a supported Java runtime, or upgraded
+         * Appbase/Jersey.
          *
          * @param resourceConfig the Jersey resource configuration
          * @return this builder
@@ -261,8 +273,11 @@ public final class UndertowServletContainer implements AppbaseWebServer {
          *
          * @return the configured, not yet started, server
          * @throws NullPointerException     if {@link #from} was not called
+         * @throws IllegalStateException    if package scanning is configured after Java 25, or if
+         *                                  future-Jersey compatibility cannot be inspected safely
          * @throws AppbaseRuntimeException  if deployment or Undertow construction fails
          */
+        @SuppressWarnings("checkstyle:IllegalCatch")
         public UndertowServletContainer build() {
             Objects.requireNonNull(appbaseServices,
                 "appbaseServices required — call from(AppbaseServices) before build()");
@@ -270,6 +285,7 @@ public final class UndertowServletContainer implements AppbaseWebServer {
             if (coreServlets && coreOpenApi) {
                 AppbaseCoreOpenApiRegistrar.register(rc);
             }
+            JerseyResourceConfigCompatibility.validate(rc);
 
             final DeploymentInfo info = Servlets.deployment()
                 .setClassLoader(UndertowServletContainer.class.getClassLoader())
@@ -308,8 +324,9 @@ public final class UndertowServletContainer implements AppbaseWebServer {
                     .setHandler(manager.start())
                     .build();
                 return new UndertowServletContainer(undertow, manager, appbaseServices, port);
-            } catch (Exception e) {
-                throw new AppbaseRuntimeException("Failed to build UndertowServletContainer", e);
+            } catch (final Exception exception) {
+                throw new AppbaseRuntimeException(
+                    "Failed to build UndertowServletContainer", exception);
             }
         }
     }

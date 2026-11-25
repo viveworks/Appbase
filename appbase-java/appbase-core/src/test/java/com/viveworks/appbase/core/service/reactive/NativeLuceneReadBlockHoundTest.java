@@ -178,12 +178,12 @@ class NativeLuceneReadBlockHoundTest {
         final Query idQuery = new TermQuery(new Term("id", "doc-1"));
         final AtomicReference<String> emitThreadName = new AtomicReference<>();
 
-        final Document result = luceneService.readReactive(cancelled -> {
-                    final TopDocs topDocs = luceneService.getIndexSearcher().search(idQuery, 1);
+        final Document result = luceneService.readReactive(cancelled -> luceneService.withSearcher(searcher -> {
+                    final TopDocs topDocs = searcher.search(idQuery, 1);
                     final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
                     Assertions.assertTrue(scoreDocs.length > 0, "expected a hit for id=doc-1");
-                    return luceneService.getDirectoryReader().storedFields().document(scoreDocs[0].doc);
-                })
+                    return searcher.getIndexReader().storedFields().document(scoreDocs[0].doc);
+                }))
                 .doOnNext(document -> emitThreadName.set(Thread.currentThread().getName()))
                 // Subscribe on a non-blocking (parallel) scheduler thread — the class BlockHound treats
                 // like an event loop. With the offload intact, the boundary dispatches the blocking Lucene

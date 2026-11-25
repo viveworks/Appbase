@@ -98,8 +98,9 @@ export const RESET_BUTTON_SELECTOR =
  *
  * Steps:
  * 1. Wait for `flutter-view` — Flutter framework has mounted.
- * 2. Give Flutter 3 seconds to render its initial frame.
- * 3. JS-click the off-screen [aria-label="Enable accessibility"] placeholder.
+ * 2. Wait for the off-screen [aria-label="Enable accessibility"] placeholder
+ *    to attach — the real signal that Flutter has rendered its first frame.
+ * 3. JS-click that placeholder.
  *    This is what a screen reader would do; Flutter observes this and builds
  *    the flt-semantics elements.
  * 4. Wait up to 10 seconds for at least one flt-semantics element to appear.
@@ -108,8 +109,15 @@ export async function waitForFlutter(page: Page): Promise<void> {
   // Wait for Flutter framework to mount
   await page.waitForSelector('flutter-view', { state: 'attached', timeout: 30_000 });
 
-  // Give Flutter time to render the first frame
-  await page.waitForTimeout(3_000);
+  // Real readiness wait instead of a fixed delay: the accessibility
+  // placeholder only exists once Flutter has rendered its first frame, and a
+  // fixed sleep either races ahead of a slow (CPU/GPU-contended,
+  // software-rendered CanvasKit) first frame or wastes time on a fast one.
+  // Falls through silently on timeout, same as before, so a page without
+  // this placeholder is not a new failure mode.
+  await page.locator('[aria-label="Enable accessibility"]')
+    .waitFor({ state: 'attached', timeout: 15_000 })
+    .catch(() => undefined);
 
   // Click the "Enable accessibility" placeholder — Flutter's off-screen
   // sentinel that triggers semantics tree construction when focused/clicked.

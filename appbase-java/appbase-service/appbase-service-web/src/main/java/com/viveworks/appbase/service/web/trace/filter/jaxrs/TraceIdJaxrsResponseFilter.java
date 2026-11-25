@@ -63,6 +63,16 @@ public class TraceIdJaxrsResponseFilter extends AbstractJaxrsResponseFilter impl
             responseContext.getHeaders().put(traceIdKey, List.of(traceId));
         }
 
-        MDC.remove(traceIdKey);
+        // Restore exactly the value TraceIdJaxrsRequestFilter snapshotted before this request
+        // resolved anything, instead of unconditionally removing -- ownership-safe, parity with
+        // the servlet-side fix (internal work item 2633/L-1291). A request that never went through the request
+        // filter (no snapshot property set) has nothing to restore, so this is also safe for that
+        // case: getProperty returns null, and MDC.remove is the correct fallback.
+        final Object priorAmbientValue = requestContext.getProperty(traceIdKey + ".priorAmbientValue");
+        if (priorAmbientValue != null) {
+            MDC.put(traceIdKey, (String) priorAmbientValue);
+        } else {
+            MDC.remove(traceIdKey);
+        }
     }
 }

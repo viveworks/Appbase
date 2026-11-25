@@ -176,7 +176,7 @@ public class AwsSdkApacheProxyConfiguration {
     public String toString() {
         // AUD-34/L4-06: endpoint (may embed userinfo credentials in its URI) and nonProxyHosts
         // (an open-ended collection) are redacted alongside password, matching the broader
-        // redaction PR internal work item 2558 established for this same class after review found a single-field
+        // redaction internal work item 2558 established for this same class after review found a single-field
         // redaction insufficient.
         return "AwsSdkApacheProxyConfiguration{" +
                 "endpoint=" + AppbaseUtil.OBFUSCATE +

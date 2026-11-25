@@ -16,10 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.viveworks.appbase.bootstrap.tomcat.server;
 
 import com.viveworks.appbase.bootstrap.servlet.AppbaseCoreOpenApiRegistrar;
 import com.viveworks.appbase.bootstrap.servlet.AppbaseServletRegistrar;
+import com.viveworks.appbase.bootstrap.servlet.JerseyResourceConfigCompatibility;
 import com.viveworks.appbase.bootstrap.server.AppbaseWebServer;
 import com.viveworks.appbase.bootstrap.service.AppbaseServices;
 import com.viveworks.appbase.core.AppbaseRuntimeException;
@@ -65,10 +67,11 @@ public final class TomcatServletContainer implements AppbaseWebServer {
 
     private TomcatServletContainer(final Tomcat tomcat,
                                    final AppbaseServices appbaseServices,
-                                   final int port) {
-        this.tomcat          = tomcat;
+                                   final int port)
+    {
+        this.tomcat = tomcat;
         this.appbaseServices = appbaseServices;
-        this.port            = port;
+        this.port = port;
     }
 
     /**
@@ -81,8 +84,9 @@ public final class TomcatServletContainer implements AppbaseWebServer {
         try {
             tomcat.start();
             started = true;
-        } catch (LifecycleException e) {
-            throw new AppbaseRuntimeException("Failed to start TomcatServletContainer", e);
+        } catch (final LifecycleException exception) {
+            throw new AppbaseRuntimeException(
+                "Failed to start TomcatServletContainer", exception);
         }
     }
 
@@ -98,8 +102,9 @@ public final class TomcatServletContainer implements AppbaseWebServer {
         try {
             tomcat.stop();
             tomcat.destroy();
-        } catch (LifecycleException e) {
-            throw new AppbaseRuntimeException("Failed to stop TomcatServletContainer", e);
+        } catch (final LifecycleException exception) {
+            throw new AppbaseRuntimeException(
+                "Failed to stop TomcatServletContainer", exception);
         } finally {
             started = false;
             appbaseServices.shutdown();
@@ -150,8 +155,8 @@ public final class TomcatServletContainer implements AppbaseWebServer {
     public static final class Builder {
 
         @Nullable private AppbaseServices appbaseServices;
-        @Nullable private ResourceConfig  resourceConfig;
-        private int    port = DEFAULT_PORT;
+        @Nullable private ResourceConfig resourceConfig;
+        private int port = DEFAULT_PORT;
         private String host = DEFAULT_HOST;
         private boolean coreServlets;
         private boolean coreOpenApi;
@@ -194,6 +199,11 @@ public final class TomcatServletContainer implements AppbaseWebServer {
         /**
          * Sets the Jersey {@link ResourceConfig} for JAX-RS resource registration.
          * If not set, an empty {@link ResourceConfig} is used.
+         * Package scanning is supported through Java 25. On a later runtime, {@link #build()}
+         * reports {@code Jersey package scanning is supported through Java 25, but this server is
+         * running on Java N} and directs callers to use explicit
+         * {@link ResourceConfig#register(Class)}, a supported Java runtime, or upgraded
+         * Appbase/Jersey.
          *
          * @param resourceConfig the Jersey resource configuration
          * @return this builder
@@ -254,6 +264,8 @@ public final class TomcatServletContainer implements AppbaseWebServer {
          *
          * @return the configured, not yet started, server
          * @throws NullPointerException if {@link #from} was not called
+         * @throws IllegalStateException if package scanning is configured after Java 25, or if
+         *                               future-Jersey compatibility cannot be inspected safely
          */
         public TomcatServletContainer build() {
             Objects.requireNonNull(appbaseServices,
@@ -262,6 +274,7 @@ public final class TomcatServletContainer implements AppbaseWebServer {
             if (coreServlets && coreOpenApi) {
                 AppbaseCoreOpenApiRegistrar.register(rc);
             }
+            JerseyResourceConfigCompatibility.validate(rc);
 
             final Tomcat tomcat = new Tomcat();
             tomcat.setBaseDir(System.getProperty("java.io.tmpdir"));

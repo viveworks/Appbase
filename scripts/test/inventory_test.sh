@@ -422,7 +422,7 @@ then ok "EXTRA_stdlib_only: generator imports only the standard library"; else b
 
 # EXTRA_excluded_trees_mirror_build_sh — classification.json's excluded_trees says it mirrors EXCLUDED_TREES in
 # build.sh. A tree excluded in one and not the other either reappears as "absent" here or hides a buildable tree,
-# so the two lists must hold the same paths. (Found when a develop merge brought two orchestrator Flutter trees
+# so the two lists must hold the same paths. (Found when a develop merge brought two private Flutter trees
 # that build.sh excludes and this file did not.)
 if python3 - "$ROOT" <<'PYEOF'
 import json, re, sys
@@ -468,7 +468,7 @@ run check; expect "A4-I2: a package rule with no prefix is reported" 1 "invalid 
 fixture; cls 'del c["artifacts"]["com.example:lib"]["family"]'
 run check; expect "A4-I3: a supported-public record without a family fails check" 1 "missing handoff field.*com\.example:lib.*family"
 
-# ── RA-A2 review fix batch (PR internal work item 2506, R-2506-1..5,7) ─────────────────────────────────────────────────
+# ── RA-A2 review fix batch (internal work item 2506, R-2506-1..5,7) ─────────────────────────────────────────────────
 # R-2506-1: every containment check has its own arm. Each plants ONE symlink out of the fixture and asserts
 # the specific refusal AND that nothing from outside reaches the inventory (a rival check refusing something
 # else must not be able to pass the arm).

@@ -168,7 +168,7 @@ final class HostValidationFilterTest {
      * Code-review Agent 4 (prior-PR-comments, final gate re-run): DNS hostnames are
      * case-insensitive, so a legitimate browser-sent {@code Host: LOCALHOST} or
      * {@code Origin: http://LOCALHOST} must not be rejected merely because of its letter case.
-     * This closes an unresolved Copilot comment from PR internal work item 2627 against {@code isAllowedHost}, and
+     * This closes an unresolved Copilot comment from internal work item 2627 against {@code isAllowedHost}, and
      * the identical gap newly introduced by this diff's {@code isAllowedOrigin}.
      */
     @Test
@@ -189,7 +189,7 @@ final class HostValidationFilterTest {
     /**
      * Code-review Agent 4 (prior-PR-comments, final gate re-run): the original {@code stripPort}
      * took everything through the closing {@code ]} and silently discarded any trailing garbage
-     * after it -- the identical bypass class a prior reviewer (PR internal work item 1510 F9) flagged against a
+     * after it -- the identical bypass class a prior reviewer (internal work item 1510 F9) flagged against a
      * now-abandoned sibling filter's {@code hostOf()}. {@code "[::1].evil"} or {@code "[::1]junk"}
      * stripped to {@code "[::1]"}, which IS in the allowlist, so the forged host was accepted.
      * The only valid continuation after the closing bracket is nothing or {@code :<port>}; any

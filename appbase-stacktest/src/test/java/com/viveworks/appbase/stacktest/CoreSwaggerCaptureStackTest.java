@@ -137,10 +137,11 @@ class CoreSwaggerCaptureStackTest {
                         .openAPI(new OpenAPI().info(new Info()
                                 // Same title as the @OpenAPIDefinition in the resources' package-info.
                                 .title("Appbase Core REST API")
-                                .version("1.0.0-SNAPSHOT")
+                                .version("1.0.0")
                                 .description("Real core JAX-RS resources documented through a test-only "
-                                        + "OpenAPI resource (no core-service main code registers one, internal work item 2548). Backend "
-                                        + "operations are not exercised by this local capture fixture.")))
+                                        + "OpenAPI resource (no core-service main code "
+                                        + "registers one, internal work item 2548). Backend operations are not exercised "
+                                        + "by this local capture fixture.")))
                         .prettyPrint(true).resourceClasses(resourceNames))
                 .buildContext(true);
         final ResourceConfig config = new ResourceConfig().registerClasses(resources)
@@ -266,8 +267,9 @@ class CoreSwaggerCaptureStackTest {
             <link rel="icon" href="data:,">
             <link rel="stylesheet" href="/swagger-assets/swagger-ui.css"></head>
             <body><p>Real Appbase core JAX-RS resources, served through a test-only OpenAPI harness because
-            no core-service main code (appbase-core, appbase-service-*) registers an OpenApiResource (internal work item 2548; the
-            configuration wizard's own web server does). In this page the operations are not invoked.</p>
+            no core-service main code (appbase-core, appbase-service-*) registers an
+            OpenApiResource (internal work item 2548; the configuration wizard's own web server does). In this page the
+            operations are not invoked.</p>
             <div id="swagger-ui"></div><script src="/swagger-assets/swagger-ui-bundle.js"></script>
             <script>window.ui=SwaggerUIBundle({url:'/openapi.json',dom_id:'#swagger-ui',
             validatorUrl:null,supportedSubmitMethods:[],docExpansion:'list'});</script></body></html>

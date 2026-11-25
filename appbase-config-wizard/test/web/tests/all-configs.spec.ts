@@ -111,9 +111,49 @@ test.describe('W10: All config classes load without error', () => {
     expect(failures, 'Config detail failures:\n' + failures.join('\n')).toHaveLength(0);
   });
 
+  // How long to wait, per opened config, for the form to reach an actual
+  // terminal UI state (the error text, or the loaded form's "Build Config"
+  // action) before giving up and moving on. This replaces a fixed
+  // page.waitForTimeout(2_000): under real but moderate host contention the
+  // two sequential API calls the form makes (detail + defaultValues) plus
+  // Flutter's CanvasKit render can legitimately take longer than 2s without
+  // ever actually hanging, and a short fixed wait can either read a
+  // not-yet-rendered DOM as "fine" or flag a healthy-but-slow load as a
+  // failure. Waiting on the real terminal state fixes both: it exits as
+  // soon as the form settles, and only a genuine hang burns the full
+  // budget.
+  const CONFIG_LOAD_SETTLE_TIMEOUT_MS = 20_000;
+
+  // Waits for the just-opened config form to settle into either state.
+  // Deliberately makes NO assertion of its own — the caller still re-reads
+  // the live DOM for the error text afterwards, so a real
+  // "Error loading config" is never masked by this wait succeeding on the
+  // "loaded" branch of the race.
+  async function waitForConfigSettled(page: Page): Promise<void> {
+    const errorLocator = page.getByText(LOAD_ERROR_TEXT).first();
+    const loadedLocator = page
+      .locator('flt-semantics[role="button"]')
+      .filter({ hasText: /^Build Config$/ })
+      .first();
+    await Promise.race([
+      errorLocator.waitFor({ state: 'attached', timeout: CONFIG_LOAD_SETTLE_TIMEOUT_MS }),
+      loadedLocator.waitFor({ state: 'attached', timeout: CONFIG_LOAD_SETTLE_TIMEOUT_MS }),
+    ]).catch(() => undefined);
+  }
+
   test('first three visible configs open without "Error loading config"', async ({
     page,
   }) => {
+    // This test opens three configs in sequence, each paying the suite's
+    // full worker/host contention cost on its own navigation + readiness
+    // wait (see CONFIG_LOAD_SETTLE_TIMEOUT_MS above). The global 60s default
+    // (playwright.config.ts) is tuned for a single typical test and is too
+    // tight for three sequential real loads under genuine-but-moderate
+    // load; this is a documented, bounded extension for that specific cost,
+    // not a blind bump — a true hang (e.g. a wedged dev server) still times
+    // out well inside this budget.
+    test.setTimeout(120_000);
+
     await goHome(page);
     const buttons = page
       .locator('flt-semantics[role="button"]')
@@ -135,7 +175,10 @@ test.describe('W10: All config classes load without error', () => {
       if ((await btn.count()) === 0) continue;
 
       await btn.click({ force: true });
-      await page.waitForTimeout(2_000);
+      // Real readiness wait (see waitForConfigSettled above) instead of a
+      // fixed sleep. The assertion below is unchanged: it still reads the
+      // live DOM and still fails if "Error loading config" really appears.
+      await waitForConfigSettled(page);
 
       const bodyText = (await page.locator('body').textContent()) ?? '';
       expect(

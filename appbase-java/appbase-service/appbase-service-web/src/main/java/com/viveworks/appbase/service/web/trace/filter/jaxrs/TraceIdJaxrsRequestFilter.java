@@ -55,10 +55,19 @@ public class TraceIdJaxrsRequestFilter extends AbstractJaxrsRequestFilter implem
         final AppbaseCore appbaseCore = appbaseCoreFromContext();
         final String traceIdKey = AppbaseServiceUtil.traceIdKey(appbaseCore);
 
-        String traceId = MDC.get(traceIdKey);
-        if (AppbaseUtil.isBlank(traceId)) {
-            traceId = cookieValue(requestContext, traceIdKey);
-        }
+        // Snapshot whatever MDC held BEFORE this request resolved anything, so
+        // TraceIdJaxrsResponseFilter can restore exactly that value afterward instead of
+        // unconditionally removing it -- ownership-safe, parity with the servlet-side fix
+        // (internal work item 2633/L-1291). Stored as a request property since the request and response filters
+        // are separate invocations with no shared try/finally scope to carry it in directly.
+        requestContext.setProperty(traceIdKey + ".priorAmbientValue", MDC.get(traceIdKey));
+
+        // Ambient thread-local MDC is deliberately never consulted as a source here (parity with
+        // AbstractAppbaseSyncServlet#traceId() and TraceIdServletFilter, internal work item 2633/L-1291): on a
+        // reused container worker thread it can carry a stale value left behind by an unrelated
+        // earlier request, and that stale value must never be allowed to outrank this request's
+        // own explicit cookie/header/query parameter.
+        String traceId = cookieValue(requestContext, traceIdKey);
 
         if (AppbaseUtil.isBlank(traceId)) {
             traceId = headerValue(requestContext, traceIdKey);

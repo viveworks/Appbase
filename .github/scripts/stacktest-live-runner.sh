@@ -64,13 +64,8 @@ run_green() {
 }
 
 install_stacktest() {
-  local -a release_args=()
-  if [[ -n "${STACKTEST_JAVA_RELEASE:-}" ]]; then
-    release_args+=("-Djdk.version=${STACKTEST_JAVA_RELEASE}")
-  fi
   (cd "$STACKTEST_ROOT" && timeout --signal=TERM --kill-after=30s 30m mvn -q -B -ntp \
-    -pl appbase-stacktest -am install -DskipTests -Dcheckstyle.skip=true -Dexec.skip=true \
-    "${release_args[@]}")
+    -pl appbase-stacktest -am install -DskipTests -Dcheckstyle.skip=true -Dexec.skip=true)
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

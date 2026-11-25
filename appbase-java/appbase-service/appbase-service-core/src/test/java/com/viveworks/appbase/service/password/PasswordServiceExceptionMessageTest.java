@@ -133,7 +133,7 @@ class PasswordServiceExceptionMessageTest {
      * on an oversized value throws {@link NumberFormatException} with the rejected digits in its
      * own message -- exactly the leak class this file's other {@code rounds} sites are already
      * guarded against via {@code parseRounds}. Flagged against this exact call by GitHub Copilot
-     * on PR internal work item 2571 and never fixed there; reproduced independently by two code-review panel agents
+     * on internal work item 2571 and never fixed there; reproduced independently by two code-review panel agents
      * on this gate's final re-run.
      */
     @Test

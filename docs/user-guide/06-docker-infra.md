@@ -44,6 +44,62 @@ already-running `elasticsearch.local` — each occurring *after* the script had 
 correct directory, so none of them are a internal work item 2547 regression. Not fixed here; flagging in case they
 affect a real local run.
 
+## StackTest's Vitess lifecycle now defaults to the Docker vttestserver backend (internal work item 2655)
+
+`appbase-stacktest/infra/{start,run,stop}-infra.sh` used to drive Vitess exclusively through
+`appbase-stacktest/infra/vitess/local-vitess-{start,stop,purge}.sh`, which assume `vttablet`,
+`vtgate`, `vtctld`, `mysqlctl`, `vtorc` and `vtctl` are installed locally on the machine running the
+script, plus a hard-coded data root (`VTDATAROOT`, defaulting to a specific maintainer's own
+`~/Temporary/Data/Vitess`). That is true on a maintainer's own workstation and nowhere else — it is
+not installed on a hosted GitHub Actions runner, so the generated public `stacktest` CI job failed
+outright (`vttablet: command not found`).
+
+All three scripts now select a backend via **`APPBASE_STACKTEST_VITESS_BACKEND`**, read at the top of
+each orchestrator's Vitess step:
+
+| Value | Behavior |
+|---|---|
+| unset, or `docker` (**default**) | Routes through the same Docker `vttestserver` lifecycle the Vitess directory in the table above already uses for its own gRPC/JDBC integration tests: `remove-vitess.sh` + `run-vitess.sh` (from `run-infra.sh`), `start-vitess.sh` (from `start-infra.sh`), `stop-vitess.sh` (from `stop-infra.sh`), all under `appbase-java/appbase-client/appbase-client-vitess/infra/docker/vitess/`. |
+| `local` | Keeps the original local-binary lifecycle (`appbase-stacktest/infra/vitess/local-vitess-{start,stop,purge}.sh`) for a maintainer whose machine genuinely has Vitess installed. |
+
+The Docker path's **keyspace/schema/connectivity contract** is a verified drop-in for what StackTest
+needs, not merely "also runs Vitess": `run-vitess.sh` already stages and provisions all **three**
+keyspaces vtgate serves — `appbase-vitess-test-keyspace` (the existing gRPC IT fixture),
+`appbase-stacktest-unsharded-keyspace` and `appbase-stacktest-sharded-keyspace` — copying the exact
+same `appbase-stacktest/infra/vitess/001-{unsharded,sharded}.{sql,json}` fixtures the local scripts
+used, plus the `appbase-service` sharded schema. It waits for a routed query against
+`stacktest_customer` before declaring readiness (not just an open socket), and publishes vtgate's
+MySQL wire port at **15306** — the exact port `appbase-stacktest-vitess-jdbc.yaml` and its container
+twin already hard-code.
+
+⚠️ **What is NOT newly verified here**: this Vitess Docker lifecycle has its own documented hang and
+outage-restoration-reliability history (epic internal work item 1137's internal work item 2749/internal work item 2788) that this routing change does not
+resolve — a prior reviewer's "the full-live StackTest readiness hang remains NOT DETERMINED" caveat
+still stands, now under the backend this routing makes the hosted-CI default. The two mitigations this
+change adds are a step-level `timeout-minutes` on the public `stacktest` job's "Live product gate"
+step strictly below the job's own 90-minute timeout (so a hang fails the STEP, not just gets silently
+killed with the runner), and an `if: failure()` "Capture infrastructure diagnostics on failure" step
+(`docker ps -a` plus the last 200 log lines per backend container). Neither mitigation proves the
+hang cannot recur; they only ensure a recurrence leaves diagnosable evidence instead of a silent
+90-minute timeout.
+
+Before using the `docker` default for the first time (including in CI), the Vitess image must be
+built once, the same way Aerospike/Druid/Firebase already are:
+
+```sh
+bash appbase-java/appbase-client/appbase-client-vitess/infra/docker/vitess/build-vitess.sh
+```
+
+The exported public `stacktest` CI job does this as part of its "Build local StackTest
+infrastructure images" step, immediately before `run-infra.sh`.
+
+**Verified**: `scripts/test/infra_client_paths_test.sh` now also asserts the `docker` default and the
+`local` opt-in each resolve to the correct lifecycle scripts for all three orchestrators, and that an
+unrecognized `APPBASE_STACKTEST_VITESS_BACKEND` value fails closed in each of the three independently
+(mutation-verified: each orchestrator's guard was broken one at a time and confirmed to turn the
+corresponding assertion red before being restored). The public `stacktest` job's live-gate step
+timeout remains strictly below the job timeout, and its diagnostics-capture step uses `if: failure()`.
+
 ## The commands that exist
 
 Every infrastructure directory has the same script set (read from the tree):

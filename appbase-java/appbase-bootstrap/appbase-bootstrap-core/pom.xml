@@ -27,7 +27,7 @@
     <parent>
         <groupId>com.viveworks.appbase</groupId>
         <artifactId>appbase-bootstrap</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
     <artifactId>appbase-bootstrap-core</artifactId>
     <name>Appbase Bootstrap Core</name>
@@ -81,7 +81,7 @@
             <groupId>com.viveworks.appbase</groupId>
             <artifactId>appbase-client-clamav</artifactId>
             <version>${appbase.version}</version>
-            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, PR internal work item 2504). -->
+            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, internal work item 2504). -->
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -103,7 +103,7 @@
             <groupId>com.viveworks.appbase</groupId>
             <artifactId>appbase-client-jasync</artifactId>
             <version>${appbase.version}</version>
-            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, PR internal work item 2504). -->
+            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, internal work item 2504). -->
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -140,14 +140,14 @@
             <groupId>com.viveworks.appbase</groupId>
             <artifactId>appbase-client-smtp</artifactId>
             <version>${appbase.version}</version>
-            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, PR internal work item 2504). -->
+            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, internal work item 2504). -->
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.viveworks.appbase</groupId>
             <artifactId>appbase-client-spark</artifactId>
             <version>${appbase.version}</version>
-            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, PR internal work item 2504). -->
+            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, internal work item 2504). -->
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -195,7 +195,7 @@
             <groupId>com.viveworks.appbase</groupId>
             <artifactId>appbase-service-user-account-r2dbc</artifactId>
             <version>${appbase.version}</version>
-            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, PR internal work item 2504). -->
+            <!-- Deferred / not Release 1: optional, so it never reaches a consumer transitively (owner ruling Q-A, internal work item 2504). -->
             <optional>true</optional>
         </dependency>
         <dependency>

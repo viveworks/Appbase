@@ -33,7 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Offline regression coverage for the live Elasticsearch fixture cleanup, folded from PR internal work item 2485.
+ * Offline regression coverage for the live Elasticsearch fixture cleanup, folded from internal work item 2485.
  *
  * @author Navaneeth Mysore G
  */

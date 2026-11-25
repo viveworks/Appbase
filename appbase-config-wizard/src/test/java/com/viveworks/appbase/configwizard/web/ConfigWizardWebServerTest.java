@@ -220,7 +220,8 @@ final class ConfigWizardWebServerTest {
     }
 
     /**
-     * Pins the initializer to the document path the server actually serves (internal work item 2380 A-L1 / internal work item 1593 F01).
+     * Pins the initializer to the document path the server actually serves
+     * (internal work item 2380 A-L1 / internal work item 1593 F01).
      *
      * <p>The wizard serves the OpenAPI document at {@code /api/openapi.json} (pinned by the arms
      * above) while the initializer still pointed at {@code /admin/openapi.json} — a path left over

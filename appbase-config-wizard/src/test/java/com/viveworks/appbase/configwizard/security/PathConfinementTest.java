@@ -77,8 +77,9 @@ final class PathConfinementTest {
     /**
      * A10-01 (internal work item 1449) regression: when the root sits behind a symlink, a written path routed through
      * {@link PathConfinement#confine} is symlink-resolved, so relativising it against a merely-normalised
-     * root produces a leaky {@code ../real/...} escape — the raw-root vs canonicalised mismatch internal work item 751/internal work item 806
-     * burned this file on. The display path must stay a clean, root-relative path with no {@code ..}.
+     * root produces a leaky {@code ../real/...} escape — the raw-root vs canonicalised mismatch
+     * internal work item 751/internal work item 806 burned this file on.
+     * The display path must stay a clean, root-relative path with no {@code ..}.
      */
     @Test
     void toDisplayPath_confinedThroughSymlinkedRoot_staysCleanRelative(@TempDir final Path tmp)

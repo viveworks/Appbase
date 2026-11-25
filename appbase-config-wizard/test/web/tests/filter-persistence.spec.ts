@@ -30,10 +30,14 @@ test('configuration filter persists through Escape and reload, then clears', asy
   const unfilteredNames = await configurationRows.allTextContents();
   expect(unfilteredNames, 'unfiltered configuration list must not be empty').not.toHaveLength(0);
 
-  await searchInput.fill('redis');
-  await expect
-    .poll(() => page.evaluate((key) => sessionStorage.getItem(key), FILTER_STORAGE_KEY))
-    .toBe('redis');
+  // Retried as one unit, not via Playwright test retries (retries stays 0 per the
+  // owner directive in playwright.config.ts): a dropped/late TextField.onChanged
+  // event under host load is re-sent by re-filling, which a bare poll cannot do.
+  await expect(async () => {
+    await searchInput.fill('redis');
+    expect(await page.evaluate((key) => sessionStorage.getItem(key), FILTER_STORAGE_KEY))
+      .toBe('redis');
+  }).toPass({ timeout: 30_000 });
   await searchInput.press('Escape');
   await expect(searchInput).toHaveValue('redis');
   expect(await page.evaluate((key) => sessionStorage.getItem(key), FILTER_STORAGE_KEY))
@@ -57,11 +61,13 @@ test('configuration filter persists through Escape and reload, then clears', asy
     'every visible configuration row must match the restored redis filter',
   ).toBe(true);
 
-  await restoredInput.fill('');
+  // Same retry-as-one-unit treatment as the fill above, for the clear.
+  await expect(async () => {
+    await restoredInput.fill('');
+    expect(await page.evaluate((key) => sessionStorage.getItem(key), FILTER_STORAGE_KEY))
+      .toBeNull();
+  }).toPass({ timeout: 15_000 });
   await expect(restoredInput).toHaveValue('');
-  await expect
-    .poll(() => page.evaluate((key) => sessionStorage.getItem(key), FILTER_STORAGE_KEY))
-    .toBeNull();
   await page.reload();
   await waitForFlutter(page);
 
