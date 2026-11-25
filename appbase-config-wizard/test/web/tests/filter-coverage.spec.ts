@@ -67,15 +67,21 @@ test.describe('W-FILTER-MODULE: search filters configs by module', () => {
         return;
       }
 
-      await searchInput.fill(mod);
-      await page.waitForTimeout(1_000);
-
-      const filteredCount = await countListItems(page);
-      expect(
-        filteredCount,
-        `Filter by "${mod}" should reduce list (was ${totalBefore})`,
-      ).toBeLessThan(totalBefore);
-      expect(filteredCount, `Filter by "${mod}" should show at least 1 result`).toBeGreaterThan(0);
+      // Retried as one unit, not via Playwright test retries (retries stays 0 per
+      // playwright.config.ts). config_list_screen.dart's TextField.onChanged is synchronous
+      // and undebounced, but under 2-worker CanvasKit contention the input event itself can be
+      // dropped or delayed past a short fixed wait; a bare waitForTimeout() does not re-send it.
+      // toPass() retries the fill (idempotent) plus the read as one block -- same mechanism and
+      // timeout as #3049's fix to the sibling filter-persistence spec.
+      await expect(async () => {
+        await searchInput.fill(mod);
+        const filteredCount = await countListItems(page);
+        expect(
+          filteredCount,
+          `Filter by "${mod}" should reduce list (was ${totalBefore})`,
+        ).toBeLessThan(totalBefore);
+        expect(filteredCount, `Filter by "${mod}" should show at least 1 result`).toBeGreaterThan(0);
+      }).toPass({ timeout: 30_000 });
     });
   }
 
@@ -84,11 +90,11 @@ test.describe('W-FILTER-MODULE: search filters configs by module', () => {
     const searchInput = page.locator('input[aria-label*="Search" i]').first();
     if ((await searchInput.count()) === 0) { test.skip(); return; }
 
-    await searchInput.fill('XYZZY_NONEXISTENT_MODULE_12345');
-    await page.waitForTimeout(1_000);
-
-    const count = await countListItems(page);
-    expect(count, 'Bogus filter should return 0 results').toBe(0);
+    await expect(async () => {
+      await searchInput.fill('XYZZY_NONEXISTENT_MODULE_12345');
+      const count = await countListItems(page);
+      expect(count, 'Bogus filter should return 0 results').toBe(0);
+    }).toPass({ timeout: 30_000 });
   });
 
   test('clearing filter restores full list', async ({ page }) => {
@@ -98,15 +104,17 @@ test.describe('W-FILTER-MODULE: search filters configs by module', () => {
     const searchInput = page.locator('input[aria-label*="Search" i]').first();
     if ((await searchInput.count()) === 0) { test.skip(); return; }
 
-    await searchInput.fill('kafka');
-    await page.waitForTimeout(800);
-    const filteredCount = await countListItems(page);
-    expect(filteredCount).toBeLessThan(totalBefore);
+    await expect(async () => {
+      await searchInput.fill('kafka');
+      const filteredCount = await countListItems(page);
+      expect(filteredCount).toBeLessThan(totalBefore);
+    }).toPass({ timeout: 30_000 });
 
-    await searchInput.fill('');
-    await page.waitForTimeout(800);
-    const restoredCount = await countListItems(page);
-    expect(restoredCount, 'Clearing filter should restore full list').toBeGreaterThanOrEqual(totalBefore);
+    await expect(async () => {
+      await searchInput.fill('');
+      const restoredCount = await countListItems(page);
+      expect(restoredCount, 'Clearing filter should restore full list').toBeGreaterThanOrEqual(totalBefore);
+    }).toPass({ timeout: 15_000 });
   });
 });
 
