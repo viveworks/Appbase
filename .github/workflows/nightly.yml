@@ -111,35 +111,23 @@ jobs:
           java -version
           mvn -version
 
+      # #2904 nightly scoping fix: this job only runs when needs.changed-modules.outputs.modules !=
+      # 'NONE' (job-level `if:` above), and nightly-scope.sh now collapses any real change straight to
+      # ALL -- so MODULES is always 'ALL' whenever this job runs at all. The narrower "changed modules
+      # only" compile path (`-pl <directed closure> -am`, which this workflow used to mirror from
+      # ci-verify.yml) is unreachable here now and has been removed rather than kept as dead code;
+      # ci-verify.yml's own per-PR gate is unaffected and still uses that narrower, faster path.
+      - name: Assert the nightly scoping invariant (MODULES must be ALL whenever this job runs)
+        run: |
+          if [[ "$MODULES" != ALL ]]; then
+            echo "::error::nightly expects MODULES=ALL whenever the job runs at all (nightly-scope.sh collapses any real change to ALL) -- got '$MODULES'. This indicates a nightly-scope.sh regression, not a legitimate narrower scope." >&2
+            exit 1
+          fi
+
       - name: Full reactor — ./build.sh --mode compile (coverage self-check + clean test-compile)
-        if: env.MODULES == 'ALL'
         run: ./build.sh --mode compile
 
-      - name: Changed modules — clean test-compile -pl <directed closure> -am
-        if: env.MODULES != 'ALL'
-        # build.sh refuses --modules for compile, so the Maven part is mirrored directly. The coverage
-        # self-check is not needed here: adding/removing a pom.xml or pubspec.yaml forces ALL.
-        #
-        # Maven's own -am/-amd each expand $MODULES exactly once, in one direction: -amd adds modules
-        # that depend on $MODULES, -am adds modules $MODULES depends on. Neither flag re-expands for a
-        # module the OTHER flag adds, so a module pulled in by -amd can have its own, unrelated -am-style
-        # dependency silently missing from the reactor (internal work item 2655 PR#3: changed appbase-core pulled in
-        # appbase-service-web-oauth-reactive via -amd, through appbase-service-core, but not that
-        # module's separate, parallel dependency appbase-service-web-oauth, which has no relationship to
-        # appbase-core at all -- the build then failed resolving it as a never-published internal
-        # SNAPSHOT jar). reactor-closure.sh therefore runs two directed phases: first the transitive
-        # downstream consumers of the ORIGINAL seeds, then the transitive prerequisites of that set.
-        # It deliberately does not feed phase-two prerequisites back through the consumer phase: doing
-        # so would add every unrelated sibling consumer of a shared prerequisite. For the same reason,
-        # never pass -amd on $FULL_MODULES. -am follows only the safe prerequisite direction; it should
-        # be idempotent after phase two and remains as Maven's native backstop if the shell parser ever
-        # misses a prerequisite edge.
-        run: |
-          FULL_MODULES="$(.github/scripts/reactor-closure.sh "$MODULES")"
-          mvn -q clean test-compile -pl "$FULL_MODULES" -am -Dsurefire.failIfNoSpecifiedTests=false
-
       - name: Generate and verify MCP API surface against compiled classes
-        if: env.MODULES == 'ALL'
         env:
           MCP_API_SOURCE_REVISION: ${{ needs.changed-modules.outputs.head_sha }}
         run: |
@@ -220,16 +208,16 @@ jobs:
             -DSparkClientServiceTests.enabled=false -DVitessClientServiceTests.enabled=false
             -DZooKeeperClientServiceTests.enabled=false
           )
-          if [[ "$MODULES" == ALL ]]; then
-            mvn -B -fae test -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
-          else
-            # Same combined -am/-amd single-pass gap as maven-compile's narrow build; see that job's
-            # comment and internal work item 2655 PR#3. The helper computes downstream-from-original-seeds first, then
-            # prerequisites. Retain Maven's safe prerequisite-only -am backstop; never reapply -amd to
-            # phase-two prerequisites, because that would add their unrelated sibling consumers.
-            FULL_MODULES="$(.github/scripts/reactor-closure.sh "$MODULES")"
-            mvn -B -fae test -pl "$FULL_MODULES" -am -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
+          # #2904 nightly scoping fix: nightly-scope.sh now collapses any real change straight to
+          # ALL, so this job (gated on modules != 'NONE') always sees MODULES=ALL. The narrower
+          # -pl <directed closure> -am path (same -am/-amd single-pass gap as maven-compile's old
+          # narrow build used to have; see internal work item 2655 PR#3) is unreachable now and has
+          # been removed; ci-verify.yml's own per-PR gate is unaffected.
+          if [[ "$MODULES" != ALL ]]; then
+            echo "::error::nightly expects MODULES=ALL whenever this job runs -- got '$MODULES'. nightly-scope.sh regression?" >&2
+            exit 1
           fi
+          mvn -B -fae test -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
       - name: Print bounded Surefire fork diagnostics
         if: failure()
         run: |
