@@ -1,19 +1,21 @@
 # Generated public develop nightly.
 name: Public nightly
 
-# Phase 2 (#2904): adds the schedule trigger Phase 1 (internal work item 2861) deliberately omitted.
-# 07:00 UTC = 02:00/03:00 ET -- off-peak for the owner's own timezone, and not exact midnight UTC,
-# which avoids the shared-runner pile-up every other `0 0 * * *` nightly workflow on GitHub hits.
-#
-# KNOWN FRAGILITY, flagged rather than silently left: this file's own header used to say "Do not
-# edit after export" because scripts/export/project-public-ci.py's project_nightly() (private repo)
-# regenerates this exact file from scratch on every export run, and its template still hardcodes
-# the Phase-1, schedule-free `on:` block as of this PR. The next export that touches this file WILL
-# silently revert this change unless that exporter function is also updated to emit the schedule --
-# tracked as a required follow-up, not done in this PR (this PR is scoped to the org repo only, per
-# the task's own instruction; the exporter lives on the private repo and needs its own review).
+# Phase 2 (#2904): adds the schedule trigger Phase 1 (#2861) deliberately omitted, plus an
+# on-demand force_full override. 07:00 UTC = 02:00/03:00 ET -- off-peak for the owner's own
+# timezone, and not exact midnight UTC, which avoids the shared-runner pile-up every other
+# `0 0 * * *` nightly workflow on GitHub hits.
 on:
   workflow_dispatch:
+    inputs:
+      force_full:
+        description: >-
+          Bypass the 24-hour window and changed-modules scoping entirely and run every product job
+          regardless of what (if anything) changed -- an on-demand full verification run that does
+          not have to wait for a real module change or the scheduled cron.
+        required: false
+        type: boolean
+        default: false
   schedule:
     - cron: '0 7 * * *'
 
@@ -53,10 +55,14 @@ jobs:
         run: test "$GITHUB_REF" = refs/heads/develop
       - name: Select commits and relevant product jobs from the last 24 hours
         id: compute
+        env:
+          # workflow_dispatch's own input when present; a schedule-triggered run has no `inputs` at
+          # all, so this defaults to 'false' rather than erroring on the missing context value.
+          FORCE_FULL: ${{ github.event.inputs.force_full || 'false' }}
         run: |
           set -euo pipefail
           cutoff="$(date -u -d '24 hours ago' +%s)"
-          .github/scripts/nightly-scope.sh "$GITHUB_OUTPUT" HEAD "$cutoff"
+          .github/scripts/nightly-scope.sh "$GITHUB_OUTPUT" HEAD "$cutoff" "$FORCE_FULL"
   maven-compile:
     needs: changed-modules
     if: >-
@@ -111,23 +117,35 @@ jobs:
           java -version
           mvn -version
 
-      # #2904 nightly scoping fix: this job only runs when needs.changed-modules.outputs.modules !=
-      # 'NONE' (job-level `if:` above), and nightly-scope.sh now collapses any real change straight to
-      # ALL -- so MODULES is always 'ALL' whenever this job runs at all. The narrower "changed modules
-      # only" compile path (`-pl <directed closure> -am`, which this workflow used to mirror from
-      # ci-verify.yml) is unreachable here now and has been removed rather than kept as dead code;
-      # ci-verify.yml's own per-PR gate is unaffected and still uses that narrower, faster path.
-      - name: Assert the nightly scoping invariant (MODULES must be ALL whenever this job runs)
-        run: |
-          if [[ "$MODULES" != ALL ]]; then
-            echo "::error::nightly expects MODULES=ALL whenever the job runs at all (nightly-scope.sh collapses any real change to ALL) -- got '$MODULES'. This indicates a nightly-scope.sh regression, not a legitimate narrower scope." >&2
-            exit 1
-          fi
-
       - name: Full reactor — ./build.sh --mode compile (coverage self-check + clean test-compile)
+        if: env.MODULES == 'ALL'
         run: ./build.sh --mode compile
 
+      - name: Changed modules — clean test-compile -pl <directed closure> -am
+        if: env.MODULES != 'ALL'
+        # build.sh refuses --modules for compile, so the Maven part is mirrored directly. The coverage
+        # self-check is not needed here: adding/removing a pom.xml or pubspec.yaml forces ALL.
+        #
+        # Maven's own -am/-amd each expand $MODULES exactly once, in one direction: -amd adds modules
+        # that depend on $MODULES, -am adds modules $MODULES depends on. Neither flag re-expands for a
+        # module the OTHER flag adds, so a module pulled in by -amd can have its own, unrelated -am-style
+        # dependency silently missing from the reactor (#2655 PR#3: changed appbase-core pulled in
+        # appbase-service-web-oauth-reactive via -amd, through appbase-service-core, but not that
+        # module's separate, parallel dependency appbase-service-web-oauth, which has no relationship to
+        # appbase-core at all -- the build then failed resolving it as a never-published internal
+        # SNAPSHOT jar). reactor-closure.sh therefore runs two directed phases: first the transitive
+        # downstream consumers of the ORIGINAL seeds, then the transitive prerequisites of that set.
+        # It deliberately does not feed phase-two prerequisites back through the consumer phase: doing
+        # so would add every unrelated sibling consumer of a shared prerequisite. For the same reason,
+        # never pass -amd on $FULL_MODULES. -am follows only the safe prerequisite direction; it should
+        # be idempotent after phase two and remains as Maven's native backstop if the shell parser ever
+        # misses a prerequisite edge.
+        run: |
+          FULL_MODULES="$(.github/scripts/reactor-closure.sh "$MODULES")"
+          mvn -q clean test-compile -pl "$FULL_MODULES" -am -Dsurefire.failIfNoSpecifiedTests=false
+
       - name: Generate and verify MCP API surface against compiled classes
+        if: env.MODULES == 'ALL'
         env:
           MCP_API_SOURCE_REVISION: ${{ needs.changed-modules.outputs.head_sha }}
         run: |
@@ -208,16 +226,16 @@ jobs:
             -DSparkClientServiceTests.enabled=false -DVitessClientServiceTests.enabled=false
             -DZooKeeperClientServiceTests.enabled=false
           )
-          # #2904 nightly scoping fix: nightly-scope.sh now collapses any real change straight to
-          # ALL, so this job (gated on modules != 'NONE') always sees MODULES=ALL. The narrower
-          # -pl <directed closure> -am path (same -am/-amd single-pass gap as maven-compile's old
-          # narrow build used to have; see internal work item 2655 PR#3) is unreachable now and has
-          # been removed; ci-verify.yml's own per-PR gate is unaffected.
-          if [[ "$MODULES" != ALL ]]; then
-            echo "::error::nightly expects MODULES=ALL whenever this job runs -- got '$MODULES'. nightly-scope.sh regression?" >&2
-            exit 1
+          if [[ "$MODULES" == ALL ]]; then
+            mvn -B -fae test -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
+          else
+            # Same combined -am/-amd single-pass gap as maven-compile's narrow build; see that job's
+            # comment and #2655 PR#3. The helper computes downstream-from-original-seeds first, then
+            # prerequisites. Retain Maven's safe prerequisite-only -am backstop; never reapply -amd to
+            # phase-two prerequisites, because that would add their unrelated sibling consumers.
+            FULL_MODULES="$(.github/scripts/reactor-closure.sh "$MODULES")"
+            mvn -B -fae test -pl "$FULL_MODULES" -am -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
           fi
-          mvn -B -fae test -Dsurefire.timeout=480 -Dsurefire.failIfNoSpecifiedTests=false "${client_gates[@]}"
       - name: Print bounded Surefire fork diagnostics
         if: failure()
         run: |
@@ -317,11 +335,11 @@ jobs:
       group: ci-verify-live-l09-${{ github.ref }}
       cancel-in-progress: false
     runs-on: ubuntu-24.04
-    # Advisory-skip until internal work item 1302's prompt rebaseline reaches this branch. The content probe below
+    # Advisory-skip until #1302's prompt rebaseline reaches this branch. The content probe below
     # automatically opts in the suite once conftest expects the shipped `number=pick` prompt.
-    # Follow-up: remove this `number=pick` content probe once internal work item 1302 merges.
+    # Follow-up: remove this `number=pick` content probe once #1302 merges.
     # The prior exact-head full verification occupied its lease window for at most 63 minutes
-    # (06:03:48Z reservation to 07:06:31Z receipt, internal work item 2513 comment 5966612358). Ninety minutes keeps
+    # (06:03:48Z reservation to 07:06:31Z receipt, #2513 comment 5966612358). Ninety minutes keeps
     # that measured workload bounded while allowing hosted-runner variance; billing stops when the
     # job finishes, so this is a failure ceiling rather than planned spend.
     timeout-minutes: 90
@@ -343,7 +361,7 @@ jobs:
         env:
           EXPECTED_SHA: ${{ needs.changed-modules.outputs.head_sha }}
         run: .github/scripts/verify-head.sh
-      - name: Detect internal work item 1302 prompt fixes
+      - name: Detect #1302 prompt fixes
         id: prompt-fix
         run: |
           conftest=appbase-config-wizard/test/console/conftest.py
@@ -352,7 +370,7 @@ jobs:
             echo 'ready=true' >> "$GITHUB_OUTPUT"
           else
             echo 'ready=false' >> "$GITHUB_OUTPUT"
-            echo 'Advisory skip: internal work item 1302 prompt fixes are not present.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Advisory skip: #1302 prompt fixes are not present.' >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Set up Temurin JDK 25
         if: steps.prompt-fix.outputs.ready == 'true'
@@ -437,7 +455,7 @@ jobs:
         timeout-minutes: 35
         run: .github/scripts/stacktest-live-runner.sh install
       - name: Live product gate
-        # Vitess's readiness/outage-restoration path has a documented hang history (internal work item 2749/internal work item 2788).
+        # Vitess's readiness/outage-restoration path has a documented hang history (#2749/#2788).
         # Bounding this step below the job's own timeout is necessary but not sufficient on its own --
         # see the job-level comment above for why every OTHER step's own budget also has to be summed.
         timeout-minutes: 70
