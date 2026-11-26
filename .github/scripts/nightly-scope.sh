@@ -2,12 +2,32 @@
 # Compute the public nightly's fail-closed 24-hour develop scope.
 set -euo pipefail
 
-output="${1:?usage: nightly-scope.sh <github-output> <head> <cutoff-epoch>}"
-head="${2:?usage: nightly-scope.sh <github-output> <head> <cutoff-epoch>}"
-cutoff="${3:?usage: nightly-scope.sh <github-output> <head> <cutoff-epoch>}"
+output="${1:?usage: nightly-scope.sh <github-output> <head> <cutoff-epoch> [force_full]}"
+head="${2:?usage: nightly-scope.sh <github-output> <head> <cutoff-epoch> [force_full]}"
+cutoff="${3:?usage: nightly-scope.sh <github-output> <head> <cutoff-epoch> [force_full]}"
+force_full="${4:-false}"
+[[ "$force_full" =~ ^(true|false)$ ]] || { echo "nightly-scope: force_full must be true or false" >&2; exit 2; }
 [[ "$cutoff" =~ ^[0-9]+$ ]] || { echo "nightly-scope: cutoff must be an epoch" >&2; exit 2; }
 git cat-file -e "$head^{commit}" 2>/dev/null \
   || { echo "nightly-scope: head is not a commit: $head" >&2; exit 2; }
+
+# On-demand override (#2904): bypasses the 24-hour window and changed-modules scoping entirely,
+# so an owner-dispatched "I want a real full verification run right now" doesn't have to wait for
+# an actual module change or the scheduled cron to land in the window. base_sha=head_sha is correct
+# here -- force_full means every product job runs regardless of what (if anything) changed, so the
+# diff range itself is not meaningful.
+if [[ "$force_full" == true ]]; then
+  {
+    echo "has_changes=true"
+    echo "base_sha=$(git rev-parse "$head")"
+    echo "head_sha=$(git rev-parse "$head")"
+    echo "modules=ALL"
+    printf '%s\n' run_shell_suites=true run_console_suite=true run_emulator=true \
+      run_stacktest=true run_hosted_tiers=true run_unit_tests=true
+  } >> "$output"
+  echo "nightly-scope: force_full=true; every product job selected regardless of window/diff" >&2
+  exit 0
+fi
 
 # A nightly window is about commits that LANDED on develop, not every side-branch commit reachable
 # from it. First-parent history gives the integration timeline and makes the oldest landing's first
@@ -38,7 +58,7 @@ if base="$(git rev-parse "$oldest^1" 2>/dev/null)"; then
     # that depend on it, so a regression a changed module introduces downstream can slip through
     # undetected on that narrower path. The nightly build has no per-PR latency pressure, so it
     # collapses ANY real change straight to ALL instead of reusing the directed-closure list.
-    # changed-modules.sh itself is unchanged -- ci-verify.yml's own per-PR gate still gets the
+    # changed-modules.sh itself is unchanged -- the regular per-PR ci-verify.yml gate still gets the
     # narrower, faster list; only the nightly scope widens.
     modules=ALL
     printf '%s\n' run_shell_suites=true run_console_suite=true run_emulator=true \
