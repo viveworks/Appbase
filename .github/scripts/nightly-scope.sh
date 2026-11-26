@@ -32,7 +32,20 @@ if base="$(git rev-parse "$oldest^1" 2>/dev/null)"; then
   selectors="$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/nightly-selectors.XXXXXX")"
   trap 'rm -f "$selectors"' EXIT
   modules="$(.github/scripts/changed-modules.sh --github-output "$selectors" "$base" "$head")"
-  cat "$selectors" >> "$output"
+  if [[ "$modules" != NONE ]]; then
+    # Nightly-only simplification (#2904 scoping fix): changed-modules.sh's directed-closure module
+    # list (`-pl <list> -am`) only pulls a changed module's own upstream dependencies, never modules
+    # that depend on it, so a regression a changed module introduces downstream can slip through
+    # undetected on that narrower path. The nightly build has no per-PR latency pressure, so it
+    # collapses ANY real change straight to ALL instead of reusing the directed-closure list.
+    # changed-modules.sh itself is unchanged -- ci-verify.yml's own per-PR gate still gets the
+    # narrower, faster list; only the nightly scope widens.
+    modules=ALL
+    printf '%s\n' run_shell_suites=true run_console_suite=true run_emulator=true \
+      run_stacktest=true >> "$output"
+  else
+    cat "$selectors" >> "$output"
+  fi
 else
   # A repository whose root commit is inside the window has no diff base. Fail toward the full
   # product scope rather than misreporting the root tree as no change.
