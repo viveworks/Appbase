@@ -1611,7 +1611,17 @@
                                                     <dependency>com.viveworks.appbase:*</dependency>
                                                 </dependencies>
                                             </requireSameVersions>
-                                            <requireSnapshotVersion/>
+                                            <!-- #3017: removed (was requireSnapshotVersion). This rule assumed every
+                                                 iteration profile (quick/develop/staging) always sees a SNAPSHOT
+                                                 version, true before #2412's 1.0.0 bump, false now that develop and
+                                                 main can legitimately sit at a real release version. The actual
+                                                 protection this was standing in for already exists correctly scoped:
+                                                 release-profile's own requireReleaseVersion rule (below) is the one
+                                                 place a version-type mismatch should fail a build, not here. Left as
+                                                 a non-blocking WARNING for months rather than silently misfiring;
+                                                 removing it now that the warning is permanently wrong on main and
+                                                 only transiently wrong on develop (until the eventual 2.0.0-SNAPSHOT
+                                                 bump), not a reason to keep a check whose premise no longer holds. -->
                                             <requireReleaseDeps>
                                                 <excludes>
                                                     <exclude>com.viveworks.appbase:*</exclude>
@@ -1876,7 +1886,17 @@
                                                     <dependency>com.viveworks.appbase:*</dependency>
                                                 </dependencies>
                                             </requireSameVersions>
-                                            <requireSnapshotVersion/>
+                                            <!-- #3017: removed (was requireSnapshotVersion). This rule assumed every
+                                                 iteration profile (quick/develop/staging) always sees a SNAPSHOT
+                                                 version, true before #2412's 1.0.0 bump, false now that develop and
+                                                 main can legitimately sit at a real release version. The actual
+                                                 protection this was standing in for already exists correctly scoped:
+                                                 release-profile's own requireReleaseVersion rule (below) is the one
+                                                 place a version-type mismatch should fail a build, not here. Left as
+                                                 a non-blocking WARNING for months rather than silently misfiring;
+                                                 removing it now that the warning is permanently wrong on main and
+                                                 only transiently wrong on develop (until the eventual 2.0.0-SNAPSHOT
+                                                 bump), not a reason to keep a check whose premise no longer holds. -->
                                             <requireReleaseDeps>
                                                 <excludes>
                                                     <exclude>com.viveworks.appbase:*</exclude>
@@ -2199,7 +2219,17 @@
                                                     <dependency>com.viveworks.appbase:*</dependency>
                                                 </dependencies>
                                             </requireSameVersions>
-                                            <requireSnapshotVersion/>
+                                            <!-- #3017: removed (was requireSnapshotVersion). This rule assumed every
+                                                 iteration profile (quick/develop/staging) always sees a SNAPSHOT
+                                                 version, true before #2412's 1.0.0 bump, false now that develop and
+                                                 main can legitimately sit at a real release version. The actual
+                                                 protection this was standing in for already exists correctly scoped:
+                                                 release-profile's own requireReleaseVersion rule (below) is the one
+                                                 place a version-type mismatch should fail a build, not here. Left as
+                                                 a non-blocking WARNING for months rather than silently misfiring;
+                                                 removing it now that the warning is permanently wrong on main and
+                                                 only transiently wrong on develop (until the eventual 2.0.0-SNAPSHOT
+                                                 bump), not a reason to keep a check whose premise no longer holds. -->
                                             <requireReleaseDeps>
                                                 <excludes>
                                                     <exclude>com.viveworks.appbase:*</exclude>
