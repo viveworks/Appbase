@@ -115,7 +115,7 @@ AppbaseCoreServices core = AppbaseCoreServices.builder()
   `com.viveworks` artifacts. The snippet built the core services and shut down cleanly. The consumer's
   classpath had 27 Appbase jars. This was a historical test before the three empty service shells
   were removed from the reactor; its classpath count is not a current Release-1 publication claim.
-  A later owner ruling (internal work item 1141 Q1) also deferred `appbase-service-user-account-r2dbc`.
+  A later owner ruling also deferred `appbase-service-user-account-r2dbc`.
   See [Known limitations](Known-Limitations.md#build-and-packaging-limits-on-this-revision).
 
 ## Examples that need a backend, Docker or credentials
@@ -129,8 +129,7 @@ KAFKA_CLIENT_SERVICE_TESTS_ENABLED=true ./build.sh develop
 The integration-test switch for every supported adapter is listed in the
 [Configuration reference](Configuration-Reference.md#integration-test-switches).
 
-**Status:** NOT MEASURED — needs Docker and a running backend container. Backend lifecycle and
-integration evidence is owned by internal work item 1135.
+**Status:** NOT MEASURED — needs Docker and a running backend container.
 
 ### 7. Run the full stacktest
 
@@ -138,14 +137,12 @@ integration evidence is owned by internal work item 1135.
 ./build.sh --mode staging       # includes appbase-stacktest and the config-wizard IT suite
 ```
 
-**Status:** NOT MEASURED — needs Docker-backed infrastructure for several backends. The
-representative stacktest gate is internal work item 1137.
+**Status:** NOT MEASURED — needs Docker-backed infrastructure for several backends.
 
 ### 8. Deploy to external infrastructure
 
 No deploy command is documented here yet. The deploy path belongs to the User Guide
-([`docs/user-guide/README.md`](user-guide/README.md), planned under
-internal work item 1416).
+([`docs/user-guide/README.md`](user-guide/README.md), planned).
 
 **Status:** NOT MEASURED — needs external, credentialed infrastructure. It stays NOT MEASURED until
 an owner-authorized gate runs it.

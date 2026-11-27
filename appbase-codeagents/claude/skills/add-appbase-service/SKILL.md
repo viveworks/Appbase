@@ -48,7 +48,7 @@ Default: `TextValue`. Use `ClusterIdValue` if the service is cluster-keyed (one 
 
 **Q7 — Modularization**
 Some services split into a generic interface module and one or more technology-specific implementation modules.
-Example: `user` + `user-account-jdbi` + `user-session-aerospike`. The JDBI support-message store instead lives inside `appbase-service-supportmessage`; the former support-message JDBI and Vitess account skeletons were removed under internal work item 1135 L-13.
+Example: `user` + `user-account-jdbi` + `user-session-aerospike`. The JDBI support-message store instead lives inside `appbase-service-supportmessage`; the former support-message JDBI and Vitess account skeletons were removed.
 > Does this service need technology-specific sub-modules? If yes, list each technology (e.g. `jdbi`, `vitess`, `aerospike`). If no, answer `none`.
 
 **Q8 — HTTP endpoints**

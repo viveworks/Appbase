@@ -6,8 +6,7 @@
 
 This is the auditable per-occurrence basis for the detector-wide suppression of
 `EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS` in
-[`config/spotbugs/exclude.xml`](exclude.xml) (N03 internal work item 1205 / S01 internal work item 1437 of P03·E01
-internal work item 1132). The file's own discipline permits a blanket, bug-pattern-wide `<Match>`
+[`config/spotbugs/exclude.xml`](exclude.xml). The file's own discipline permits a blanket, bug-pattern-wide `<Match>`
 **only** when every occurrence of that pattern across the whole reactor is
 enumerated and individually classified as a non-defect. This directory retains
 that enumeration as reviewable, tracked, reproducible artifacts rather than as a
@@ -51,7 +50,7 @@ mvn -B -DskipTests -Dspotbugs.threshold=Low -Dspotbugs.effort=Max \
 > EXS `<Match>` active, so it reports zero EXS findings. Step 1 above is a
 > diagnostic enumeration only.
 
-Exact-head machine evidence for this fix wave lives in the internal work item 1132 quality ledger
+Exact-head machine evidence for this fix wave lives in the quality ledger
 and in the lane checkpoint logs (`agent2-1132-exs-occurrences-v2.tsv` →
 `exs-inventory.tsv`; `agent2-1132-fixwave-heavy-v2.out` §C, `report files=26
 EXS TOTAL=128`). `exs-inventory.tsv` is a byte-identical copy of that machine

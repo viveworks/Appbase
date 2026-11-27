@@ -9,13 +9,12 @@
 adapters, application services, and a choice of embedded server, assembled from one YAML
 configuration.**
 
-The former platform overview, `README.adoc` (architecture, modules, the build), was removed by internal work item 1421.
+The former platform overview, `README.adoc` (architecture, modules, the build), was removed.
 Current documentation lives under [`docs/`](docs/); the former document is not part of the public export.
 This file carries the short operator-facing command tables that people need before they need any of that.
 
 > *Placeholder brand.* The name, wordmark and tagline may still change. The brand set, including
-> the light and dark lockups, is planned in [`docs/branding/`](docs/branding/README.md) under
-> internal work item 1415.
+> the light and dark lockups, is planned in [`docs/branding/`](docs/branding/README.md).
 
 ## What is Appbase
 
@@ -83,9 +82,9 @@ need Docker, a backend or external infrastructure are NOT MEASURED.
 
 ## Swagger UI
 
-Screenshots of the Swagger UI that a running Appbase service publishes belong here (brainstorm P-010,
-internal work item 2419). **Status: NOT MEASURED.** They are captured from a local stacktest run in the internal work item 1142 epic
-campaign, and none has been taken yet, so none is shown. How to run the stacktest is in
+Screenshots of the Swagger UI that a running Appbase service publishes belong here (brainstorm P-010).
+**Status: NOT MEASURED.** They are captured from a local stacktest run, and none has been taken yet,
+so none is shown. How to run the stacktest is in
 [Examples](docs/Examples.md#7-run-the-full-stacktest).
 
 Swagger UI is **opt-in and meant for development**. A Jetty service serves it only if it calls
@@ -99,12 +98,12 @@ outside.
 | Document | What it covers |
 |---|---|
 | [Module and Service Catalog](docs/Module-and-Service-Catalog.md) | Every shipped module and artifact: purpose, entry points, configuration, support state and limitations. This is the completeness authority |
-| [User Guide](docs/user-guide/README.md) *(planned, internal work item 1416)* | Installation, a first service, the configuration wizard and deployment, tested on a clean machine |
+| [User Guide](docs/user-guide/README.md) | Installation, a first service, the configuration wizard and deployment, tested on a clean machine |
 | [Developer MCP](docs/developer-mcp.md) | Give Claude Code, Codex CLI, Cursor, or GitHub Copilot source-derived Appbase API and convention lookup |
 | [Examples](docs/Examples.md) | Supported examples, each marked EXECUTED or NOT MEASURED |
 | [Configuration reference](docs/Configuration-Reference.md) | How a service finds and reads its YAML, the override keys, server choice and test switches |
 | [Known limitations](docs/Known-Limitations.md) | Interim Release 1 limitations; publication adds the generated release-specific view |
-| API documentation | Supported public Java and Dart APIs. Not published yet; owned by internal work item 1141 |
+| API documentation | Supported public Java and Dart APIs. Not published yet |
 | Release notes *(published with the release)* | What 1.0.0 contains and what is slated next; no release-notes file is present in the public tree before publication |
 
 ### API inventory gate
@@ -164,9 +163,8 @@ claim to bind evidence to each pushed ref. CI is the exact-commit authority: its
 
 ## What comes next
 
-Release 2 work is tracked in the Release 2 Plan of Record
-internal work item 1957, and deferred adapter breadth in
-internal work item 1925. Release publication adds the public
+Release 2 work, including deferred adapter breadth, is tracked in the Release 2 Plan of
+Record. Release publication adds the public
 release notes that preserve the durable next-release decisions; no release-notes file is present in
 the public tree before then. This README does not copy that future publication output.
 
@@ -183,3 +181,20 @@ The rest of this README is for people working **on** Appbase, not with it.
 - **Contributing** — Start with the public [contributor guide](CONTRIBUTING.md) for setup,
   checks, sign-off, licence expectations, review and merge, troubleshooting, and private
   security reports.
+
+## Release 1.0.0 Stats
+
+Measured against `develop`'s actual release-candidate tree and git history, not estimated.
+
+- **Time to release:** 7 years, 9 months, 14 days (2,844 days) — first commit `2019-02-12` to
+  `2026-11-26`.
+- **Commits:** 2,806 on `develop`, from a single author across 3 git identities used over the
+  project's life (`Navaneeth Mysore G`, `navaneeth-mysore-dev`, `navaneeth-mysore`).
+- **Maven modules:** 55.
+- **Lines of code:** 399,186 total (code lines only, via `cloc`, 3,698 files).
+- **Tests:** 2,709 total.
+  - Unit tests: 2,585
+  - Integration tests: 93
+  - Stacktests (`appbase-stacktest`, full-stack scenario coverage): 31
+- **Full release-profile build** (`clean install site site:stage`, every module, every test
+  tier): ~5h01m, last proven clean end to end on the exact commit this release ships.

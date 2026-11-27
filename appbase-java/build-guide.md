@@ -67,8 +67,8 @@ If future Jersey internals cannot be inspected safely, startup fails closed with
 | `package` | `maven-shade-plugin` | `develop-profile`, `staging-profile`, `release-profile` (pluginManagement only; modules opt in) |
 | `package` | `maven-javadoc-plugin` | `release-profile` |
 | `verify` | `maven-failsafe-plugin` | `develop-profile`, `staging-profile`, `release-profile` (per-module opt-in, e.g. `appbase-bootstrap-tomcat`) |
-| `verify` | `spotbugs-maven-plugin:check` | `staging-profile`, `release-profile` only (threshold High, fails the build on a High finding; report-only in `quick-profile`/`develop-profile`) — N04 (internal work item 1206) |
-| `verify` | `dependency-check-maven:check` (OWASP) | `security-scan` profile only (opt-in; fails at CVSS ≥ 7.0) — N05 (internal work item 1207) |
+| `verify` | `spotbugs-maven-plugin:check` | `staging-profile`, `release-profile` only (threshold High, fails the build on a High finding; report-only in `quick-profile`/`develop-profile`) — N04 |
+| `verify` | `dependency-check-maven:check` (OWASP) | `security-scan` profile only (opt-in; fails at CVSS ≥ 7.0) — N05 |
 | `install` | `default-install` | always |
 | `initialize` | `enforce-release-environment` (`requireReleaseVersion` included) | `release-profile`; rejects SNAPSHOT projects in ordinary release builds and in `release:perform`. The release plugin's preparation-only `clean verify` goals pass `-Denforcer.skip=true`, because a dry run verifies the unchanged SNAPSHOT working-copy POM. |
 
@@ -112,7 +112,7 @@ works the same way but under its own profile id (`appbase-config-wizard-it-profi
 self-contained in `appbase-config-wizard/pom.xml`), co-activated alongside `staging-profile`/
 `release-profile` via `build.sh`'s `-P` flag rather than merged into their bodies.
 
-Two `appbase-service` modules join that opt-in as of N11 (internal work item 1301):
+Two `appbase-service` modules join that opt-in as of N11:
 `appbase-service-supportmessage` and `appbase-service-user-account-jdbi`. Five of their store
 tests open a live JDBI `Handle` against the vtgate declared by
 `appbase-service-vitess-jdbc.yaml` (`localhost:15306`). They were named `*Test`, so Surefire
@@ -133,7 +133,7 @@ is what keeps them skipped there. To run them you need a live vtgate **and** the
 ```
 
 **Recorded reason for the default skip (spec T7 / epic acceptance):** what is missing is a reachable
-vtgate on `localhost:15306`; task N03 (internal work item 1294) provides it. With that up and the gate enabled, these
+vtgate on `localhost:15306`; task N03 provides it. With that up and the gate enabled, these
 ITs run.
 
 `SupportMessageStoreItGateConventionTest` and `UserAccountStoreItGateConventionTest` guard the
@@ -148,10 +148,10 @@ the gate, so a newly added ungated integration test cannot silently redden the o
 |---|---|
 | `maven-surefire-plugin` | Unit tests |
 | `jacoco-maven-plugin` | Code coverage |
-| `spotbugs-maven-plugin` | Static analysis (extended by `sb-contrib` and `findsecbugs-plugin`). **Build-time gate**: `spotbugs:check` bound to `verify` at threshold High in `staging-profile`/`release-profile` **only** (fails the build on a High finding); report-only in `quick-profile`/`develop-profile`. Promoted from report-only by N04 (internal work item 1206). |
-| `maven-checkstyle-plugin` | Style and standards (extended by `sevntu-checks`). **Report-only** — the checkstyle build-failing gate was carved out of internal work item 1132 (spec internal work item 1336) and is **owned by internal work item 1204** (P04·E05), which depends on **internal work item 710**'s (P04·E04) `google-java-format --aosp` reformat landing first; internal work item 710 owns the format, internal work item 1204 owns the checkstyle ruleset and gate (ownership reconciled 2026-08-20). |
+| `spotbugs-maven-plugin` | Static analysis (extended by `sb-contrib` and `findsecbugs-plugin`). **Build-time gate**: `spotbugs:check` bound to `verify` at threshold High in `staging-profile`/`release-profile` **only** (fails the build on a High finding); report-only in `quick-profile`/`develop-profile`. Promoted from report-only by N04. |
+| `maven-checkstyle-plugin` | Style and standards (extended by `sevntu-checks`). **Report-only** — the checkstyle build-failing gate depends on the `google-java-format --aosp` reformat landing first. |
 | `maven-failsafe-plugin` | Integration tests (per-module opt-in profile, see Maven Profiles below) |
-| `dependency-check-maven` (OWASP) | CVE gate — fails at CVSS ≥ 7.0 under the opt-in `security-scan` profile (N05 internal work item 1207). |
+| `dependency-check-maven` (OWASP) | CVE gate — fails at CVSS ≥ 7.0 under the opt-in `security-scan` profile (N05). |
 
 ---
 
@@ -849,7 +849,7 @@ of any gate. It must be run explicitly with `-Dtest=ReactiveElasticsearchAccesso
 Elasticsearch reachable at `localhost:9200`. Separately, it is also annotated with
 `@EnabledIfSystemProperty(named = "ElasticsearchClientServiceTests.enabled", matches = "true")` —
 that gate defaults to `false` in `appbase-client/pom.xml`, like every other client's gate (changed in
-N10, internal work item 1300; it was previously the sole gate defaulting `true`), so it must be enabled explicitly with
+N10; it was previously the sole gate defaulting `true`), so it must be enabled explicitly with
 `-DElasticsearchClientServiceTests.enabled=true` to run, on top of being explicitly targeted:
 
 ```shell
@@ -946,7 +946,7 @@ both accessors already get from `AbstractAppbaseAccessor`/`AbstractReactiveAcces
 `ReactiveZooKeeperAccessor`, and the same sequence synchronously via `ZooKeeperAccessor`, each
 against a throwaway znode under the ensemble root, cleaned up unconditionally in `@AfterAll`. It
 is gated by `@EnabledIfSystemProperty(named = "ZooKeeperClientServiceTests.enabled", matches =
-"true")` — like every other client's twin gate (Elasticsearch included since N10, internal work item 1300), this one
+"true")` — like every other client's twin gate (Elasticsearch included since N10), this one
 **defaults to `false`** in
 `appbase-client/pom.xml` (the same gate `DefaultZooKeeperClientServiceTest` uses), so it must be
 explicitly enabled. As with the Elasticsearch/jasync twins, this module has no
@@ -1039,7 +1039,7 @@ claim is present) → `deleteUser` → `getUser` (asserting the resulting error 
 synchronously via `FirebaseAuthAccessor`. It is gated by
 `@EnabledIfSystemProperty(named = "FirebaseAuthClientServiceTests.enabled", matches = "true")` —
 this gate **defaults to `false`** in `appbase-client/pom.xml`, the same convention as
-ZooKeeper's/jasync's twins (and Elasticsearch's twin gate too, since N10 (internal work item 1300)), so it must
+ZooKeeper's/jasync's twins (and Elasticsearch's twin gate too, since N10), so it must
 be explicitly enabled. As with the other twins, this module has no `maven-failsafe-plugin`, and
 Surefire's default includes (`*Test`/`*Tests`/`Test*`/`*TestCase`) exclude `*IT` classes, so a
 plain `mvn test`/`install` never selects `ReactiveFirebaseAuthAccessorIT` regardless of the gate —

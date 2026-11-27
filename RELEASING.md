@@ -1,6 +1,6 @@
 # Releasing Appbase
 
-This runbook separates the harmless private-repository rehearsal from the credentialed public-repository release. The private repository is export input only. Never deploy from it, and never run a credentialed Maven release goal locally.
+This runbook separates the harmless private-repository rehearsal from the credentialed public-repository release. The private repository is export input only. Never deploy from it, and never run a credentialed Maven release goal locally -- except under a fresh, dated, explicit owner authorization recorded in Procedure C below, which this runbook treats as a one-time, named exception, not a standing alternative to Procedure B.
 
 ## Roles and repositories
 
@@ -92,7 +92,7 @@ Stop unless every item below has a timestamped, redacted evidence record:
 
 - An owner-authored comment explicitly authorizes this specific attempt.
 - The heavy-work lease is released.
-- The Sonatype namespace and published signing key from internal work item 1143 are verified.
+- The Sonatype namespace and published signing key are verified.
 - The public export run ties `PRIVATE_SHA` and `MANIFEST_SHA256` to `RELEASE_SHA`.
 - `.github/workflows/release.yml` is present on the public repository default branch.
 - The public release branch tip is exactly `RELEASE_SHA`.
@@ -100,9 +100,9 @@ Stop unless every item below has a timestamped, redacted evidence record:
 - The effective staging configuration has `autoReleaseAfterClose=false`.
 - The protected `dispatch/*` tag ruleset is effective.
 
-The public workflow must have an unprivileged, secret-free preflight job. Its release job must depend on preflight, reference the protected `release` Environment, and request only the permissions needed to create and clean up the public release commit and tag. It must run both `release:prepare` and `release:perform` with `-P release-profile`. This repository does not author that workflow; internal work item 1432 owns it.
+The public workflow must have an unprivileged, secret-free preflight job. Its release job must depend on preflight, reference the protected `release` Environment, and request only the permissions needed to create and clean up the public release commit and tag. It must run both `release:prepare` and `release:perform` with `-P release-profile`. This repository does not author that workflow.
 
-Before N03 may use that workflow, verify the full internal work item 1432 contract in `PUBLIC_REPO`:
+Before using that workflow, verify its full contract in `PUBLIC_REPO`:
 
 - the only trigger is `workflow_dispatch`;
 - required string inputs are `correlation_id`, `release_sha`, and `release_branch`, and the run name is exactly `correlation_id`;
@@ -115,7 +115,7 @@ Before N03 may use that workflow, verify the full internal work item 1432 contra
 - a separate smoke job still declares `environment: release`, so the approval mechanism itself is exercised; and
 - failure cleanup deletes only the generated public release tag and reverts only the generated public release commit or commits. It never resets, force-pushes, promotes, or targets `PRIVATE_REPO`.
 
-An absent or differently shaped property is `STOP / BLOCKED ON internal work item 1432`, not permission to patch a second workflow here.
+An absent or differently shaped property is `STOP / BLOCKED`, not permission to patch a second workflow here.
 
 Perform the public repository existence, default-branch workflow and release-branch identity reads
 before creating or accepting a dispatch tag:
@@ -185,7 +185,7 @@ authorization for the later credentialed release; Procedure B requires a fresh o
 
 ### Credential-disabled workflow smoke test
 
-This is a public-repository workflow dispatch, but it must be incapable of reading credentials or mutating either repository. It can run only after internal work item 1432 is merged on `PUBLIC_REPO`'s default branch and the protected lightweight dispatch tag has passed the exact and peeled reads below.
+This is a public-repository workflow dispatch, but it must be incapable of reading credentials or mutating either repository. It can run only after the public release workflow is merged on `PUBLIC_REPO`'s default branch and the protected lightweight dispatch tag has passed the exact and peeled reads below.
 
 ```sh
 SMOKE_CORRELATION="release-smoke-${RELEASE_SHA}-$(date -u +%Y%m%dT%H%M%SZ)"
@@ -228,7 +228,7 @@ test "$(gh run view "$SMOKE_RUN_ID" --repo "$PUBLIC_REPO" --json headSha --jq .h
 gh run view "$SMOKE_RUN_ID" --repo "$PUBLIC_REPO" --log >"${TMPDIR:-/tmp}/release-smoke-$SMOKE_RUN_ID.log" || exit 1
 ```
 
-Success requires one matching `workflow_dispatch` run, `headSha == RELEASE_SHA`, a recorded owner approval for the smoke job's protected `release` Environment, and successful preflight/smoke jobs. The internal work item 1432 test evidence must also prove that smoke mode skipped every secret-consuming step, `release:prepare`, release-tag creation and deploy. A green run without that negative-path evidence is not acceptance. Retain the run URL and approver; do not retain secret-bearing logs.
+Success requires one matching `workflow_dispatch` run, `headSha == RELEASE_SHA`, a recorded owner approval for the smoke job's protected `release` Environment, and successful preflight/smoke jobs. The test evidence must also prove that smoke mode skipped every secret-consuming step, `release:prepare`, release-tag creation and deploy. A green run without that negative-path evidence is not acceptance. Retain the run URL and approver; do not retain secret-bearing logs.
 
 ## Verify the public dispatch identity
 
@@ -321,10 +321,66 @@ case "$RUN_URL" in "https://github.com/$PUBLIC_REPO/actions/runs/$RUN_ID") ;; *)
 A queued, in-progress, cancelled, skipped or failed run is not release evidence. A successful run is
 also insufficient without the separately recorded staging validation and terminal-drop proof.
 
-Retain the run URL, approver, staging identifier and redacted validation/drop output on internal work item 1144. On workflow failure, clean up only the public repository's generated release tag and revert its generated release commit; leave no promoted artifact. Never aim cleanup at `PRIVATE_REPO`.
+Retain the run URL, approver, staging identifier and redacted validation/drop output. On workflow failure, clean up only the public repository's generated release tag and revert its generated release commit; leave no promoted artifact. Never aim cleanup at `PRIVATE_REPO`.
 
 ## Mark the released source
 
 After the staged repository is verified dropped and the release evidence is accepted, a human merges `develop` into protected `main` in `PRIVATE_REPO` through a reviewed pull request. This merge records which private source state produced the export; it does not publish artifacts.
+
+## Procedure C: owner-authorized local credentialed release (dated exception, 1.0.0 only)
+
+**This procedure exists for exactly one release.** It is not a standing alternative to Procedure B.
+Procedure B (the protected `release` Environment dispatch) remains the default; wiring it for real
+is tracked separately so every release after 1.0.0 uses it. Using Procedure C again for a later
+release needs its own fresh, dated owner authorization recorded here the same way -- an old
+authorization below does not carry forward.
+
+**Authorization on record:** owner, 2026-11-26/27, verbal in conversation with EA-Super: run the
+real 1.0.0 Maven Central publish directly from this workstation instead of through the Actions
+dispatch path, because the release profile is already proven to build clean on this exact host and
+this is the very first real publish -- minimizing new, never-exercised surface (an Actions publish
+step that has never actually run for real) was judged worth more than using the originally-planned
+mechanism this one time.
+
+Preconditions, all owner-driven, none committed to this repository:
+
+- `com.viveworks` namespace verified on Sonatype's Central Portal (`central.sonatype.com`) --
+  already true, independent of this procedure.
+- A Central Portal **User Token** (not the owner's regular login) in `~/.m2/settings.xml` under
+  `<server><id>central</id>...</server>`, matching `publishingServerId=central` in the POM's
+  `central-publishing-maven-plugin` configuration.
+- The release-signing GPG key present and its passphrase cached in the local `gpg-agent` before
+  this procedure starts (`gpg --batch --yes --pinentry-mode error --local-user <key> --detach-sign
+  --output /dev/null -` must succeed non-interactively; if it does not, stop and get the owner to
+  re-enter the passphrase rather than let a release step block on an interactive prompt nobody is
+  watching).
+- A clean, fresh checkout of `PUBLIC_REPO` at the exact commit being released -- not a working
+  branch, not a clone with uncommitted changes.
+- The identity-chain checks earlier in this runbook (reviewed commit, exact head, no SNAPSHOT
+  dependencies) still apply in full; this procedure changes *where* `release:prepare`/
+  `release:perform` run, not what they verify first.
+
+Sequence:
+
+1. Run the real full build once, against this exact commit, before touching the release plugin at
+   all: `./build.sh --mode release` (`mvn clean install site site:stage -P release-profile,
+   appbase-config-wizard-it-profile`). This is the authoritative proof for *this* commit -- do not
+   skip it on the theory that an earlier build of a different commit already proved enough.
+2. Only after that build is confirmed green, run `release:prepare` and `release:perform` with
+   tests running in full both times (owner decision, 2026-11-27: no `-DskipTests` anywhere, even
+   though the standalone build in step 1 already proved this exact commit -- the redundancy is
+   accepted deliberately for the first real release).
+3. `release:perform` stages the signed artifacts at Central Portal and stops (`autoPublish=false`,
+   `waitUntil=validated`) -- the same stop-before-promote posture Procedure B uses. Validate the
+   staged deployment the same way Procedure B's own validation step does.
+4. The actual promotion to a publicly resolvable `1.0.0` is a separate, fresh owner decision after
+   validation -- this procedure does not make that decision for the owner, it only gets the build
+   signed and staged.
+5. Record the same evidence Procedure B would have recorded (run output, staging identifier,
+   redacted validation output) on the release ticket, noting plainly that this ran via Procedure C,
+   not Procedure B, and why.
+
+Everything else in this runbook -- the identity chain, the stop conditions, never promoting without
+a fresh owner decision, the `develop` into `main` marker merge -- is unchanged by this procedure.
 
 The real Maven Central promotion belongs to the later release gate. This epic must not promote or publish anything.

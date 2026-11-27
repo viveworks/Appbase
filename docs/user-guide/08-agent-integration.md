@@ -47,7 +47,7 @@ Cautions found in the recipes:
 - They name reference modules as `appbase-client/appbase-client-aerospike/`, a path that does not exist at
   the repository root; the modules are under `appbase-java/appbase-client/`. The recipes still make
   sense, but expect to translate paths. See [known divergences](known-divergences.md).
-- They write Java package names and a groupId as they are today. Whether internal work item 2546 changes them is not verified.
+- They write Java package names and a groupId as they are today. Whether the pending rename changes them is not verified.
 
 ### Review gates: appbase-code-review and appbase-security-review
 

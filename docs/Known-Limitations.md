@@ -13,23 +13,21 @@ The status words used here and in the [README](../README.md) are:
 | **NOT MEASURED** | Documented, but no gate has run it yet. It is not claimed to work. |
 
 > ⚠️ **This page is written by hand, and it is interim.** Release 1 generates its known limitations
-> from authoritative inputs (internal work item 1140 /
-> internal work item 1387). When that output lands, it
+> from authoritative inputs. When that output lands, it
 > supersedes this page. Until then this page must agree with the baseline sections cited above.
 
 ## Deferred capabilities (Release 2)
 
 These are deferred from the Release 1 support promise. Their artifacts may exist in the reactor, but
-they are **not supported** in Release 1. They are tracked by the adapter-and-extension registry
-internal work item 1925 under the Release 2 Plan of Record
-internal work item 1957.
+they are **not supported** in Release 1. They are tracked in the adapter-and-extension registry,
+part of the Release 2 Plan of Record.
 
 | Capability | Artifact in the tree | Release 1 status |
 |---|---|---|
 | ClamAV virus scanning | `appbase-client-clamav` | Deferred — not supported |
 | SMTP mail | `appbase-client-smtp` | Deferred — not supported |
 | Jasync SQL driver | `appbase-client-jasync` | Deferred — not supported; R2DBC is the supported reactive SQL path |
-| R2DBC user-account store | `appbase-service-user-account-r2dbc` | Deferred — not supported (owner ruling, internal work item 1141); the R2DBC client is supported |
+| R2DBC user-account store | `appbase-service-user-account-r2dbc` | Deferred — not supported (owner ruling); the R2DBC client is supported |
 | Spark | `appbase-client-spark` | Deferred — not supported |
 | General gRPC service bootstrap | — | Deferred. The Vitess gRPC *client* path **is** supported |
 | Meta, X and AWS Cognito OAuth providers | — | Deferred — not supported |
@@ -51,14 +49,13 @@ support-message service. No separate account bundle for Vitess is claimed for Re
   `appbase-client-spark`), and the deferred R2DBC user-account store
   (`appbase-service-user-account-r2dbc`). `scripts/test/bom_release1_test.sh` fails if
   the BOM drifts from that set. Those deferred modules are still reactor modules, so a full build
-  produces them. Keeping them out of the published artifacts is the public-export gate
-  internal work item 1009. Importing the BOM does not make a
-  deferred module supported.
+  produces them. Keeping them out of the published artifacts is the public-export gate.
+  Importing the BOM does not make a deferred module supported.
 - **`appbase-bootstrap-core` builds against the deferred modules, but does not hand them on.**
   [`appbase-bootstrap-core`](../appbase-java/appbase-bootstrap/appbase-bootstrap-core/pom.xml)
   depends on the five retained excluded artifacts, and it carries
   factories for the deferred ClamAV, SMTP, Jasync and Spark clients. Since the owner's ruling on
-  internal work item 2504 (2026-09-27), those dependencies are `<optional>true</optional>`. They are on
+  2026-09-27, those dependencies are `<optional>true</optional>`. They are on
   bootstrap-core's own build classpath, so those factories still compile, but they no longer reach a
   consumer of `appbase-bootstrap-core` or `appbase-bootstrap-reactor-netty`. The factories are
   registered only by explicit caller code (`AppbaseClientServices.builder().with(…)`), so a consumer
@@ -75,21 +72,19 @@ support-message service. No separate account bundle for Vitess is claimed for Re
 ## Documentation and evidence limits
 
 - **Artifact classification is checked; release evidence is not complete.** The generated
-  [shipped-artifact inventory](api-inventory/README.md) (internal work item 1399) and the mechanically checked
-  [module and service catalogue](Module-and-Service-Catalog.md) (internal work item 2418) have landed. The
+  [shipped-artifact inventory](api-inventory/README.md) and the mechanically checked
+  [module and service catalogue](Module-and-Service-Catalog.md) have landed. The
   [README capability matrix](../README.md#release-1-support) is checked against their
   supported-public artifact classifications, not just reactor POMs and the lean baseline.
   That check does not establish each capability's live integration evidence or a complete,
   revision-pinned release-evidence index. Generating the supported-status view and known
-  limitations from all authoritative evidence remains open in
-  internal work item 1387; this page remains interim
+  limitations from all authoritative evidence remains open; this page remains interim
   until that work lands.
-- **There is no published API reference yet.** Supported public Java and Dart API documentation is
-  owned by internal work item 1141. Internal and deferred
+- **There is no published API reference yet.** Internal and deferred
   types may be `public` in Java, and that does not make them supported.
-- **There is no clean-machine User Guide yet.** It is planned as
-  internal work item 1416. Until it passes, no path from a
-  clean machine to a running service is claimed.
+- **The clean-machine [User Guide](user-guide/README.md) now exists.** Its clean-machine
+  verification is tracked by `scripts/test/user_guide_test.sh`; until that passes at an exact
+  head, no path from a clean machine to a running service is claimed.
 - **Examples that need a real backend, Docker or credentials are NOT MEASURED.** Each entry in
   [Examples](Examples.md) states whether it was run.
 - **External or credentialed deployment is NOT MEASURED.** A local run never counts as evidence that
@@ -98,24 +93,21 @@ support-message service. No separate account bundle for Vitess is claimed for Re
 ## Not in Release 1 at all
 
 - **Maven Central publication is not claimed yet.** The public export and distribution path is the
-  Release 1 gate internal work item 1009. Until it passes,
+  Release 1 gate. Until it passes,
   build and install from source.
-- **Per-module READMEs, a Maven Site and broad documentation consolidation are Release 2**
-  (internal work item 1417,
-  internal work item 1418,
-  internal work item 1419).
-- **The brand is a placeholder** (internal work item 1415).
+- **Per-module READMEs, a Maven Site and broad documentation consolidation are Release 2.**
+- **The brand is a placeholder.**
   The product name may still change.
 - **The config wizard's browser Back button does not step back through an open form.** Using your
   browser's own Back button (not the app's in-app Back arrow) while a configuration form is open
   does not return you to the configuration list the way normal web navigation would. **Workaround:
   use the in-app Back arrow in the form's own toolbar instead of the browser's Back button.**
-  Deferred to Release 2.0.0 (internal work item 3026).
+  Deferred to Release 2.0.0.
 
 ## Where the Release 2 work lives
 
 This page links to Release 2 work. It does not copy it. The authoritative structure is the
-Release 2 Plan of Record internal work item 1957. The
+Release 2 Plan of Record. The
 public release notes are generated and added with the publication commit; no release-notes file is
 present in the public tree before publication. Those notes preserve the durable next-release
 decisions.
