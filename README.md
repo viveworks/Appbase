@@ -193,8 +193,7 @@ Measured against `develop`'s actual release-candidate tree and git history, not 
 - **Commits:** 2,806 on `develop`, from a single author across 3 git identities used over the
   project's life (`Navaneeth Mysore G`, `navaneeth-mysore-dev`, `navaneeth-mysore`).
 - **Maven modules:** 55.
-- **Lines of code:** 399,186 total (code lines only, via `cloc`, 3,698 files). Of that, Java is
-  261,934 lines — `src/main` 239,717 across 2,341 files, `src/test` 85,843 across 836 files.
+- **Lines of code:** 399,186 total (code lines only, via `cloc`, 3,698 files).
 - **Tests:** 2,709 total.
   - Unit tests: 2,585
   - Integration tests: 93
