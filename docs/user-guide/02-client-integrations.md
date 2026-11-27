@@ -15,9 +15,9 @@ Nothing here was run against live infrastructure.
 All integrations follow one pattern, so learn it once.
 
 **1. Add the module.** Depend on the `appbase-client-<name>` artifact (plus `appbase-bootstrap-core`, which
-holds the factories). The coordinates' groupId is a placeholder pending internal work item 2546, as in
-[part 1](01-install-and-first-service.md). `appbase-client-r2dbc` is managed by `appbase-bom/pom.xml`,
-so it needs no explicit version when that BOM is imported.
+holds the factories). The real, permanent groupId is `com.viveworks.appbase` (internal work item 2546,
+finalized -- see [part 1](01-install-and-first-service.md)). `appbase-client-r2dbc` is managed by
+`appbase-bom/pom.xml`, so it needs no explicit version when that BOM is imported.
 
 **2. Write a YAML file.** Each integration reads a YAML document with `autoStart: true` and a key named
 `defaultDefault<Name>ClientIntegrationServiceConfiguration` for the default client. Most also accept

@@ -57,7 +57,7 @@ Import the bill of materials, then add the modules you need. The bill of materia
 ```
 
 > **groupId: finalized (internal work item 2546, resolved 2026-11-27).** `com.viveworks.appbase` is
-> the real, permanent coordinate -- the 1.0.0 release already published under it on
+> the real, permanent coordinate -- the 1.0.0 release published under it on
 > [Maven Central](https://central.sonatype.com/artifact/com.viveworks.appbase/appbase-core). A rename
 > to a shorter `com.viveworks` namespace was considered and abandoned: it would force a breaking
 > change on anyone who already adopted 1.0.0, and a product-scoped groupId
