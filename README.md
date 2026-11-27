@@ -99,7 +99,7 @@ outside.
 | Document | What it covers |
 |---|---|
 | [Module and Service Catalog](docs/Module-and-Service-Catalog.md) | Every shipped module and artifact: purpose, entry points, configuration, support state and limitations. This is the completeness authority |
-| [User Guide](docs/user-guide/README.md) *(planned, internal work item 1416)* | Installation, a first service, the configuration wizard and deployment, tested on a clean machine |
+| [User Guide](docs/user-guide/README.md) | Installation, a first service, the configuration wizard and deployment, tested on a clean machine |
 | [Developer MCP](docs/developer-mcp.md) | Give Claude Code, Codex CLI, Cursor, or GitHub Copilot source-derived Appbase API and convention lookup |
 | [Examples](docs/Examples.md) | Supported examples, each marked EXECUTED or NOT MEASURED |
 | [Configuration reference](docs/Configuration-Reference.md) | How a service finds and reads its YAML, the override keys, server choice and test switches |
