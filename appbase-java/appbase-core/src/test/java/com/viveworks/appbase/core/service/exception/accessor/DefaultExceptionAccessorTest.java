@@ -489,7 +489,7 @@ class DefaultExceptionAccessorTest {
         Assertions.assertTrue(exceptionStores3.isEmpty());
     }
 
-    private static class TestExceptionStore implements ExceptionStore {
+    private static final class TestExceptionStore implements ExceptionStore {
         @Override
         public ExceptionMessageDetails readExceptionMessageDetailsById(final int id) throws ExceptionStoreException {
             return null;
@@ -596,7 +596,7 @@ class DefaultExceptionAccessorTest {
         }
     }
 
-    private static class TestExceptionStoreConfiguration implements ExceptionStoreConfiguration {
+    private static final class TestExceptionStoreConfiguration implements ExceptionStoreConfiguration {
         @Override
         public boolean isEnabled() {
             return true;
@@ -609,7 +609,7 @@ class DefaultExceptionAccessorTest {
         }
     }
 
-    private static class TestExceptionStoreFactory
+    private static final class TestExceptionStoreFactory
             implements ExceptionStoreFactory<TestExceptionStore, TestExceptionStoreConfiguration>
     {
         @Override
