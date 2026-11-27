@@ -59,15 +59,13 @@
         </mailingList>
     </mailingLists>
     <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <name>Sonatype Central staging</name>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
+        <!-- Release deploys go through the central-publishing-maven-plugin below (release-profile),
+             not a distributionManagement/repository entry: the Central Portal publish API is not a
+             plain HTTP PUT target the way the legacy OSSRH staging repository was. -->
         <snapshotRepository>
-            <id>ossrh</id>
+            <id>central</id>
             <name>Sonatype Central snapshots</name>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
         </snapshotRepository>
         <site>
             <id>${project.artifactId}</id>
@@ -2859,14 +2857,14 @@
                             </executions>
                         </plugin>
                         <plugin>
-                            <groupId>org.sonatype.plugins</groupId>
-                            <artifactId>nexus-staging-maven-plugin</artifactId>
-                            <version>1.7.0</version>
+                            <groupId>org.sonatype.central</groupId>
+                            <artifactId>central-publishing-maven-plugin</artifactId>
+                            <version>0.12.0</version>
                             <extensions>true</extensions>
                             <configuration>
-                                <serverId>ossrh</serverId>
-                                <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                                <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                                <publishingServerId>central</publishingServerId>
+                                <autoPublish>false</autoPublish>
+                                <waitUntil>validated</waitUntil>
                             </configuration>
                         </plugin>
                         <plugin>
@@ -2894,9 +2892,9 @@
                         <version>3.2.8</version>
                     </plugin>
                     <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.7.0</version>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.12.0</version>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
