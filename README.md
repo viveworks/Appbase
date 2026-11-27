@@ -183,3 +183,35 @@ The rest of this README is for people working **on** Appbase, not with it.
 - **Contributing** — Start with the public [contributor guide](CONTRIBUTING.md) for setup,
   checks, sign-off, licence expectations, review and merge, troubleshooting, and private
   security reports.
+
+## Release 1.0.0 Stats
+
+Measured against `develop`'s actual release-candidate tree and git history, not estimated.
+
+- **Time to release:** 7 years, 9 months, 14 days (2,844 days) — first commit `2019-02-12` to
+  `2026-11-26`.
+- **Commits:** 2,806 on `develop`, from a single author across 3 git identities used over the
+  project's life (`Navaneeth Mysore G`, `navaneeth-mysore-dev`, `navaneeth-mysore`).
+- **Maven modules:** 55.
+- **Lines of code:** 399,186 total (code lines only, via `cloc`, 3,698 files), across:
+
+  | Language | Files | Lines |
+  |---|---|---|
+  | Java | 3,055 | 261,934 |
+  | JSON | 29 | 55,712 |
+  | Markdown (docs) | 94 | 21,598 |
+  | Shell | 205 | 13,911 |
+  | YAML | 100 | 10,239 |
+  | XML | 13 | 9,346 |
+  | Maven POMs | 55 | 8,982 |
+  | Python | 46 | 8,541 |
+  | Dart (Config Wizard UI) | 51 | 4,979 |
+
+  Of the Java total, `src/main` is 239,717 lines across 2,341 files and `src/test` is 85,843
+  lines across 836 files.
+- **Tests:** 2,709 total.
+  - Unit tests: 2,585
+  - Integration tests: 93
+  - Stacktests (`appbase-stacktest`, full-stack scenario coverage): 31
+- **Full release-profile build** (`clean install site site:stage`, every module, every test
+  tier): ~5h01m, last proven clean end to end on the exact commit this release ships.
