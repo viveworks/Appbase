@@ -25,8 +25,8 @@ So there are **four web-server flavors**: Jetty, Tomcat, Undertow (servlet) and 
 on top of the core, with `appbase-bootstrap-servlet` as the layer the three servlet servers share. All
 four servers implement `AppbaseWebServer` (`start()`, `stop()`, `getPort()`, `isStarted()`).
 
-> **BOM coverage (`internal work item 2549 resolved`).** `appbase-bootstrap-reactor-netty` is managed by
-> `appbase-bom/pom.xml`. The groupId remains a placeholder, **pending internal work item 2546**.
+> **BOM coverage.** `appbase-bootstrap-reactor-netty` is managed by
+> `appbase-bom/pom.xml`. The groupId remains a placeholder, **pending the rename**.
 
 ### Which one do I pick?
 

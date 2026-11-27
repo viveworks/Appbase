@@ -15,7 +15,7 @@ Nothing here was run against live infrastructure.
 All integrations follow one pattern, so learn it once.
 
 **1. Add the module.** Depend on the `appbase-client-<name>` artifact (plus `appbase-bootstrap-core`, which
-holds the factories). The coordinates' groupId is a placeholder, **pending internal work item 2546**, as in
+holds the factories). The coordinates' groupId is a placeholder, **pending the rename**, as in
 [part 1](01-install-and-first-service.md). `appbase-client-r2dbc` is managed by `appbase-bom/pom.xml`,
 so it needs no explicit version when that BOM is imported.
 

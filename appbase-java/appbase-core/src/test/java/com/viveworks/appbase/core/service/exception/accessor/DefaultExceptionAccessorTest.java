@@ -188,7 +188,14 @@ class DefaultExceptionAccessorTest {
                 throw new RuntimeException(ex);
             }
         });
-        final long timestamp3 = System.currentTimeMillis();
+        // +1 guards against a real race, not a padding-for-safety guess: exceptionMessage2's
+        // write is confirmed complete by the awaited future just above, but System.currentTimeMillis()
+        // has coarse (1ms) resolution relative to how fast these in-memory operations run. On a fast
+        // enough CI host, the write-commit timestamp and this capture can land in the exact same
+        // millisecond, and the exclusive-upper-bound query below would then legitimately (not buggily)
+        // exclude exceptionMessage2, since its stored timestamp == timestamp3. Observed causing a real
+        // intermittent NoSuchElementException on the iterator.next() calls further down.
+        final long timestamp3 = System.currentTimeMillis() + 1;
         final Map<String, Collection<ExceptionMessageDetails>>
                 readAllExceptionMessageDetailsByTimestamps1 =
                 defaultExceptionAccessor.readAllExceptionMessageDetailsByTimestamps(timestamp1, timestamp2);
@@ -482,7 +489,7 @@ class DefaultExceptionAccessorTest {
         Assertions.assertTrue(exceptionStores3.isEmpty());
     }
 
-    private static class TestExceptionStore implements ExceptionStore {
+    private static final class TestExceptionStore implements ExceptionStore {
         @Override
         public ExceptionMessageDetails readExceptionMessageDetailsById(final int id) throws ExceptionStoreException {
             return null;
@@ -589,7 +596,7 @@ class DefaultExceptionAccessorTest {
         }
     }
 
-    private static class TestExceptionStoreConfiguration implements ExceptionStoreConfiguration {
+    private static final class TestExceptionStoreConfiguration implements ExceptionStoreConfiguration {
         @Override
         public boolean isEnabled() {
             return true;
@@ -602,7 +609,7 @@ class DefaultExceptionAccessorTest {
         }
     }
 
-    private static class TestExceptionStoreFactory
+    private static final class TestExceptionStoreFactory
             implements ExceptionStoreFactory<TestExceptionStore, TestExceptionStoreConfiguration>
     {
         @Override
