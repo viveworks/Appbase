@@ -366,10 +366,10 @@ Sequence:
    all: `./build.sh --mode release` (`mvn clean install site site:stage -P release-profile,
    appbase-config-wizard-it-profile`). This is the authoritative proof for *this* commit -- do not
    skip it on the theory that an earlier build of a different commit already proved enough.
-2. Only after that build is confirmed green, run `release:prepare` and `release:perform` with tests
-   skipped (`-DskipTests`) -- the build just proved this exact, immutable commit; a second and
-   third full test re-run during prepare/perform buys nothing and roughly doubles or triples the
-   wall-clock time for no new information.
+2. Only after that build is confirmed green, run `release:prepare` and `release:perform` with
+   tests running in full both times (owner decision, 2026-11-27: no `-DskipTests` anywhere, even
+   though the standalone build in step 1 already proved this exact commit -- the redundancy is
+   accepted deliberately for the first real release).
 3. `release:perform` stages the signed artifacts at Central Portal and stops (`autoPublish=false`,
    `waitUntil=validated`) -- the same stop-before-promote posture Procedure B uses. Validate the
    staged deployment the same way Procedure B's own validation step does.
