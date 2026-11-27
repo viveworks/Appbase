@@ -56,14 +56,16 @@ Import the bill of materials, then add the modules you need. The bill of materia
 </dependencyManagement>
 ```
 
-> **groupId: pending.** `GROUP_ID_PENDING_2546` is a placeholder, not a real coordinate. The
-> Central namespace has been chosen and the rename is pending. Until it lands, copy
-> the `<groupId>` of the `appbase-bom` artifact from `appbase-bom/pom.xml` in your checkout. Do not
-> hard-code it in a build you intend to keep. The Java package names in the snippets of this guide are
-> as they are in the tree today. Whether the pending rename changes them too is not verified here.
+> **groupId: pending internal work item 2546.** `GROUP_ID_PENDING_2546` is a placeholder, not a real
+> coordinate. The 1.0.0 release published under `com.viveworks.appbase`
+> ([Maven Central](https://central.sonatype.com/artifact/com.viveworks.appbase/appbase-core)), but a
+> rename to a shorter namespace is still a real, tracked, open decision for a future release. Read
+> the current `<groupId>` from `appbase-bom/pom.xml` in your checkout rather than hard-coding either
+> value in a build you intend to keep.
 
-This resolves only after `mvn clean install -DskipTests -P quick-profile` has installed the artifacts
-locally.
+Appbase 1.0.0 is published on Maven Central, so this resolves directly with no local build step. To
+build from source instead (for example, to work on Appbase itself),
+`mvn clean install -DskipTests -P quick-profile` installs the artifacts locally first.
 
 > **BOM coverage.** The BOM manages every module named below, including Reactor Netty, both R2DBC
 > modules, all five OAuth providers, the reactive OAuth module and both token-cache modules. When you
