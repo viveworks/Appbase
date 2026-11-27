@@ -46,7 +46,7 @@ Import the bill of materials, then add the modules you need. The bill of materia
 <dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>GROUP_ID_PENDING_2546</groupId>
+      <groupId>com.viveworks.appbase</groupId>
       <artifactId>appbase-bom</artifactId>
       <version>1.0.0</version>
       <type>pom</type>
@@ -56,12 +56,14 @@ Import the bill of materials, then add the modules you need. The bill of materia
 </dependencyManagement>
 ```
 
-> **groupId: pending internal work item 2546.** `GROUP_ID_PENDING_2546` is a placeholder, not a real
-> coordinate. The 1.0.0 release published under `com.viveworks.appbase`
-> ([Maven Central](https://central.sonatype.com/artifact/com.viveworks.appbase/appbase-core)), but a
-> rename to a shorter namespace is still a real, tracked, open decision for a future release. Read
-> the current `<groupId>` from `appbase-bom/pom.xml` in your checkout rather than hard-coding either
-> value in a build you intend to keep.
+> **groupId: finalized (internal work item 2546, resolved 2026-11-27).** `com.viveworks.appbase` is
+> the real, permanent coordinate -- the 1.0.0 release already published under it on
+> [Maven Central](https://central.sonatype.com/artifact/com.viveworks.appbase/appbase-core). A rename
+> to a shorter `com.viveworks` namespace was considered and abandoned: it would force a breaking
+> change on anyone who already adopted 1.0.0, and a product-scoped groupId
+> (`groupId.artifactId` naming the product, not just the company) is itself a common, legitimate
+> pattern (for example `com.google.guava`, `com.fasterxml.jackson.core`). No further rename is
+> planned.
 
 Appbase 1.0.0 is published on Maven Central, so this resolves directly with no local build step. To
 build from source instead (for example, to work on Appbase itself),

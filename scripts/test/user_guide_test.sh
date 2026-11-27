@@ -210,11 +210,23 @@ CLAIM_PARAGRAPHS="$(awk 'BEGIN{RS=""; ORS="\n"} {gsub(/(^|\n)[[:space:]]*>[[:spa
 # Remove only a complete, unqualified negative sentence containing the forbidden surface; then reject
 # every occurrence left. Sentence-end anchoring prevents a qualifier such as "not supported on Windows,
 # but supported on Linux" from laundering the positive support claim.
+#
+# A truthful, now-accurate POSITIVE claim ("Appbase 1.0.0 is published on Maven Central", "the 1.0.0
+# release published under `com.viveworks.appbase`") needs its own exemption, distinct from the negative
+# ones above and from each other: the real sentences here embed a dotted identifier
+# (`com.viveworks.appbase`) before the true sentence terminator, so the sentence-boundary anchoring
+# style above (`[^.!?]*` up to a literal `[.!?]`) can never reach "maven central" at all -- the dots in
+# the identifier look like sentence-ends to that pattern first. These two therefore match the specific
+# claim phrase directly and stop at the nearest unambiguous boundary (a closing paren for the markdown
+# link, or nothing beyond the phrase itself) instead of a sentence terminator, leaving the rest of the
+# sentence (which does not itself name the forbidden surface) in the residual untouched.
 CLAIM_RESIDUAL="$(sed -E \
   -e 's/(^|[.!?][[:space:]]+)([^.!?]* )?(not|never) (yet )?(published|available) (to|on) maven central[.!?]([[:space:]]+|$)/\1/g' \
   -e 's/(^|[.!?][[:space:]]+)maven central (publication|release) is (not|never) (yet )?(published|available)[.!?]([[:space:]]+|$)/\1/g' \
   -e 's/(^|[.!?][[:space:]]+)appbase[_-]flutter (is )?(not|never) (yet )?(shipped|supported|available)[.!?]([[:space:]]+|$)/\1/g' \
-  -e 's/(^|[.!?][[:space:]]+)appbase-react (is )?(not|never) (yet )?(shipped|supported|available)[.!?]([[:space:]]+|$)/\1/g' <<<"$CLAIM_PARAGRAPHS")"
+  -e 's/(^|[.!?][[:space:]]+)appbase-react (is )?(not|never) (yet )?(shipped|supported|available)[.!?]([[:space:]]+|$)/\1/g' \
+  -e 's/(the )?1\.0\.0 release published under[^)]*maven central[^)]*\)//g' \
+  -e 's/appbase 1\.0\.0 is published on maven central//g' <<<"$CLAIM_PARAGRAPHS")"
 bad_claims="$(grep -niE 'maven central|appbase[_-]flutter|appbase-react' <<<"$CLAIM_RESIDUAL")"
 [ -z "$bad_claims" ] && ok "EXTRA_no_unsupported: no unshipped surface advertised" \
   || bad "EXTRA_no_unsupported: $bad_claims"
@@ -223,15 +235,25 @@ grep -qF '[Module and Service Catalogue](../Module-and-Service-Catalog.md)' "$GU
   && ok "EXTRA_no_unsupported: support claims defer to the landed module/service catalogue" \
   || bad "EXTRA_no_unsupported: the guide must link the landed module/service catalogue"
 
-# ── EXTRA_groupid — the groupId is a marked placeholder pending internal work item 2546, never a final literal ─────────
-if grep -qE '<groupId>com\.viveworks|~/\.m2/repository/com/viveworks' "$ALL"; then
-  bad "EXTRA_groupid: a com.viveworks groupId (or its ~/.m2 path) is hard-coded as final"
+# ── EXTRA_groupid — internal work item 2546 finalized com.viveworks.appbase as the real, permanent
+# groupId (owner decision, 2026-11-27: abandoned the rename to a bare com.viveworks namespace). The
+# real value is now REQUIRED, the reverse of this arm's prior "never a final literal" rule, and the
+# bare, abandoned `com.viveworks` groupId (without `.appbase`) is what must never appear as if real ──
+bare_viveworks="$(grep -nE '<groupId>com\.viveworks</groupId>' "$ALL")"
+bare_m2_path="$(grep -noE '~/\.m2/repository/com/viveworks/[a-zA-Z0-9_-]+' "$ALL" | grep -v '/appbase$')"
+if [ -n "$bare_viveworks" ] || [ -n "$bare_m2_path" ]; then
+  bad "EXTRA_groupid: the abandoned bare com.viveworks groupId (without .appbase) is hard-coded as if real"
 else
-  ok "EXTRA_groupid: no hard-coded com.viveworks groupId"
+  ok "EXTRA_groupid: no reference to the abandoned bare com.viveworks groupId"
 fi
-if grep -qF 'GROUP_ID_PENDING_2546' "$ALL" && grep -qiE 'pending internal work item 2546' "$ALL"; then
-  ok "EXTRA_groupid: the placeholder is used and marked 'pending internal work item 2546'"
-else bad "EXTRA_groupid: need the GROUP_ID_PENDING_2546 placeholder and a 'pending internal work item 2546' note"; fi
+if grep -qE '<groupId>com\.viveworks\.appbase</groupId>' "$ALL" && ! grep -qF 'GROUP_ID_PENDING_2546' "$ALL"; then
+  ok "EXTRA_groupid: the real, permanent com.viveworks.appbase groupId is used, placeholder fully removed"
+else
+  bad "EXTRA_groupid: need the real com.viveworks.appbase groupId with no remaining GROUP_ID_PENDING_2546 placeholder"
+fi
+if grep -qiE 'internal work item 2546' "$CLAIMS" && grep -qiE 'abandon' "$CLAIMS"; then
+  ok "EXTRA_groupid: the groupId note records internal work item 2546's abandoned-rename resolution"
+else bad "EXTRA_groupid: need a note citing internal work item 2546's resolution (the rename was abandoned, com.viveworks.appbase is permanent)"; fi
 grep -q 'internal work item 1143' "$CLAIMS" && bad "EXTRA_groupid: internal work item 1143 is the wrong reference for the groupId (use internal work item 2546)" \
   || ok "EXTRA_groupid: no stale internal work item 1143 reference"
 
@@ -2504,7 +2526,7 @@ if [ "${USER_GUIDE_FIXTURE_RUN:-0}" != 1 ] && [ "${USER_GUIDE_SKIP_NESTED_FIXTUR
   # Content mutations of the new arms, each on a full copy of the guide.
   mkdir -p "$FIXTURE_ROOT/groupid" "$FIXTURE_ROOT/leak" "$FIXTURE_ROOT/stalecount"
   cp "$GDIR"/*.md "$FIXTURE_ROOT/groupid/"; cp "$GDIR"/*.md "$FIXTURE_ROOT/leak/"; cp "$GDIR"/*.md "$FIXTURE_ROOT/stalecount/"
-  prepend "$FIXTURE_ROOT/groupid/01-install-and-first-service.md" '<groupId>com.viveworks.appbase</groupId>\n'
+  prepend "$FIXTURE_ROOT/groupid/01-install-and-first-service.md" '<groupId>com.viveworks</groupId>\n'
   prepend "$FIXTURE_ROOT/leak/01-install-and-first-service.md" 'See /Users/someone/notes and the codex lane.\n'
   prepend "$FIXTURE_ROOT/stalecount/01-install-and-first-service.md" 'Appbase has 21 service modules.\n'
   for pair in "groupid:EXTRA_groupid" "leak:EXTRA_hygiene" "stalecount:EXTRA_counts"; do

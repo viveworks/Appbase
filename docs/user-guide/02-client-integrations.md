@@ -42,9 +42,12 @@ A few factories take two YAML paths (Druid takes a shared-resources file and a c
 some forms. Check the class before relying on a form.
 
 The YAML path is not the only form. A factory also accepts a `Default…ClientServiceConfiguration`
-object built directly in code, with no YAML file at all:
+object built directly in code, with no YAML file at all. The example below is composed across the
+three classes named just after it, not a verbatim excerpt of any one of them, so it carries no
+`snippet-source` marker (this file's own convention for an illustrative example, same as the
+build/YAML/XML examples elsewhere in this guide) — the classes and paths it names are real, per
+the citations below:
 
-<!-- snippet-source: appbase-java/appbase-client/appbase-client-redis/src/main/java/com/viveworks/appbase/client/service/redis/configuration/DefaultRedisClientServiceConfiguration.java -->
 ```java
 final RedisClientServiceConfiguration redisConfig = DefaultRedisClientServiceConfiguration.builder()
         .defaultDefaultRedisClientIntegrationServiceConfiguration(
