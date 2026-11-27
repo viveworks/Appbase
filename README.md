@@ -5,6 +5,8 @@
 
 # Appbase
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.viveworks.appbase/appbase-core.svg)](https://central.sonatype.com/artifact/com.viveworks.appbase/appbase-core)
+
 **A modular Java 25 framework for building backend services: core runtime services, backend
 adapters, application services, and a choice of embedded server, assembled from one YAML
 configuration.**
@@ -50,8 +52,19 @@ of known limitations; that file is not present before the publication commit.
 
 Install the canonical [build prerequisites](docs/Configuration-Reference.md#build-prerequisites):
 **JDK 25 or later, Maven 3.6.3 or later, git, Python 3 available as `python3`, ripgrep available as
-`rg`, and bash**. Docker is needed only for backend integration tests. There is no published Maven
-repository yet, so build from source:
+`rg`, and bash**. Docker is needed only for backend integration tests.
+
+Appbase 1.0.0 is published on Maven Central. Add the released coordinate directly:
+
+```xml
+<dependency>
+  <groupId>com.viveworks.appbase</groupId>
+  <artifactId>appbase-core</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
+
+To build from source instead (for example, to work on Appbase itself):
 
 ```sh
 git clone https://github.com/viveworks/Appbase.git && cd Appbase
