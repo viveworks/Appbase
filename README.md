@@ -20,12 +20,17 @@ This file carries the short operator-facing command tables that people need befo
 
 ## What is Appbase
 
-Appbase is a set of Maven modules that you combine into a service. The core modules supply the
-runtime a service needs: logging, metrics, validation, configuration, a service registry, tracing,
-JMX and an internal mediator. Adapter modules connect that runtime to data stores, messaging and
-identity providers. Service modules add ready-made application features: user accounts, sessions,
-OAuth/OIDC sign-in, and web endpoints. A bootstrap module then runs everything on the embedded server
-you choose.
+Appbase is a set of Maven modules that you combine into a service.
+
+The core modules supply the runtime a service needs: logging, metrics, validation, configuration,
+a service registry, tracing, JMX and an internal mediator.
+
+Adapter modules connect that runtime to data stores, messaging and identity providers.
+
+Service modules add ready-made application features: user accounts, sessions, OAuth/OIDC sign-in,
+and web endpoints.
+
+A bootstrap module then runs everything on the embedded server you choose.
 
 This README gives an overview of Release 1.0.0. Every supported module and artifact is described in
 the shipped [catalogue](#documentation). Release publication adds a generated, release-specific list
@@ -75,13 +80,13 @@ mvn test -pl appbase-stacktest -am \
   -Dsurefire.failIfNoSpecifiedTests=false   # starts a real Reactor Netty service; no Docker needed
 ```
 
-The servlet bootstraps use Jersey 3.1.11, whose embedded ASM supports
-`ResourceConfig.packages(...)` scanning on JDK 25. On a later Java runtime, Jetty, Tomcat, and
-Undertow fail fast before startup when package scanning is configured; register resource classes
-explicitly with `ResourceConfig.register(Class)`, run on a supported Java runtime, or upgrade
-Appbase/Jersey. The failure identifies the running Java N: “Jersey package scanning is supported
-through Java 25, but this server is running on Java N.” If Appbase cannot inspect a future Jersey
-layout safely, it fails closed with the same remedies instead of starting with unverified scanning.
+> **NOTE:** The servlet bootstraps use Jersey 3.1.11, whose embedded ASM supports
+> `ResourceConfig.packages(...)` scanning on JDK 25. On a later Java runtime, Jetty, Tomcat, and
+> Undertow fail fast before startup when package scanning is configured; register resource classes
+> explicitly with `ResourceConfig.register(Class)`, run on a supported Java runtime, or upgrade
+> Appbase/Jersey. The failure identifies the running Java N: “Jersey package scanning is supported
+> through Java 25, but this server is running on Java N.” If Appbase cannot inspect a future Jersey
+> layout safely, it fails closed with the same remedies instead of starting with unverified scanning.
 
 If `rg` is missing, use the [ripgrep installation guide](https://github.com/BurntSushi/ripgrep#installation),
 or install it with `brew install ripgrep` on macOS, `sudo apt install ripgrep` on Debian/Ubuntu, or
@@ -117,7 +122,7 @@ outside.
 | [Configuration reference](docs/Configuration-Reference.md) | How a service finds and reads its YAML, the override keys, server choice and test switches |
 | [Known limitations](docs/Known-Limitations.md) | Interim Release 1 limitations; publication adds the generated release-specific view |
 | API documentation | Supported public Java and Dart APIs. Not published yet |
-| Release notes *(published with the release)* | What 1.0.0 contains and what is slated next; no release-notes file is present in the public tree before publication |
+| [Release notes](https://github.com/viveworks/Appbase/releases/tag/1.0.0) | What 1.0.0 contains and what is deferred to Release 2 |
 
 ### API inventory gate
 
@@ -177,9 +182,8 @@ claim to bind evidence to each pushed ref. CI is the exact-commit authority: its
 ## What comes next
 
 Release 2 work, including deferred adapter breadth, is tracked in the Release 2 Plan of
-Record. Release publication adds the public
-release notes that preserve the durable next-release decisions; no release-notes file is present in
-the public tree before then. This README does not copy that future publication output.
+Record. The [1.0.0 release notes](https://github.com/viveworks/Appbase/releases/tag/1.0.0) record
+the durable next-release decisions; this README does not copy that content.
 
 ## License
 
