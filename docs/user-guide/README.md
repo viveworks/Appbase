@@ -7,21 +7,6 @@ client integrations and service modules → bootstrap → configuration wizard �
 REST documentation → agent integration → developer MCP**. It describes only what is in this repository today, and it
 says so wherever something you might expect is missing or broken.
 
-> **Before you start — four facts that shape every step**
->
-> - **Appbase is built from source.** The version is `1.0.0`. Appbase is not yet published to
->   Maven Central. Build and `mvn install` it locally. Publication is planned
->   for a later release.
-> - **The groupId is not final.** Every dependency snippet uses the placeholder `GROUP_ID_PENDING_2546`.
->   The namespace decision has been made and **the rename is pending**. Read the real value
->   from `appbase-bom/pom.xml` in your checkout.
-> - **No deploy flow ships yet.** The [Deploy section](#deploy--what-exists) below says exactly what
->   exists and what does not.
-> - **Which modules are *supported* is not decided by this guide.** The shipped-artifact inventory
->   and the [Module and Service Catalogue](../Module-and-Service-Catalog.md) are the
->   authority. A module named here is in the build; consult the catalogue for its current support
->   classification.
-
 ## Release evidence
 
 Release publication generates the Quality & Security Practices page from the release-evidence index.
