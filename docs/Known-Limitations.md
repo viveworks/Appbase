@@ -92,9 +92,6 @@ support-message service. No separate account bundle for Vitess is claimed for Re
 
 ## Not in Release 1 at all
 
-- **Maven Central publication is not claimed yet.** The public export and distribution path is the
-  Release 1 gate. Until it passes,
-  build and install from source.
 - **Per-module READMEs, a Maven Site and broad documentation consolidation are Release 2.**
 - **The brand is a placeholder.**
   The product name may still change.
@@ -103,11 +100,3 @@ support-message service. No separate account bundle for Vitess is claimed for Re
   does not return you to the configuration list the way normal web navigation would. **Workaround:
   use the in-app Back arrow in the form's own toolbar instead of the browser's Back button.**
   Deferred to Release 2.0.0.
-
-## Where the Release 2 work lives
-
-This page links to Release 2 work. It does not copy it. The authoritative structure is the
-Release 2 Plan of Record. The
-public release notes are generated and added with the publication commit; no release-notes file is
-present in the public tree before publication. Those notes preserve the durable next-release
-decisions.
