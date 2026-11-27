@@ -1,6 +1,6 @@
 # Appbase developer MCP lookup core
 
-This package is the lookup core and pinned stdio MCP transport for internal work item 2687. It intentionally has no
+This package is the lookup core and pinned stdio MCP transport. It intentionally has no
 third-party dependency: the transport registers the three methods on `LookupHandlers` without
 coupling catalog validation to a particular Python MCP SDK.
 
@@ -59,7 +59,7 @@ rejects a seed whose evidence no longer describes the tree.
 
 ## Acceptance status
 
-The Spec and Plan are review candidates and must receive independent review before internal work item 2687 completes.
+The Spec and Plan are review candidates and must receive independent review before this work completes.
 The CI compile tier performs the same generate-and-verify sequence. Changes to the generator or
 oracle force a full reactor build so that this independent compiled-artifact check cannot produce a
 partial-build false green.

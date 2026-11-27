@@ -4,7 +4,7 @@ How Appbase matches an incoming request path against configured security rules â
 allow/block lists, CORS headers, session creation, and filter enablement. This is the seed of the
 user-facing configuration guide (P-010); it is written to be lifted into it.
 
-> Delivered by P-027 R1 (issue internal work item 342). The behaviour described here is uniform across all three
+> Delivered by P-027 R1. The behaviour described here is uniform across all three
 > transport faces â€” servlet, JAX-RS, and reactor-netty.
 
 ## The one rule to remember
