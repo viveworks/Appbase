@@ -193,22 +193,8 @@ Measured against `develop`'s actual release-candidate tree and git history, not 
 - **Commits:** 2,806 on `develop`, from a single author across 3 git identities used over the
   project's life (`Navaneeth Mysore G`, `navaneeth-mysore-dev`, `navaneeth-mysore`).
 - **Maven modules:** 55.
-- **Lines of code:** 399,186 total (code lines only, via `cloc`, 3,698 files), across:
-
-  | Language | Files | Lines |
-  |---|---|---|
-  | Java | 3,055 | 261,934 |
-  | JSON | 29 | 55,712 |
-  | Markdown (docs) | 94 | 21,598 |
-  | Shell | 205 | 13,911 |
-  | YAML | 100 | 10,239 |
-  | XML | 13 | 9,346 |
-  | Maven POMs | 55 | 8,982 |
-  | Python | 46 | 8,541 |
-  | Dart (Config Wizard UI) | 51 | 4,979 |
-
-  Of the Java total, `src/main` is 239,717 lines across 2,341 files and `src/test` is 85,843
-  lines across 836 files.
+- **Lines of code:** 399,186 total (code lines only, via `cloc`, 3,698 files). Of that, Java is
+  261,934 lines — `src/main` 239,717 across 2,341 files, `src/test` 85,843 across 836 files.
 - **Tests:** 2,709 total.
   - Unit tests: 2,585
   - Integration tests: 93
