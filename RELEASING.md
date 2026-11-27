@@ -1,6 +1,6 @@
 # Releasing Appbase
 
-This runbook separates the harmless private-repository rehearsal from the credentialed public-repository release. The private repository is export input only. Never deploy from it, and never run a credentialed Maven release goal locally.
+This runbook separates the harmless private-repository rehearsal from the credentialed public-repository release. The private repository is export input only. Never deploy from it, and never run a credentialed Maven release goal locally -- except under a fresh, dated, explicit owner authorization recorded in Procedure C below, which this runbook treats as a one-time, named exception, not a standing alternative to Procedure B.
 
 ## Roles and repositories
 
@@ -326,5 +326,61 @@ Retain the run URL, approver, staging identifier and redacted validation/drop ou
 ## Mark the released source
 
 After the staged repository is verified dropped and the release evidence is accepted, a human merges `develop` into protected `main` in `PRIVATE_REPO` through a reviewed pull request. This merge records which private source state produced the export; it does not publish artifacts.
+
+## Procedure C: owner-authorized local credentialed release (dated exception, 1.0.0 only)
+
+**This procedure exists for exactly one release.** It is not a standing alternative to Procedure B.
+Procedure B (the protected `release` Environment dispatch) remains the default; wiring it for real
+is tracked separately so every release after 1.0.0 uses it. Using Procedure C again for a later
+release needs its own fresh, dated owner authorization recorded here the same way -- an old
+authorization below does not carry forward.
+
+**Authorization on record:** owner, 2026-11-26/27, verbal in conversation with EA-Super: run the
+real 1.0.0 Maven Central publish directly from this workstation instead of through the Actions
+dispatch path, because the release profile is already proven to build clean on this exact host and
+this is the very first real publish -- minimizing new, never-exercised surface (an Actions publish
+step that has never actually run for real) was judged worth more than using the originally-planned
+mechanism this one time.
+
+Preconditions, all owner-driven, none committed to this repository:
+
+- `com.viveworks` namespace verified on Sonatype's Central Portal (`central.sonatype.com`) --
+  already true, independent of this procedure.
+- A Central Portal **User Token** (not the owner's regular login) in `~/.m2/settings.xml` under
+  `<server><id>central</id>...</server>`, matching `publishingServerId=central` in the POM's
+  `central-publishing-maven-plugin` configuration.
+- The release-signing GPG key present and its passphrase cached in the local `gpg-agent` before
+  this procedure starts (`gpg --batch --yes --pinentry-mode error --local-user <key> --detach-sign
+  --output /dev/null -` must succeed non-interactively; if it does not, stop and get the owner to
+  re-enter the passphrase rather than let a release step block on an interactive prompt nobody is
+  watching).
+- A clean, fresh checkout of `PUBLIC_REPO` at the exact commit being released -- not a working
+  branch, not a clone with uncommitted changes.
+- The identity-chain checks earlier in this runbook (reviewed commit, exact head, no SNAPSHOT
+  dependencies) still apply in full; this procedure changes *where* `release:prepare`/
+  `release:perform` run, not what they verify first.
+
+Sequence:
+
+1. Run the real full build once, against this exact commit, before touching the release plugin at
+   all: `./build.sh --mode release` (`mvn clean install site site:stage -P release-profile,
+   appbase-config-wizard-it-profile`). This is the authoritative proof for *this* commit -- do not
+   skip it on the theory that an earlier build of a different commit already proved enough.
+2. Only after that build is confirmed green, run `release:prepare` and `release:perform` with
+   tests running in full both times (owner decision, 2026-11-27: no `-DskipTests` anywhere, even
+   though the standalone build in step 1 already proved this exact commit -- the redundancy is
+   accepted deliberately for the first real release).
+3. `release:perform` stages the signed artifacts at Central Portal and stops (`autoPublish=false`,
+   `waitUntil=validated`) -- the same stop-before-promote posture Procedure B uses. Validate the
+   staged deployment the same way Procedure B's own validation step does.
+4. The actual promotion to a publicly resolvable `1.0.0` is a separate, fresh owner decision after
+   validation -- this procedure does not make that decision for the owner, it only gets the build
+   signed and staged.
+5. Record the same evidence Procedure B would have recorded (run output, staging identifier,
+   redacted validation output) on the release ticket, noting plainly that this ran via Procedure C,
+   not Procedure B, and why.
+
+Everything else in this runbook -- the identity chain, the stop conditions, never promoting without
+a fresh owner decision, the `develop` into `main` marker merge -- is unchanged by this procedure.
 
 The real Maven Central promotion belongs to the later release gate. This epic must not promote or publish anything.
