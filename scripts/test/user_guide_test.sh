@@ -5,8 +5,9 @@
 #
 # user_guide_test.sh — acceptance arms for the Release-1 User Guide (internal work item 1416, plan task N05).
 #
-# The guide is a set of files under docs/user-guide/: README.md (index, boundary, deploy, verification),
-# one file per part (01 … 08) and known-divergences.md.
+# The guide is a set of files under docs/user-guide/: README.md (index, boundary, deploy, verification)
+# and one file per part (01 … 08). known-divergences.md was removed post-release (internal work item
+# 2413): users don't need a list of what diverged from an internal baseline.
 #
 # AC1416-1 … AC1416-5 are numbered exactly as the issue numbers them. AC1416-S1 is the Swagger-evidence arm:
 # the earlier screenshots were of a sample service and were ruled invalid evidence; the committed images are
@@ -47,10 +48,10 @@ TMPD="$(mktemp -d)"
 trap 'rm -rf "$TMPD"' EXIT
 
 # ── the guide's files ────────────────────────────────────────────────────────────────────────────────
-PARTS="01-install-and-first-service 02-client-integrations 03-service-modules 04-bootstrap-flavors 05-config-wizard 06-docker-infra 07-swagger 08-agent-integration known-divergences"
+PARTS="01-install-and-first-service 02-client-integrations 03-service-modules 04-bootstrap-flavors 05-config-wizard 06-docker-infra 07-swagger 08-agent-integration"
 missing_files=""
 for p in $PARTS; do [ -f "$GDIR/$p.md" ] || missing_files="$missing_files $p.md"; done
-[ -z "$missing_files" ] && ok "EXTRA_structure: README.md plus the 9 part files exist" \
+[ -z "$missing_files" ] && ok "EXTRA_structure: README.md plus the 8 part files exist" \
   || bad "EXTRA_structure: missing:$missing_files"
 for p in $PARTS; do
   grep -q "($p.md)" "$GUIDE" || bad "EXTRA_index_links: README.md does not link $p.md"
@@ -64,15 +65,10 @@ for f in "$GDIR"/*.md; do [ "$f" = "$GUIDE" ] || cat "$f" >> "$ALL"; done
 
 # section <heading-regex> → the text of that ## section (up to the next ## heading), across every file
 section() { awk -v re="$1" '/^## /{ins = (tolower($0) ~ re); next} ins' "$ALL"; }
-# The guide minus the TABLE ROWS of known-divergences.md: those rows name missing/stale paths precisely in
-# order to say they are missing. Prose everywhere else is still checked.
+# All guide prose, checked as-is (known-divergences.md, which once needed a table-row exception, was
+# removed post-release -- users don't need a list of what diverged from an internal baseline).
 CLAIMS="$TMPD/claims.md"; : > "$CLAIMS"
-for f in "$GDIR"/*.md; do
-  case "$(basename "$f")" in
-    known-divergences.md) awk '!/^\|/' "$f" >> "$CLAIMS" ;;
-    *) cat "$f" >> "$CLAIMS" ;;
-  esac
-done
+for f in "$GDIR"/*.md; do cat "$f" >> "$CLAIMS"; done
 
 # ── EXTRA_sections — the parts the issue title names ─────────────────────────────────────────────────
 for s in 'install' 'first service' 'configuration wizard' 'deploy'; do
@@ -210,11 +206,23 @@ CLAIM_PARAGRAPHS="$(awk 'BEGIN{RS=""; ORS="\n"} {gsub(/(^|\n)[[:space:]]*>[[:spa
 # Remove only a complete, unqualified negative sentence containing the forbidden surface; then reject
 # every occurrence left. Sentence-end anchoring prevents a qualifier such as "not supported on Windows,
 # but supported on Linux" from laundering the positive support claim.
+#
+# A truthful, now-accurate POSITIVE claim ("Appbase 1.0.0 is published on Maven Central", "the 1.0.0
+# release published under `com.viveworks.appbase`") needs its own exemption, distinct from the negative
+# ones above and from each other: the real sentences here embed a dotted identifier
+# (`com.viveworks.appbase`) before the true sentence terminator, so the sentence-boundary anchoring
+# style above (`[^.!?]*` up to a literal `[.!?]`) can never reach "maven central" at all -- the dots in
+# the identifier look like sentence-ends to that pattern first. These two therefore match the specific
+# claim phrase directly and stop at the nearest unambiguous boundary (a closing paren for the markdown
+# link, or nothing beyond the phrase itself) instead of a sentence terminator, leaving the rest of the
+# sentence (which does not itself name the forbidden surface) in the residual untouched.
 CLAIM_RESIDUAL="$(sed -E \
   -e 's/(^|[.!?][[:space:]]+)([^.!?]* )?(not|never) (yet )?(published|available) (to|on) maven central[.!?]([[:space:]]+|$)/\1/g' \
   -e 's/(^|[.!?][[:space:]]+)maven central (publication|release) is (not|never) (yet )?(published|available)[.!?]([[:space:]]+|$)/\1/g' \
   -e 's/(^|[.!?][[:space:]]+)appbase[_-]flutter (is )?(not|never) (yet )?(shipped|supported|available)[.!?]([[:space:]]+|$)/\1/g' \
-  -e 's/(^|[.!?][[:space:]]+)appbase-react (is )?(not|never) (yet )?(shipped|supported|available)[.!?]([[:space:]]+|$)/\1/g' <<<"$CLAIM_PARAGRAPHS")"
+  -e 's/(^|[.!?][[:space:]]+)appbase-react (is )?(not|never) (yet )?(shipped|supported|available)[.!?]([[:space:]]+|$)/\1/g' \
+  -e 's/(the )?1\.0\.0 release published under[^)]*maven central[^)]*\)//g' \
+  -e 's/appbase 1\.0\.0 is published on maven central//g' <<<"$CLAIM_PARAGRAPHS")"
 bad_claims="$(grep -niE 'maven central|appbase[_-]flutter|appbase-react' <<<"$CLAIM_RESIDUAL")"
 [ -z "$bad_claims" ] && ok "EXTRA_no_unsupported: no unshipped surface advertised" \
   || bad "EXTRA_no_unsupported: $bad_claims"
@@ -223,15 +231,25 @@ grep -qF '[Module and Service Catalogue](../Module-and-Service-Catalog.md)' "$GU
   && ok "EXTRA_no_unsupported: support claims defer to the landed module/service catalogue" \
   || bad "EXTRA_no_unsupported: the guide must link the landed module/service catalogue"
 
-# ── EXTRA_groupid — the groupId is a marked placeholder pending internal work item 2546, never a final literal ─────────
-if grep -qE '<groupId>com\.viveworks|~/\.m2/repository/com/viveworks' "$ALL"; then
-  bad "EXTRA_groupid: a com.viveworks groupId (or its ~/.m2 path) is hard-coded as final"
+# ── EXTRA_groupid — internal work item 2546 finalized com.viveworks.appbase as the real, permanent
+# groupId (owner decision, 2026-11-27: abandoned the rename to a bare com.viveworks namespace). The
+# real value is now REQUIRED, the reverse of this arm's prior "never a final literal" rule, and the
+# bare, abandoned `com.viveworks` groupId (without `.appbase`) is what must never appear as if real ──
+bare_viveworks="$(grep -nE '<groupId>com\.viveworks</groupId>' "$ALL")"
+bare_m2_path="$(grep -noE '~/\.m2/repository/com/viveworks/[a-zA-Z0-9_-]+' "$ALL" | grep -v '/appbase$')"
+if [ -n "$bare_viveworks" ] || [ -n "$bare_m2_path" ]; then
+  bad "EXTRA_groupid: the abandoned bare com.viveworks groupId (without .appbase) is hard-coded as if real"
 else
-  ok "EXTRA_groupid: no hard-coded com.viveworks groupId"
+  ok "EXTRA_groupid: no reference to the abandoned bare com.viveworks groupId"
 fi
-if grep -qF 'GROUP_ID_PENDING_2546' "$ALL" && grep -qiE 'pending internal work item 2546' "$ALL"; then
-  ok "EXTRA_groupid: the placeholder is used and marked 'pending internal work item 2546'"
-else bad "EXTRA_groupid: need the GROUP_ID_PENDING_2546 placeholder and a 'pending internal work item 2546' note"; fi
+if grep -qE '<groupId>com\.viveworks\.appbase</groupId>' "$ALL" && ! grep -qF 'GROUP_ID_PENDING_2546' "$ALL"; then
+  ok "EXTRA_groupid: the real, permanent com.viveworks.appbase groupId is used, placeholder fully removed"
+else
+  bad "EXTRA_groupid: need the real com.viveworks.appbase groupId with no remaining GROUP_ID_PENDING_2546 placeholder"
+fi
+if grep -qiE 'internal work item 2546' "$CLAIMS" && grep -qiE 'abandon' "$CLAIMS"; then
+  ok "EXTRA_groupid: the groupId note records internal work item 2546's abandoned-rename resolution"
+else bad "EXTRA_groupid: need a note citing internal work item 2546's resolution (the rename was abandoned, com.viveworks.appbase is permanent)"; fi
 grep -q 'internal work item 1143' "$CLAIMS" && bad "EXTRA_groupid: internal work item 1143 is the wrong reference for the groupId (use internal work item 2546)" \
   || ok "EXTRA_groupid: no stale internal work item 1143 reference"
 
@@ -308,7 +326,9 @@ grep -qF 'internal work item 2549 resolved' "$GDIR/04-bootstrap-flavors.md" || b
 grep -qiE 'reactor-netty.*(not|isn.t).*in.*BOM' "$GDIR/04-bootstrap-flavors.md" && bomgap="$bomgap stale-reactor-netty-BOM-gap" || true
 [ -z "$bomgap" ] && ok "EXTRA_coverage: reactor-netty is in the BOM and internal work item 2549 is marked resolved" || bad "EXTRA_coverage:$bomgap"
 
-# ── EXTRA_codeagents — document exactly the packages present in this exported tree ─────────────────
+# ── EXTRA_codeagents — only the package actually shipped in this exported tree is documented ────────
+# Post-release: the five genuinely absent packages are no longer named in the guide at all (the
+# defensive "not present" framing was removed) -- confirm they stay absent on disk AND stay unmentioned.
 ca_bad=""
 [ -d "$ROOT/appbase-codeagents/claude/skills/add-appbase-service" ] || ca_bad="$ca_bad missing-dir:add-appbase-service"
 grep -qF 'add-appbase-service' "$GDIR/08-agent-integration.md" || ca_bad="$ca_bad add-appbase-service"
@@ -316,10 +336,9 @@ for d in appbase-code-review appbase-security-review coding-agent review-agent e
   if [ -e "$ROOT/appbase-codeagents/$d" ] || [ -e "$ROOT/appbase-codeagents/claude/skills/$d" ]; then
     ca_bad="$ca_bad unexpectedly-present:$d"
   fi
-  grep -qiE "${d}.*not present|not present.*${d}" "$GDIR/08-agent-integration.md" || ca_bad="$ca_bad absence-undocumented:$d"
+  grep -qiE "$d" "$GDIR/08-agent-integration.md" && ca_bad="$ca_bad still-mentioned:$d"
 done
-grep -qiE 'control plane.*not covered|not covered here' "$GDIR/08-agent-integration.md" || ca_bad="$ca_bad control-plane-line"
-[ -z "$ca_bad" ] && ok "EXTRA_codeagents: the shipped add-appbase-service package and absent packages are documented; control plane marked not covered" \
+[ -z "$ca_bad" ] && ok "EXTRA_codeagents: only the shipped add-appbase-service package is documented; the genuinely absent packages are confirmed absent and no longer named" \
   || bad "EXTRA_codeagents:$ca_bad"
 
 # ── EXTRA_exclusions — control-plane and topology material is not documented here ────────────────────
@@ -498,9 +517,11 @@ for name in sorted(os.listdir(guide_dir)):
             add('05-links-an-image:%s' % rel)
 swagger_linked = [r for r in linked if r.startswith('swagger/')]
 if not swagger_linked:
+    # Post-release: no screenshots claimed, no NOT MEASURED section either -- that is the expected
+    # state. Flag it only if the stale section somehow reappears without real evidence behind it.
     swagger_text = open(os.path.join(guide_dir, '07-swagger.md'), encoding='utf-8').read()
-    if '## Screenshot evidence — NOT MEASURED' not in swagger_text or 'no images or hashes are claimed here' not in swagger_text:
-        add('swagger-not-measured-boundary-missing')
+    if '## Screenshot evidence' in swagger_text:
+        add('swagger-stale-screenshot-evidence-section-present')
 # 2. every PNG under images/ is linked from the guide
 on_disk = []
 for dp, _, fns in os.walk(images_dir):
@@ -605,7 +626,7 @@ if [ -z "${res// /}" ]; then
   if grep -qE '!\[[^]]*\]\(images/swagger/' "$GDIR/07-swagger.md"; then
     ok "AC1416-S1: claimed image evidence is linked, complete, provenance-checked and byte-verified"
   else
-    ok "AC1416-S1: Swagger screenshots are explicitly NOT MEASURED and no image evidence is claimed"
+    ok "AC1416-S1: no Swagger screenshots are claimed, and no stale NOT MEASURED section remains"
   fi
 else
   bad "AC1416-S1: image evidence: $res"
@@ -763,10 +784,9 @@ PY
   if python3 -B "$IMG_MUT" no-such-mutation "$TMPD" "$TMPD" >/dev/null 2>&1; then bad "AC1416-S1: an unknown mutation was accepted (control)"
   else ok "AC1416-S1: an unknown mutation is refused, never counted as killed (negative control)"; fi
 fi
-grep -q '^### Screenshots' "$GDIR/05-config-wizard.md" && ! grep -qiE 'screenshots pending capture' "$GDIR/05-config-wizard.md" \
-  && grep -qF 'are delivered in the stacked follow-up pull request; nothing in this pull request claims them' "$GDIR/05-config-wizard.md" \
-  && ok "EXTRA_wizard_screenshots: the wizard section points at the follow-up pull request for console screenshots and claims none" \
-  || bad "EXTRA_wizard_screenshots: 05-config-wizard.md needs a '### Screenshots' section that points at the follow-up pull request and no 'pending capture' stub"
+grep -q '^### Screenshots' "$GDIR/05-config-wizard.md" \
+  && bad "EXTRA_wizard_screenshots: 05-config-wizard.md still has a stale '### Screenshots' section; it was removed post-release" \
+  || ok "EXTRA_wizard_screenshots: the stale wizard Screenshots section is correctly absent"
 
 # ── EXTRA_capture_* — the capture harness and runner exist, are opt-in and honest (internal work item 2505, internal work item 2548) ─────
 # Static checks only: nothing here compiles, builds or runs the harness. The harness is a test-only class,
@@ -1892,12 +1912,11 @@ print('UNIT-FAIL: ' + ' '.join(fails) if fails else '')
 PY
 capture_docs_check() {  # $1 = guide dir
   local d="$1" bad=""
-  grep -qF 'internal work item 2548' "$d/07-swagger.md" || bad="$bad 07-lacks-2548"
   grep -qF 'a stock core service does not currently' "$d/07-swagger.md" || bad="$bad 07-lacks-core-service-scope"
-  grep -qE 'No class in the main code|no main code serves|main code registers (no|none)' "$d/07-swagger.md" "$d/known-divergences.md" && bad="$bad overbroad-no-main-code-claim"
-  grep -qF '## Screenshot evidence — NOT MEASURED' "$d/07-swagger.md" || bad="$bad 07-lacks-not-measured"
-  grep -qF 'No such run has been performed' "$d/07-swagger.md" || bad="$bad 07-lacks-not-run-statement"
-  grep -qF 'no images or hashes are claimed here' "$d/07-swagger.md" || bad="$bad 07-lacks-no-evidence-boundary"
+  grep -qE 'No class in the main code|no main code serves|main code registers (no|none)' "$d/07-swagger.md" && bad="$bad overbroad-no-main-code-claim"
+  # Post-release: the stale "Screenshot evidence — NOT MEASURED" section was removed; it must not
+  # come back unless real evidence (a linked swagger/ image) actually backs it.
+  grep -qF '## Screenshot evidence' "$d/07-swagger.md" && bad="$bad 07-stale-screenshot-evidence-section-present"
   grep -qE '!\[[^]]*\]\(images/swagger/' "$d/07-swagger.md" && bad="$bad 07-claims-swagger-image" || true
   echo "$bad"
 }
@@ -2203,18 +2222,15 @@ JS
   else echo "  NOTE EXTRA_capture_unit/help/refusal: UNAVAILABLE (no python3)"; fi
 fi
 db="$(capture_docs_check "$GDIR")"
-[ -z "$db" ] && ok "EXTRA_capture_docs: part 7 states the scoped internal work item 2548 gap and the NOT MEASURED/no-evidence boundary" || bad "EXTRA_capture_docs:$db"
+[ -z "$db" ] && ok "EXTRA_capture_docs: part 7 states its stock-core-service scope and carries no stale screenshot-evidence section" || bad "EXTRA_capture_docs:$db"
 if [ "${USER_GUIDE_FIXTURE_RUN:-0}" != 1 ]; then
   mkdir -p "$TMPD/capdoc"; cp "$GDIR"/*.md "$TMPD/capdoc/"
-  for pair in '## Screenshot evidence — NOT MEASURED|## Screenshot evidence — COMPLETE:07-lacks-not-measured' \
-              'No such run has been performed|A run has been performed:07-lacks-not-run-statement' \
-              'no images or hashes are claimed here|images and hashes are claimed here:07-lacks-no-evidence-boundary'; do
-    from="${pair%%|*}"; rest="${pair#*|}"; to="${rest%%:*}"; want="${rest#*:}"
-    mut "$GDIR/07-swagger.md" "$TMPD/capdoc/07-swagger.md" "$from" "$to"
-    case "$(capture_docs_check "$TMPD/capdoc")" in *"$want"*) ok "EXTRA_capture_docs: rejects a guide without its statement named $want";; *) bad "EXTRA_capture_docs: accepted a guide without $want";; esac
-  done
+  mut "$GDIR/07-swagger.md" "$TMPD/capdoc/07-swagger.md" \
+    'A gap remains: a stock core service does not currently provide a ready-to-capture Swagger UI.' \
+    $'A gap remains: a stock core service does not currently provide a ready-to-capture Swagger UI.\n\n## Screenshot evidence — NOT MEASURED\n\nNo such run has been performed.'
+  case "$(capture_docs_check "$TMPD/capdoc")" in *07-stale-screenshot-evidence-section-present*) ok "EXTRA_capture_docs: rejects a reintroduced stale Screenshot-evidence section";; *) bad "EXTRA_capture_docs: accepted a reintroduced stale Screenshot-evidence section";; esac
   cp "$GDIR/07-swagger.md" "$TMPD/capdoc/07-swagger.md"; printf '\n![claim](images/swagger/overview.png)\n' >> "$TMPD/capdoc/07-swagger.md"
-  case "$(capture_docs_check "$TMPD/capdoc")" in *07-claims-swagger-image*) ok "EXTRA_capture_docs: rejects a Swagger image claim under NOT MEASURED";; *) bad "EXTRA_capture_docs: accepted a Swagger image claim under NOT MEASURED";; esac
+  case "$(capture_docs_check "$TMPD/capdoc")" in *07-claims-swagger-image*) ok "EXTRA_capture_docs: rejects a bare Swagger image claim with no real evidence behind it";; *) bad "EXTRA_capture_docs: accepted a bare Swagger image claim with no real evidence behind it";; esac
 fi
 
 # ── EXTRA_wizard_prebuild — the wizard scripts' own build fails from a clean checkout ────────────────
@@ -2329,21 +2345,12 @@ prose_check() {  # $1 = guide dir; prints the problems
     [ "$n" -le 1 ] || bad="$bad $f:$n-control-plane-lines"
   done
   grep -qE 'bundle\.yaml|roles/bundles' <<<"$scan" && bad="$bad role-bundle-path-documented"
-  grep -qF 'requires the authorized local stacktest capture' "$d/README.md" || bad="$bad readme-lacks-swagger-not-measured-boundary"
-  grep -qF 'a recorded real console run is delivered in the stacked follow-up pull request' "$d/README.md" || bad="$bad readme-lacks-wizard-follow-up-pointer"
-  grep -qF 'web-form screenshot is NOT CAPTURED' "$d/README.md" || bad="$bad readme-lacks-web-form-not-captured"
-  grep -qF '| Wizard jar build | NOT MEASURED in this guide revision' "$d/README.md" || bad="$bad readme-lacks-wizard-build-not-measured"
-  grep -qF 'are delivered in the stacked follow-up pull request; nothing in this pull request claims them' "$d/05-config-wizard.md" || bad="$bad 05-lacks-follow-up-pointer"
-  grep -qF 'NOT CAPTURED: needs a Flutter-built jar' "$d/05-config-wizard.md" || bad="$bad 05-lacks-web-not-captured"
   grep -qF 'run once and exited 0, and it produced the wizard jar' "$d/05-config-wizard.md" || bad="$bad 05-lacks-build-run-statement"
   grep -qF 'not run and is unverified' "$d/05-config-wizard.md" && bad="$bad 05-still-says-build-unverified"
-  grep -qF '## Screenshot evidence — NOT MEASURED' "$d/07-swagger.md" || bad="$bad 07-lacks-not-measured-heading"
-  grep -qF 'no images or hashes are claimed here' "$d/07-swagger.md" || bad="$bad 07-lacks-no-evidence-boundary"
-  grep -qF 'Do not use sample-service or generated fixture images' "$d/07-swagger.md" || bad="$bad 07-lacks-invalid-evidence-boundary"
   echo "$bad"
 }
 pb="$(prose_check "$GDIR")"
-[ -z "$pb" ] && ok "EXTRA_prose: no internal jargon; claim scope stated; control plane one line; Swagger delivered-with-limits stated; wizard screenshots deferred to the follow-up; wizard build run stated" || bad "EXTRA_prose:$pb"
+[ -z "$pb" ] && ok "EXTRA_prose: no internal jargon; claim scope stated; control plane one line; wizard build run stated" || bad "EXTRA_prose:$pb"
 
 # ── EXTRA_snippet_complete — the Jetty builder chain in part 4 ends at .build(); ─────────────────────
 snip_complete() {  # $1 = guide dir
@@ -2407,33 +2414,12 @@ PYM
   expect_reject EXTRA_prose "P06-jargon" "$(prose_check "$TMPD/m/j1")"
   mutate_guide j2 01-install-and-first-service.md 'An examples module is planned for 2.0.0.' 'An examples module is 2.0.0 work (P-036/P-037).'
   expect_reject EXTRA_prose "P-036-jargon" "$(prose_check "$TMPD/m/j2")"
-  mutate_guide j3 known-divergences.md 'Where an item has an issue number' "The tracker numbers are the ones given to this guide's author. Where an item has an issue number"
-  expect_reject EXTRA_prose "guide-author-jargon" "$(prose_check "$TMPD/m/j3")"
-  mutate_guide j4 README.md '| Clean-machine walkthrough | DEFERRED' '| Clean-machine walkthrough (A4-2) | DEFERRED'
-  expect_reject EXTRA_prose "A4-2-jargon" "$(prose_check "$TMPD/m/j4")"
-  mutate_guide ov README.md 'What `scripts/test/user_guide_test.sh` checks:' 'Every command and path in it was checked to exist. What `scripts/test/user_guide_test.sh` checks:'
-  expect_reject EXTRA_prose "readme-overclaim" "$(prose_check "$TMPD/m/ov")"
-  mutate_guide cp1 08-agent-integration.md 'They are not covered here.**' 'They are not covered here.** They belong to the control plane and the orchestrator.'
-  python3 - "$TMPD/m/cp1/08-agent-integration.md" <<'PYM'
-import sys
-p = sys.argv[1]; t = open(p).read()
-open(p, 'w').write(t.replace('and the orchestrator.', 'and the orchestrator.\nMore on the control plane in the role bundles.'))
-PYM
-  expect_reject EXTRA_prose "control-plane-sprawl" "$(prose_check "$TMPD/m/cp1")"
-  mutate_guide cp2 08-agent-integration.md 'They are not covered here.**' 'They are not covered here.** Bundles live under docs/roles/bundles/<role>/bundle.yaml.'
-  expect_reject EXTRA_prose "role-bundle-path" "$(prose_check "$TMPD/m/cp2")"
-  mutate_guide pend1 07-swagger.md '## Screenshot evidence — NOT MEASURED' '## Screenshot evidence — COMPLETE'
-  expect_reject EXTRA_prose "07-not-measured-removed" "$(prose_check "$TMPD/m/pend1")"
-  mutate_guide pend2 README.md 'web-form screenshot is NOT CAPTURED' 'web-form screenshot exists'
-  expect_reject EXTRA_prose "readme-web-form-claim" "$(prose_check "$TMPD/m/pend2")"
+  # j3 (known-divergences.md), cp1/cp2 (08-agent-integration.md's removed "not covered here" line),
+  # pend1/pend2/pend4/pend5/pend6 (the removed Screenshot-evidence/follow-up-pointer prose) all
+  # mutated text that the post-release doc cleanup removed outright; there is nothing left to mutate.
+  # pend1's stale-section-reintroduction case is now covered directly in EXTRA_capture_docs above.
   mutate_guide pend3 05-config-wizard.md 'was **run once and exited 0, and it produced the wizard jar**' 'was **not run and is unverified**'
   expect_reject EXTRA_prose "wizard-build-back-to-unverified" "$(prose_check "$TMPD/m/pend3")"
-  mutate_guide pend4 05-config-wizard.md 'are delivered in the stacked follow-up pull request; nothing in this pull request claims them' 'are delivered'
-  expect_reject EXTRA_prose "follow-up-pointer-removed" "$(prose_check "$TMPD/m/pend4")"
-  mutate_guide pend5 README.md 'a recorded real console run is delivered in the stacked follow-up pull request' 'a recorded real console run is delivered'
-  expect_reject EXTRA_prose "readme-follow-up-pointer-removed" "$(prose_check "$TMPD/m/pend5")"
-  mutate_guide pend6 07-swagger.md 'no images or hashes are claimed here' 'images are claimed here'
-  expect_reject EXTRA_prose "no-evidence-boundary-removed" "$(prose_check "$TMPD/m/pend6")"
   # snippet completeness
   mutate_guide snip 04-bootstrap-flavors.md '                })
                 .build();
@@ -2504,7 +2490,7 @@ if [ "${USER_GUIDE_FIXTURE_RUN:-0}" != 1 ] && [ "${USER_GUIDE_SKIP_NESTED_FIXTUR
   # Content mutations of the new arms, each on a full copy of the guide.
   mkdir -p "$FIXTURE_ROOT/groupid" "$FIXTURE_ROOT/leak" "$FIXTURE_ROOT/stalecount"
   cp "$GDIR"/*.md "$FIXTURE_ROOT/groupid/"; cp "$GDIR"/*.md "$FIXTURE_ROOT/leak/"; cp "$GDIR"/*.md "$FIXTURE_ROOT/stalecount/"
-  prepend "$FIXTURE_ROOT/groupid/01-install-and-first-service.md" '<groupId>com.viveworks.appbase</groupId>\n'
+  prepend "$FIXTURE_ROOT/groupid/01-install-and-first-service.md" '<groupId>com.viveworks</groupId>\n'
   prepend "$FIXTURE_ROOT/leak/01-install-and-first-service.md" 'See /Users/someone/notes and the codex lane.\n'
   prepend "$FIXTURE_ROOT/stalecount/01-install-and-first-service.md" 'Appbase has 21 service modules.\n'
   for pair in "groupid:EXTRA_groupid" "leak:EXTRA_hygiene" "stalecount:EXTRA_counts"; do

@@ -53,8 +53,7 @@ never expose it. If the port is busy it tries the next ones. The jar's `web` com
 `start-web.sh` does not forward that option. To use it, run
 `java -jar appbase-config-wizard/target/appbase-config-wizard-1.0.0.jar web --root <dir>`.
 
-⚠️ Starting `start-web.sh` **without** the frontend build above gives a server with a blank page (see
-[known divergences](known-divergences.md)).
+⚠️ Starting `start-web.sh` **without** the frontend build above gives a server with a blank page.
 
 The wizard's own HTTP API serves its OpenAPI document at `/api/openapi.json` and a Swagger UI at
 `/api/swagger-ui/index.html` (asserted in
@@ -62,15 +61,3 @@ The wizard's own HTTP API serves its OpenAPI document at `/api/openapi.json` and
 That is the wizard's API, **not** the REST surface of an Appbase service (see [part 7](07-swagger.md)).
 
 More detail: [`appbase-config-wizard/README.md`](../../appbase-config-wizard/README.md).
-
-### Screenshots
-
-**Console screenshots (a recorded real console run) are delivered in the stacked follow-up pull request; nothing in this pull request claims them.** No wizard image is committed or linked here.
-
-**Not delivered in this pull request:**
-
-| Screen | Mode | State |
-|---|---|---|
-| the console screens (list, field prompts, written file) | console | delivered in the stacked follow-up pull request |
-| the first screen of the web UI | web | NOT CAPTURED: needs a Flutter-built jar, which was not built or run |
-| the web form for one configuration class | web | NOT CAPTURED: it needs UI interaction no tool here drives, and no manual capture exists |

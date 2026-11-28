@@ -34,7 +34,7 @@
     "reactor_profile": null,
     "support": "internal-implementation",
     "type": "maven-pom",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-bom",
@@ -55,7 +55,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-pom",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-bootstrap",
@@ -76,7 +76,7 @@
     "reactor_profile": null,
     "support": "internal-implementation",
     "type": "maven-pom",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-bootstrap-core",
@@ -106,7 +106,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-bootstrap-reactor-netty",
@@ -133,7 +133,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-bootstrap-servlet",
@@ -156,7 +156,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-bootstrap-servlet-jetty",
@@ -180,7 +180,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-bootstrap-servlet-tomcat",
@@ -204,7 +204,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-bootstrap-servlet-undertow",
@@ -228,7 +228,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client",
@@ -249,7 +249,7 @@
     "reactor_profile": null,
     "support": "internal-implementation",
     "type": "maven-pom",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-aerospike",
@@ -276,7 +276,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-cassandra",
@@ -301,7 +301,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-clamav",
@@ -330,7 +330,7 @@
     "reactor_profile": null,
     "support": "deferred-unsupported",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-cloud",
@@ -351,7 +351,7 @@
     "reactor_profile": null,
     "support": "internal-implementation",
     "type": "maven-pom",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-cloud-aws",
@@ -372,7 +372,7 @@
     "reactor_profile": null,
     "support": "internal-implementation",
     "type": "maven-pom",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-cloud-aws-common",
@@ -398,7 +398,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-cloud-aws-httpclient",
@@ -422,7 +422,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-cloud-aws-s3",
@@ -448,7 +448,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-core",
@@ -479,7 +479,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-druid",
@@ -506,7 +506,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-elasticsearch",
@@ -544,7 +544,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-firebase",
@@ -572,7 +572,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-jasync",
@@ -597,7 +597,7 @@
     "reactor_profile": null,
     "support": "deferred-unsupported",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-jdbc",
@@ -621,7 +621,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-jdbi",
@@ -646,7 +646,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-jpa",
@@ -670,7 +670,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-kafka",
@@ -700,7 +700,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-r2dbc",
@@ -726,7 +726,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-redis",
@@ -751,7 +751,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-smtp",
@@ -775,7 +775,7 @@
     "reactor_profile": null,
     "support": "deferred-unsupported",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-spark",
@@ -799,7 +799,7 @@
     "reactor_profile": null,
     "support": "deferred-unsupported",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-vitess",
@@ -825,7 +825,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-client-zookeeper",
@@ -852,7 +852,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-config-wizard",
@@ -888,7 +888,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-core",
@@ -1002,7 +1002,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-java",
@@ -1023,7 +1023,7 @@
     "reactor_profile": null,
     "support": "internal-implementation",
     "type": "maven-pom",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service",
@@ -1044,7 +1044,7 @@
     "reactor_profile": null,
     "support": "internal-implementation",
     "type": "maven-pom",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-core",
@@ -1078,7 +1078,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-supportmessage",
@@ -1105,7 +1105,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-user",
@@ -1145,7 +1145,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-user-account-firebaseauth",
@@ -1168,7 +1168,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-user-account-jdbi",
@@ -1191,7 +1191,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-user-account-r2dbc",
@@ -1214,7 +1214,7 @@
     "reactor_profile": null,
     "support": "deferred-unsupported",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-user-session-aerospike",
@@ -1237,7 +1237,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-web",
@@ -1278,7 +1278,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-web-oauth",
@@ -1301,7 +1301,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-web-oauth-apple",
@@ -1324,7 +1324,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-web-oauth-github",
@@ -1347,7 +1347,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-web-oauth-google",
@@ -1370,7 +1370,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-web-oauth-microsoft",
@@ -1393,7 +1393,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-web-oauth-okta",
@@ -1416,7 +1416,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-web-oauth-reactive",
@@ -1439,7 +1439,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-web-oauth-tokencache-aerospike",
@@ -1462,7 +1462,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-service-web-oauth-tokencache-redis",
@@ -1485,7 +1485,7 @@
     "reactor_profile": null,
     "support": "supported-public",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase-stacktest",
@@ -1575,7 +1575,7 @@
     "reactor_profile": null,
     "support": "internal-implementation",
     "type": "maven-jar",
-    "version": "1.0.0"
+    "version": "2.0.0-SNAPSHOT"
    },
    {
     "artifact_id": "appbase_config_wizard",
