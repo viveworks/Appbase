@@ -56,8 +56,19 @@
             <groupId>com.viveworks.appbase</groupId>
             <artifactId>appbase-bootstrap-servlet-jetty</artifactId>
         </dependency>
+        <!-- Supplies the JAX-RS-annotated Core resource classes used (for OpenAPI scanning only,
+             not as live resources) to build this example's combined Swagger document; see
+             CombinedOpenApiSupport. Already a compile-time dependency of appbase-bootstrap-servlet
+             transitively, declared explicitly here for a reliable compile classpath. -->
+        <dependency>
+            <groupId>com.viveworks.appbase</groupId>
+            <artifactId>appbase-service-web</artifactId>
+        </dependency>
 
-        <!-- Embedded JPA + H2, this example's own persistence, not an Appbase coordinate. -->
+        <!-- Embedded JPA + H2, this example's own persistence, not an Appbase coordinate.
+             Hibernate itself is an unconditional transitive dependency of appbase-core (see
+             appbase-java/appbase-core/pom.xml); declared explicitly here for a reliable
+             compile classpath rather than relying on it arriving undeclared. -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>

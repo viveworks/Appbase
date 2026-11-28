@@ -58,7 +58,10 @@
             <artifactId>appbase-service-core</artifactId>
         </dependency>
 
-        <!-- Embedded JPA + H2, this example's own persistence, not an Appbase coordinate. -->
+        <!-- Embedded JPA + H2, this example's own persistence, not an Appbase coordinate.
+             Hibernate itself is an unconditional transitive dependency of appbase-core (see
+             appbase-java/appbase-core/pom.xml); declared explicitly here for a reliable
+             compile classpath rather than relying on it arriving undeclared. -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
