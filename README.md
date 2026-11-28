@@ -15,9 +15,6 @@ The former platform overview, `README.adoc` (architecture, modules, the build), 
 Current documentation lives under [`docs/`](docs/); the former document is not part of the public export.
 This file carries the short operator-facing command tables that people need before they need any of that.
 
-> *Placeholder brand.* The name, wordmark and tagline may still change. The brand set, including
-> the light and dark lockups, is planned in [`docs/branding/`](docs/branding/README.md).
-
 ## What is Appbase
 
 Appbase is a set of Maven modules that you combine into a service.
