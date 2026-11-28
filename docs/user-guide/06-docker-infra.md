@@ -26,6 +26,35 @@ the same way, into `appbase-java/appbase-client/appbase-client-vitess/infra/loca
 MinIO is a standing gap, not a regression: no MinIO Docker infra exists anywhere in this tree (it was
 never built), so the three stacktest scripts simply don't try to start or stop a MinIO container.
 
+```mermaid
+flowchart LR
+    subgraph Umbrella scripts
+        A["appbase-stacktest/infra/\nstart-infra.sh · run-infra.sh · stop-infra.sh"]
+        B["appbase-java/appbase-service/infra/\nstart-infra.sh · run-infra.sh · stop-infra.sh"]
+    end
+    A --> C[appbase-client-jdbc<br/>postgresql]
+    A --> D[appbase-client-zookeeper]
+    A --> E[appbase-client-aerospike]
+    A --> F[appbase-client-druid]
+    A --> G[appbase-client-elasticsearch]
+    A --> H[appbase-client-firebase]
+    A --> I["appbase-client-vitess<br/>infra/local/{vitess,service-schema}"]
+    B --> C
+    B --> D
+    B --> E
+    B --> F
+    B --> G
+    B --> H
+    B --> I
+    J[appbase-client-aws<br/>MinIO — never built] -.-x A
+    J -.-x B
+```
+
+Each umbrella script now resolves every service through its *owning* client module directly, instead
+of a single shared base path that never existed. MinIO (dashed, crossed) is the one service no
+umbrella script can resolve, because no MinIO Docker infra was ever built — not a path bug, a missing
+directory.
+
 Verified by `scripts/test/infra_client_paths_test.sh` (asserts the exact script each of the six
 orchestrators resolves to, per service) plus one live Redis smoke cycle (run → stop → start → stop).
 A broader live multi-service smoke attempt separately hit three unrelated environment issues — a

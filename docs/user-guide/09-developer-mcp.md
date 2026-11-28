@@ -1,6 +1,6 @@
 # Part 9 — Developer MCP
 
-[Guide index](README.md) · previous: [agent integration](08-agent-integration.md) · next: [known divergences](known-divergences.md)
+[Guide index](README.md) · previous: [agent integration](08-agent-integration.md)
 
 Appbase ships a local, read-only Model Context Protocol server that gives coding assistants
 source-derived Java API and repository-convention lookup. See the dedicated

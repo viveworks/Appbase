@@ -9,8 +9,8 @@ says so wherever something you might expect is missing or broken.
 
 ## Release evidence
 
-Release publication generates the Quality & Security Practices page from the release-evidence index.
-That page is not present before the publication commit.
+The Quality & Security Practices page, generated from the release-evidence index, is not yet
+available in this guide.
 
 ## Guide map
 
@@ -21,11 +21,10 @@ That page is not present before the publication commit.
 | 3 | [03-service-modules.md](03-service-modules.md) | The 17 service modules: core, web, OAuth, user accounts, sessions, support messages |
 | 4 | [04-bootstrap-flavors.md](04-bootstrap-flavors.md) | The 6 bootstrap modules: core, reactor-netty, servlet layer, Jetty, Tomcat, Undertow |
 | 5 | [05-config-wizard.md](05-config-wizard.md) | The configuration wizard (console and web) |
-| 6 | [06-docker-infra.md](06-docker-infra.md) | Local Docker infrastructure for client modules, and what is broken in the umbrella scripts |
+| 6 | [06-docker-infra.md](06-docker-infra.md) | Local Docker infrastructure for client modules, and how the umbrella scripts resolve each service |
 | 7 | [07-swagger.md](07-swagger.md) | The REST surface of a core service, and the state of its OpenAPI documentation |
 | 8 | [08-agent-integration.md](08-agent-integration.md) | The `appbase-codeagents/` directory: what each part is and how to use it |
 | 9 | [09-developer-mcp.md](09-developer-mcp.md) | Connect popular coding agents to Appbase's source-derived API and convention lookup server |
-| — | [known-divergences.md](known-divergences.md) | Places where docs, scripts or build files disagree with the tree |
 
 Existing documents this guide links instead of repeating:
 [OAuth primer](../OAuth-Primer.md) (concepts behind the OAuth modules),
@@ -143,9 +142,8 @@ reality differs.
 7. Record the result under this heading as `Walkthrough record: PASSED <date> <link to the run or
    issue comment>`, or list each divergence you fixed.
 
-The clean-machine walkthrough is deferred to the
-release checklist, to be run by the maintainers
-before the 1.0.0 cut. Nothing in this guide establishes that walkthrough or an external deploy.
+The clean-machine walkthrough has not yet been run post-release; see the walkthrough record above
+for its current status. Nothing in this guide establishes that walkthrough or an external deploy.
 
 Parts 2, 3, 4, 6, 7, 8 and 9 are reference material and are **not** part of this walkthrough.
 
@@ -153,7 +151,7 @@ Parts 2, 3, 4, 6, 7, 8 and 9 are reference material and are **not** part of this
 
 ## Where to go next
 
-The root [`README.md`](../../README.md) (being rewritten as the Release-1 storefront), the
+The root [`README.md`](../../README.md), the
 [Module and Service Catalogue](../Module-and-Service-Catalog.md), the release notes, and the
 configuration reference
 [authorization and path matching](../configuration/authorization-and-path-matching.md).

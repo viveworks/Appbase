@@ -12,11 +12,6 @@ writing it.
 | Path | What it is | For a person building on Appbase? |
 |---|---|---|
 | `appbase-codeagents/claude/skills/add-appbase-service/` | scaffolds a new Appbase module (a recipe plus six layer recipes) | **Yes**: this is the integration surface |
-| appbase-code-review | not present in this exported tree | not available here |
-| appbase-security-review | not present in this exported tree | not available here |
-| coding-agent | not present in this exported tree | not available here |
-| review-agent | not present in this exported tree | not available here |
-| executor-agent | not present in this exported tree | not available here |
 
 ### Scaffolding a new module: `add-appbase-service`
 
@@ -46,18 +41,8 @@ Cautions found in the recipes:
 - They write library versions into the **repository root** `pom.xml` and never into a module pom.
 - They name reference modules as `appbase-client/appbase-client-aerospike/`, a path that does not exist at
   the repository root; the modules are under `appbase-java/appbase-client/`. The recipes still make
-  sense, but expect to translate paths. See [known divergences](known-divergences.md).
+  sense, but expect to translate paths.
 - They write Java package names and a groupId as they are today. Whether the pending rename changes them is not verified.
-
-### Review gates: appbase-code-review and appbase-security-review
-
-These packages are not present in this exported tree, so this guide makes no claim about their
-contents or use.
-
-### Role adapters: coding-agent, review-agent, executor-agent
-
-These directories are not present in this exported tree. A team using Appbase in an application does
-not need them. **They are not covered here.**
 
 ## How the packages are switched on
 
