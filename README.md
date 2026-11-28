@@ -86,9 +86,14 @@ or install it with `brew install ripgrep` on macOS, `sudo apt install ripgrep` o
 
 Next, generate a configuration file with `appbase-config-wizard/bin/start-console.sh` and read
 [Configuration reference](docs/Configuration-Reference.md). Whether each of these steps has actually
-been run is recorded in [Examples](docs/Examples.md). All five local examples have been EXECUTED: four
+been run is recorded in [Examples](docs/Examples.md). All seven local examples have been EXECUTED: six
 on JDK 25, plus the minimum-JDK refusal example against an unsupported older toolchain. Examples that
 need Docker, a backend or external infrastructure are NOT MEASURED.
+
+Two of those are minimal external consumer projects under [`examples/`](examples/), each depending on
+the published `1.0.0` coordinate above and starting a real service: one over Reactor Netty
+([`examples/tasks-quickstart/`](examples/tasks-quickstart/)), one over embedded Jetty + Jersey
+([`examples/tasks-quickstart-jetty-jersey/`](examples/tasks-quickstart-jetty-jersey/)).
 
 ## Swagger UI
 

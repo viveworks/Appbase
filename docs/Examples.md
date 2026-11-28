@@ -118,9 +118,51 @@ AppbaseCoreServices core = AppbaseCoreServices.builder()
   A later owner ruling also deferred `appbase-service-user-account-r2dbc`.
   See [Known limitations](Known-Limitations.md#build-and-packaging-limits-on-this-revision).
 
+### 6. Consumer smoke test — Reactor Netty + embedded JPA/H2
+
+A minimal external Maven project, outside the reactor, depends on the published `1.0.0`
+coordinates and starts a real Reactor Netty service backed by embedded JPA + H2, exposing one
+Tasks REST resource. See [`examples/tasks-quickstart/`](../examples/tasks-quickstart/).
+
+```sh
+cd examples/tasks-quickstart
+mvn -Dmaven.repo.local=<empty dir> clean test
+```
+
+**Status:** EXECUTED 2026-11-28 at `e663e73fc` on OpenJDK 25.0.3. Resolved against an empty
+local repository with network only to Maven Central: `appbase-bom`, `appbase-core`,
+`appbase-service-core` and `appbase-bootstrap-reactor-netty` at `1.0.0`, plus their own
+transitive dependencies, all from `repo.maven.apache.org`. The smoke test started the server on
+an ephemeral port and drove full CRUD over real HTTP: `POST /tasks` → 201, `GET /tasks` → 200
+(one task listed), `PUT /tasks/item?id=1` → 200 (`done:true`), `GET /tasks/item?id=1` → 200,
+`DELETE /tasks/item?id=1` → 200, then `GET /tasks/item?id=1` → 404. `BUILD SUCCESS`, Tests run:
+1, Failures: 0.
+
+### 7. Consumer smoke test — embedded Jetty + Jersey + embedded JPA/H2
+
+The same Tasks resource/service pattern as example 6, under a different embedded-server
+choice: embedded Jetty with a JAX-RS (Jersey) resource. See
+[`examples/tasks-quickstart-jetty-jersey/`](../examples/tasks-quickstart-jetty-jersey/).
+
+```sh
+cd examples/tasks-quickstart-jetty-jersey
+mvn -Dmaven.repo.local=<empty dir> clean test
+```
+
+**Status:** EXECUTED 2026-11-28 at `e663e73fc` on OpenJDK 25.0.3. Resolved against an empty
+local repository with network only to Maven Central: `appbase-bom`, `appbase-core` and
+`appbase-bootstrap-servlet-jetty` at `1.0.0` (30 distinct `com.viveworks.appbase` artifacts in
+total, pulled in transitively), from `repo.maven.apache.org`. One resolution attempt logged a
+harmless failed metadata fetch against an unrelated legacy host (`jvnet-nexus-releases`,
+expired certificate); it did not affect the actual resolution, which completed from Central.
+The smoke test started the server on an ephemeral port and drove full CRUD over real HTTP:
+`POST /tasks` → 201, `GET /tasks` → 200 (one task listed), `PUT /tasks/1` → 200 (`done:true`),
+`GET /tasks/1` → 200, `DELETE /tasks/1` → 200, then `GET /tasks/1` → 404. `BUILD SUCCESS`,
+Tests run: 1, Failures: 0.
+
 ## Examples that need a backend, Docker or credentials
 
-### 6. Run a supported adapter's integration tests
+### 8. Run a supported adapter's integration tests
 
 ```sh
 KAFKA_CLIENT_SERVICE_TESTS_ENABLED=true ./build.sh develop
@@ -131,7 +173,7 @@ The integration-test switch for every supported adapter is listed in the
 
 **Status:** NOT MEASURED — needs Docker and a running backend container.
 
-### 7. Run the full stacktest
+### 9. Run the full stacktest
 
 ```sh
 ./build.sh --mode staging       # includes appbase-stacktest and the config-wizard IT suite
@@ -139,7 +181,7 @@ The integration-test switch for every supported adapter is listed in the
 
 **Status:** NOT MEASURED — needs Docker-backed infrastructure for several backends.
 
-### 8. Deploy to external infrastructure
+### 10. Deploy to external infrastructure
 
 No deploy command is documented here yet. The deploy path belongs to the User Guide
 ([`docs/user-guide/README.md`](user-guide/README.md), planned).
