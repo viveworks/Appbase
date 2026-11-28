@@ -11,10 +11,6 @@
 adapters, application services, and a choice of embedded server, assembled from one YAML
 configuration.**
 
-The former platform overview, `README.adoc` (architecture, modules, the build), was removed.
-Current documentation lives under [`docs/`](docs/); the former document is not part of the public export.
-This file carries the short operator-facing command tables that people need before they need any of that.
-
 ## What is Appbase
 
 Appbase is a set of Maven modules that you combine into a service.
