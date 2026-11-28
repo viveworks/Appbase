@@ -11,7 +11,9 @@
     }
   },
   "excluded_trees": {
-    "appbase-codeagents": "agent configuration only — no build surface (mirrors EXCLUDED_TREES in build.sh)"
+    "appbase-codeagents": "agent configuration only — no build surface (mirrors EXCLUDED_TREES in build.sh)",
+    "examples/tasks-quickstart": "standalone external-consumer example; deliberately not a reactor module — it resolves the published com.viveworks.appbase 1.0.0 coordinates from Central, not the local reactor (mirrors EXCLUDED_TREES in build.sh)",
+    "examples/tasks-quickstart-jetty-jersey": "standalone external-consumer example; deliberately not a reactor module — it resolves the published com.viveworks.appbase 1.0.0 coordinates from Central, not the local reactor (mirrors EXCLUDED_TREES in build.sh)"
   },
   "module_groups": [
     {

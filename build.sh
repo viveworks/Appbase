@@ -19,6 +19,8 @@ cd "$SCRIPT_DIR"
 # finds a buildable tree in neither the reactor nor this list.
 EXCLUDED_TREES=(
   "appbase-codeagents"  # agent configuration only — no build surface
+  "examples/tasks-quickstart"  # standalone external-consumer example, resolves 1.0.0 from Central, not the reactor
+  "examples/tasks-quickstart-jetty-jersey"  # standalone external-consumer example, resolves 1.0.0 from Central, not the reactor
 )
 
 MODE="quick"
