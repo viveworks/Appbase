@@ -122,10 +122,10 @@ AppbaseCoreServices core = AppbaseCoreServices.builder()
 
 A minimal external Maven project, outside the reactor, depends on the published `1.0.0`
 coordinates and starts a real Reactor Netty service backed by embedded JPA + H2, exposing one
-Tasks REST resource. See [`examples/tasks-quickstart/`](../examples/tasks-quickstart/).
+Tasks REST resource. See [`examples/tasks-quickstart-reactor-netty/`](../examples/tasks-quickstart-reactor-netty/).
 
 ```sh
-cd examples/tasks-quickstart
+cd examples/tasks-quickstart-reactor-netty
 mvn -Dmaven.repo.local=<empty dir> clean test
 ```
 

@@ -78,9 +78,10 @@ embedded JPA + H2, under a different embedded-server choice.
 
 ### 1. Reactor Netty (embedded JPA + H2)
 
-[`examples/tasks-quickstart/`](examples/tasks-quickstart/) registers a Tasks REST resource on
-`AppbaseRouteRegistry` and starts a real `ReactorNettyAppbaseWebServer`. Real API usage, pulled
-directly from [`TasksEndpoint.java`](examples/tasks-quickstart/src/main/java/com/example/appbase/quickstart/TasksEndpoint.java):
+[`examples/tasks-quickstart-reactor-netty/`](examples/tasks-quickstart-reactor-netty/) registers a
+Tasks REST resource on `AppbaseRouteRegistry` and starts a real `ReactorNettyAppbaseWebServer`.
+Real API usage, pulled directly from
+[`TasksEndpoint.java`](examples/tasks-quickstart-reactor-netty/src/main/java/com/viveworks/appbase/example/reactornetty/TasksEndpoint.java):
 
 ```java
 registry.route("GET", COLLECTION_PATH, exchange -> Mono.fromCallable(() ->
@@ -119,7 +120,7 @@ server.start();
 [`examples/tasks-quickstart-jetty-jersey/`](examples/tasks-quickstart-jetty-jersey/) registers the
 same Tasks resource/service pattern as a real JAX-RS resource on embedded Jetty + Jersey instead.
 Real API usage, pulled directly from
-[`TasksResource.java`](examples/tasks-quickstart-jetty-jersey/src/main/java/com/example/appbase/quickstart/jetty/TasksResource.java):
+[`TasksResource.java`](examples/tasks-quickstart-jetty-jersey/src/main/java/com/viveworks/appbase/example/jettyjersey/TasksResource.java):
 
 ```java
 @POST
@@ -190,11 +191,12 @@ depends on.
 [`examples/tasks-quickstart-jetty-jersey/`](examples/tasks-quickstart-jetty-jersey/) enables
 `withAppbaseCoreServlets()` (Core's real, live management endpoints) alongside its own live
 `TasksResource`, and serves one combined OpenAPI document covering both -- real, not fabricated: a
-real headless-Chrome screenshot of that running service's Swagger UI, showing the example's own
-`/tasks` and `/tasks/{id}` endpoints at the top, immediately followed by Core's own REST surface
-(configuration, core, exception, JMX, log, mediator, metric, service registry, status):
+real headless-Chrome screenshot of that running service's Swagger UI, tagged by category so every
+endpoint group is visible in one view: the example's own Tasks endpoints, plus Core's full real
+REST surface (Configuration, Core, Exception, JMX, Log, Mediator, Metrics, Service Registry,
+Status):
 
-![Swagger UI: Tasks Quickstart (Jetty/Jersey) alongside Appbase Core REST endpoints](docs/images/examples-swagger/tasks-quickstart-jetty-jersey-swagger.png)
+![Swagger UI: Tasks Quickstart (Jetty/Jersey) alongside every Appbase Core REST endpoint category](docs/images/examples-swagger/tasks-quickstart-jetty-jersey-swagger.png)
 
 ### Reactor Netty example
 
@@ -202,7 +204,8 @@ real headless-Chrome screenshot of that running service's Swagger UI, showing th
 a servlet-bootstrap-only capability today -- see `appbase-bootstrap-servlet`'s
 `AppbaseCoreOpenApiRegistrar` and `JettyServletContainer.Builder#withSwaggerUI`, which have no
 Reactor Netty equivalent). There is no Swagger UI screenshot for
-[`examples/tasks-quickstart/`](examples/tasks-quickstart/) for that reason; adding one would mean
+[`examples/tasks-quickstart-reactor-netty/`](examples/tasks-quickstart-reactor-netty/) for that
+reason; adding one would mean
 adding real OpenAPI/Swagger support to the Reactor Netty bootstrap itself, which is out of scope for
 this examples/docs change.
 

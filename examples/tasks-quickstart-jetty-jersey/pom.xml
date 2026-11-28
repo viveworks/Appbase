@@ -11,9 +11,9 @@
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example.appbase</groupId>
-    <artifactId>tasks-quickstart-jetty-jersey</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>com.viveworks.appbase</groupId>
+    <artifactId>appbase-example-jetty-jersey</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Appbase Tasks Quickstart (Jetty + Jersey)</name>
     <description>
