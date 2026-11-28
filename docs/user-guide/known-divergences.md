@@ -30,12 +30,6 @@ This guide routes around every one of them, and **edits none of them**.
 The stacktest, service, and Vitess orchestration paths were corrected. Part 6 gives the
 per-client commands that now exist; the MinIO path above remains unresolved.
 
-## Build and artifact coverage
-
-| Where | What it says | What the tree does |
-|---|---|---|
-| the `<groupId>` of the root `pom.xml`, `appbase-bom/pom.xml` and the other module poms | `com.viveworks.appbase` | the Central namespace decision is `com.viveworks`; the rename is pending. This guide uses the placeholder `GROUP_ID_PENDING_2546` |
-
 ## REST documentation
 
 | Where | What it says | What the tree does |

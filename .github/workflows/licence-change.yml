@@ -39,6 +39,19 @@ jobs:
         run: |
           python3 - <<'PY'
           import json, os
+
+          # This project's own groupId (declared with the Apache-2.0 licence this workflow
+          # already allow-lists in pom.xml's <licenses>). An "unlicensed" entry under this
+          # groupId is never an external dependency slipping past the real policy check below
+          # -- it is one of this reactor's own modules, newly diffed because its own <version>
+          # changed (e.g. a SNAPSHOT version bump) and never yet published anywhere a licence
+          # scanner could resolve metadata for. Only a first-party coordinate is exempted here;
+          # "unresolved" and "forbidden" are never filtered, for first-party artifacts or not.
+          FIRST_PARTY_GROUP = 'com.viveworks.appbase:'
+
+          def is_first_party(entry):
+              return entry.get('ecosystem') == 'maven' and entry.get('name', '').startswith(FIRST_PARTY_GROUP)
+
           raw = os.environ.get('INVALID_LICENSE_CHANGES', '')
           if not raw.strip():
               raise SystemExit('dependency review produced no invalid-license-changes output')
@@ -50,11 +63,18 @@ jobs:
           if not isinstance(changes, dict) or any(
                   key not in changes or not isinstance(changes[key], list) for key in required):
               raise SystemExit('invalid-license-changes has an unexpected schema')
-          unknown = changes['unresolved'] + changes['unlicensed']
+          exempted = [e for e in changes['unlicensed'] if is_first_party(e)]
+          external_unlicensed = [e for e in changes['unlicensed'] if not is_first_party(e)]
+          unknown = changes['unresolved'] + external_unlicensed
           if unknown:
               raise SystemExit('dependency licences unresolved or unlicensed: ' + repr(unknown))
           if changes['forbidden']:
               raise SystemExit('dependency review reported forbidden licences')
+          if exempted:
+              print(f'{len(exempted)} first-party {FIRST_PARTY_GROUP}* coordinate(s) exempted from licence '
+                    'metadata resolution (own-module version change, not an external dependency):')
+              for e in exempted:
+                  print(f"  - {e.get('name')}@{e.get('version')} ({e.get('manifest')})")
           print('dependency licence metadata resolved and policy-compliant')
           PY
 

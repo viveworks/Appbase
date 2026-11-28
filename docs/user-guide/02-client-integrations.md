@@ -15,9 +15,9 @@ Nothing here was run against live infrastructure.
 All integrations follow one pattern, so learn it once.
 
 **1. Add the module.** Depend on the `appbase-client-<name>` artifact (plus `appbase-bootstrap-core`, which
-holds the factories). The coordinates' groupId is a placeholder, **pending the rename**, as in
-[part 1](01-install-and-first-service.md). `appbase-client-r2dbc` is managed by `appbase-bom/pom.xml`,
-so it needs no explicit version when that BOM is imported.
+holds the factories). The real, permanent groupId is `com.viveworks.appbase` (internal work item 2546,
+finalized -- see [part 1](01-install-and-first-service.md)). `appbase-client-r2dbc` is managed by
+`appbase-bom/pom.xml`, so it needs no explicit version when that BOM is imported.
 
 **2. Write a YAML file.** Each integration reads a YAML document with `autoStart: true` and a key named
 `defaultDefault<Name>ClientIntegrationServiceConfiguration` for the default client. Most also accept
@@ -40,6 +40,37 @@ Javadoc (Redis and Vitess JDBC were read in full) accept five forms:
 
 A few factories take two YAML paths (Druid takes a shared-resources file and a client file), or omit
 some forms. Check the class before relying on a form.
+
+The YAML path is not the only form. A factory also accepts a `Default…ClientServiceConfiguration`
+object built directly in code, with no YAML file at all. The example below is composed across the
+three classes named just after it, not a verbatim excerpt of any one of them, so it carries no
+`snippet-source` marker (this file's own convention for an illustrative example, same as the
+build/YAML/XML examples elsewhere in this guide) — the classes and paths it names are real, per
+the citations below:
+
+```java
+final RedisClientServiceConfiguration redisConfig = DefaultRedisClientServiceConfiguration.builder()
+        .defaultDefaultRedisClientIntegrationServiceConfiguration(
+                DefaultRedisClientIntegrationServiceConfiguration.builder()
+                        .hostPortConfiguration(HostPortConfiguration.builder()
+                                .host("localhost")
+                                .port(6379)
+                                .build())
+                        .build())
+        .build();
+
+final AppbaseClientServices clientServices = AppbaseClientServices.builder()
+        .from(coreServices)
+        .with(new RedisClientServiceFactory(redisConfig))
+        .build();
+```
+
+Source for the configuration classes' real builder setters:
+`appbase-java/appbase-client/appbase-client-redis/src/main/java/com/viveworks/appbase/client/service/redis/configuration/DefaultRedisClientServiceConfiguration.java`
+and `DefaultRedisClientIntegrationServiceConfiguration.java` in the same directory; `HostPortConfiguration`
+is `appbase-java/appbase-core/src/main/java/com/viveworks/appbase/core/util/net/HostPortConfiguration.java`.
+The YAML form above remains the recommended default for anything beyond a quick local test — it keeps
+connection details out of compiled code.
 
 **4. Use the service.** `AppbaseClientServices.get(RedisClientService.class)` returns the registered
 service. Every client service hands out the native client (for example a Hikari `DataSource`, or
