@@ -11,7 +11,8 @@
     }
   },
   "excluded_trees": {
-    "appbase-codeagents": "agent configuration only — no build surface (mirrors EXCLUDED_TREES in build.sh)"
+    "appbase-codeagents": "agent configuration only — no build surface (mirrors EXCLUDED_TREES in build.sh)",
+    "examples": "standalone external-consumer examples; deliberately not reactor modules — each resolves the published com.viveworks.appbase 1.0.0 coordinates from Central, not the local reactor (mirrors EXCLUDED_TREES in build.sh)"
   },
   "module_groups": [
     {
