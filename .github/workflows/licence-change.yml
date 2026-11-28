@@ -30,8 +30,8 @@ jobs:
           license-check: true
           allow-licenses: >-
             Apache-2.0, BSD-2-Clause, BSD-3-Clause, CC0-1.0, CDDL-1.0, CDDL-1.1,
-            EPL-1.0, EPL-2.0, ISC, LicenseRef-Public-Domain, MIT, MIT-0, MPL-1.1,
-            MPL-2.0, W3C
+            EPL-1.0, EPL-2.0, ISC, LGPL-2.1-only, LGPL-2.1-or-later, LGPL-3.0-only,
+            LicenseRef-Public-Domain, MIT, MIT-0, MPL-1.1, MPL-2.0, W3C
       - name: Fail closed on missing or unresolved licence metadata
         if: always()
         env:
