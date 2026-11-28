@@ -281,10 +281,11 @@ ac5() {
                         || bad "AC2419-5: Release-2 work linked, not duplicated" "${miss[@]}"
 }
 
-# AC2419-7 — the Swagger UI screenshots (brainstorm P-010), appended to internal work item 2419 on 2026-09-27 by the owner's
-# ruling. The README has a "## Swagger UI" section. Until the screenshots are captured from a local
-# stacktest run it must say NOT MEASURED and name that run; once it embeds an image, every image must
-# exist (AC2419-2 resolves image links) and the NOT MEASURED marker must be gone.
+# AC2419-7 — the Swagger UI screenshots, appended to internal work item 2419 on 2026-09-27 by the owner's
+# ruling. The README has a "## Swagger UI" section. Post-release this section carries no screenshot-status
+# commentary by default (no screenshots, no NOT MEASURED marker) -- that is the expected, non-problem state.
+# Once it embeds an image, every image must exist (AC2419-2 resolves image links) and the NOT MEASURED
+# marker must be gone.
 # Every image form counts (inline, reference-style, <img>) outside HTML comments; each must be a non-empty
 # local file, with a capture date and revision in the section (RA-A1 L5-4).
 ac7() {

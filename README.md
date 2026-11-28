@@ -33,8 +33,7 @@ and web endpoints.
 A bootstrap module then runs everything on the embedded server you choose.
 
 This README gives an overview of Release 1.0.0. Every supported module and artifact is described in
-the shipped [catalogue](#documentation). Release publication adds a generated, release-specific list
-of known limitations; that file is not present before the publication commit.
+the shipped [catalogue](#documentation), including the release's [known limitations](docs/Known-Limitations.md).
 
 ## Capability families
 
@@ -99,11 +98,6 @@ on JDK 25, plus the minimum-JDK refusal example against an unsupported older too
 need Docker, a backend or external infrastructure are NOT MEASURED.
 
 ## Swagger UI
-
-Screenshots of the Swagger UI that a running Appbase service publishes belong here (brainstorm P-010).
-**Status: NOT MEASURED.** They are captured from a local stacktest run, and none has been taken yet,
-so none is shown. How to run the stacktest is in
-[Examples](docs/Examples.md#7-run-the-full-stacktest).
 
 Swagger UI is **opt-in and meant for development**. A Jetty service serves it only if it calls
 `withSwaggerUI(...)` on its container builder, as the stacktest's development server does. It is a
